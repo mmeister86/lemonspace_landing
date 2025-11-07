@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage } from 'appwrite';
+import { Client, Account, Databases, Storage } from "appwrite";
 
 // Lazy Appwrite Client-Initialisierung
 // Verhindert Fehler während des Build-Prozesses (SSR) wenn Umgebungsvariablen nicht gesetzt sind
@@ -15,7 +15,9 @@ function getClient(): Client {
       // Fallback für Build-Zeit: Verwende gültige Dummy-Werte
       // Diese werden zur Laufzeit nie verwendet, da useAuth nur clientseitig läuft
       // Appwrite validiert die URL beim setEndpoint, daher müssen wir eine gültige URL verwenden
-      clientInstance = new Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('build-placeholder');
+      clientInstance = new Client()
+        .setEndpoint("https://cloud.appwrite.io/v1")
+        .setProject("build-placeholder");
     } else {
       clientInstance = new Client().setEndpoint(endpoint).setProject(projectId);
     }
@@ -35,7 +37,9 @@ export const account = new Proxy({} as Account, {
     if (!accountInstance) {
       accountInstance = new Account(getClient());
     }
-    return (accountInstance as unknown as Record<string | symbol, unknown>)[prop];
+    return (accountInstance as unknown as Record<string | symbol, unknown>)[
+      prop
+    ];
   },
 }) as Account;
 
@@ -44,7 +48,14 @@ export const databases = new Proxy({} as Databases, {
     if (!databasesInstance) {
       databasesInstance = new Databases(getClient());
     }
-    return (databasesInstance as unknown as Record<string | symbol, unknown>)[prop];
+    const value = (
+      databasesInstance as unknown as Record<string | symbol, unknown>
+    )[prop];
+    // Binde Funktionen an die Instanz, damit 'this' korrekt gesetzt ist
+    if (typeof value === "function") {
+      return value.bind(databasesInstance);
+    }
+    return value;
   },
 }) as Databases;
 
@@ -53,7 +64,15 @@ export const storage = new Proxy({} as Storage, {
     if (!storageInstance) {
       storageInstance = new Storage(getClient());
     }
-    return (storageInstance as unknown as Record<string | symbol, unknown>)[prop];
+    const value = Reflect.get(
+      storageInstance as unknown as Record<string | symbol, unknown>,
+      prop
+    );
+    // Binde Funktionen an die Instanz, damit 'this' korrekt gesetzt ist
+    if (typeof value === "function") {
+      return value.bind(storageInstance);
+    }
+    return value;
   },
 }) as Storage;
 
