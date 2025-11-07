@@ -95,7 +95,7 @@ export default function Navbar() {
                           <button className="focus:outline-none inline-flex items-center justify-center">
                             <Avatar className="h-8 w-8">
                               <AvatarImage
-                                src={(user.prefs as any)?.avatar}
+                                src={(user.prefs as { avatar?: string })?.avatar}
                                 alt={user.name}
                               />
                               <AvatarFallback>

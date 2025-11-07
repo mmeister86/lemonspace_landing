@@ -17,7 +17,7 @@ export function useAuth() {
     try {
       const currentUser = await account.get()
       setUser(currentUser)
-    } catch (error) {
+    } catch {
       setUser(null)
     } finally {
       setLoading(false)
@@ -28,12 +28,13 @@ export function useAuth() {
     try {
       await account.create(ID.unique(), email, password, name)
       // Nach erfolgreicher Registrierung direkt einloggen
-      const session = await account.createEmailPasswordSession(email, password)
+      await account.createEmailPasswordSession(email, password)
       const currentUser = await account.get()
       setUser(currentUser)
       return { success: true, user: currentUser }
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Registrierung fehlgeschlagen' }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Registrierung fehlgeschlagen'
+      return { success: false, error: errorMessage }
     }
   }
 
@@ -43,8 +44,9 @@ export function useAuth() {
       const currentUser = await account.get()
       setUser(currentUser)
       return { success: true, user: currentUser }
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Anmeldung fehlgeschlagen' }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Anmeldung fehlgeschlagen'
+      return { success: false, error: errorMessage }
     }
   }
 
@@ -53,8 +55,9 @@ export function useAuth() {
       await account.deleteSession('current')
       setUser(null)
       return { success: true }
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Abmeldung fehlgeschlagen' }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Abmeldung fehlgeschlagen'
+      return { success: false, error: errorMessage }
     }
   }
 
