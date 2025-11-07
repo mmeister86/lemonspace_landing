@@ -1,6 +1,6 @@
 export default function StatsSection() {
     return (
-        <section className="py-12 md:py-20">
+        <section className="bg-gradient-to-b from-gray-50 to-white py-12 md:py-20">
             <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
                 <div className="relative z-10 mx-auto max-w-xl space-y-6 text-center">
                     <h2 className="text-4xl font-medium lg:text-5xl">Tailark in numbers</h2>

@@ -10,6 +10,7 @@ const page = () => {
   return (
     <>
      <HeroSection />  
+
      <FeaturesSection />
      <StatsSection />
      <PricingSection />

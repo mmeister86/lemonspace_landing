@@ -93,7 +93,7 @@ export default function HeroSection() {
                                     <ArrowRight className="size-4" />
                                 </Link>
 
-                                <h1 className="mt-8 text-balance text-4xl font-semibold md:text-5xl xl:text-6xl xl:[line-height:1.125]">Modern Software testing reimagined</h1>
+                                <h1 className="mt-8 text-balance text-4xl font-semibold md:text-5xl xl:text-6xl xl:leading-[1.125]">Modern Software testing reimagined</h1>
                                 <p className="mx-auto mt-8 hidden max-w-2xl text-wrap text-lg sm:block">Tailwindcss highly customizable components for building modern websites and applications that look and feel the way you mean it.</p>
                                 <p className="mx-auto mt-6 max-w-2xl text-wrap sm:hidden">Highly customizable components for building modern websites and applications, with your personal spark.</p>
 
@@ -128,86 +128,86 @@ export default function HeroSection() {
                         </div>
                     </div>
                 </section>
-                <section className="bg-background relative z-10 pb-16">
+                <section className="bg-[linear-gradient(to_bottom,#ffffff_0%,#ffffff_70%,#f9fafb_100%)] relative z-10 pb-16">
                     <div className="m-auto max-w-5xl px-6">
                         <h2 className="text-center text-lg font-medium">Your favorite companies are our partners.</h2>
                         <div className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center justify-center gap-x-12 gap-y-8 sm:gap-x-16 sm:gap-y-12">
-                            <img
+                            <Image
                                 className="h-5 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/nvidia.svg"
                                 alt="Nvidia Logo"
-                                height="20"
-                                width="auto"
+                                height={20}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-4 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/column.svg"
                                 alt="Column Logo"
-                                height="16"
-                                width="auto"
+                                height={16}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-4 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/github.svg"
                                 alt="GitHub Logo"
-                                height="16"
-                                width="auto"
+                                height={16}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-5 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/nike.svg"
                                 alt="Nike Logo"
-                                height="20"
-                                width="auto"
+                                height={20}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-4 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/laravel.svg"
                                 alt="Laravel Logo"
-                                height="16"
-                                width="auto"
+                                height={16}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-7 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/lilly.svg"
                                 alt="Lilly Logo"
-                                height="28"
-                                width="auto"
+                                height={28}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-5 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/lemonsqueezy.svg"
                                 alt="Lemon Squeezy Logo"
-                                height="20"
-                                width="auto"
+                                height={20}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-6 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/openai.svg"
                                 alt="OpenAI Logo"
-                                height="24"
-                                width="auto"
+                                height={24}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-4 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/tailwindcss.svg"
                                 alt="Tailwind CSS Logo"
-                                height="16"
-                                width="auto"
+                                height={16}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-5 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/vercel.svg"
                                 alt="Vercel Logo"
-                                height="20"
-                                width="auto"
+                                height={20}
+                                width={80}
                             />
-                            <img
+                            <Image
                                 className="h-5 w-fit dark:invert"
                                 src="https://html.tailus.io/blocks/customers/zapier.svg"
                                 alt="Zapier Logo"
-                                height="20"
-                                width="auto"
+                                height={20}
+                                width={80}
                             />
                         </div>
                     </div>
