@@ -35,27 +35,27 @@ export const account = new Proxy({} as Account, {
     if (!accountInstance) {
       accountInstance = new Account(getClient());
     }
-    return (accountInstance as any)[prop];
+    return (accountInstance as unknown as Record<string | symbol, unknown>)[prop];
   },
-});
+}) as Account;
 
 export const databases = new Proxy({} as Databases, {
   get(_target, prop) {
     if (!databasesInstance) {
       databasesInstance = new Databases(getClient());
     }
-    return (databasesInstance as any)[prop];
+    return (databasesInstance as unknown as Record<string | symbol, unknown>)[prop];
   },
-});
+}) as Databases;
 
 export const storage = new Proxy({} as Storage, {
   get(_target, prop) {
     if (!storageInstance) {
       storageInstance = new Storage(getClient());
     }
-    return (storageInstance as any)[prop];
+    return (storageInstance as unknown as Record<string | symbol, unknown>)[prop];
   },
-});
+}) as Storage;
 
 // Export als Funktion, damit der Client nicht sofort initialisiert wird
 export default getClient;
