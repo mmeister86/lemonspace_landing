@@ -14,10 +14,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "LemonSpace.io",
-  description: "LemonSpace.io is a platform for creating and managing marketing boards to share on social media.",
+  description:
+    "LemonSpace.io is a platform for creating and managing marketing boards to share on social media.",
   openGraph: {
     title: "LemonSpace.io",
-    description: "LemonSpace.io is a platform for creating and managing marketing boards to share on social media.",
+    description:
+      "LemonSpace.io is a platform for creating and managing marketing boards to share on social media.",
     url: "https://lemonspace.io", // Platzhalter URL
     siteName: "LemonSpace.io",
     images: [
@@ -34,7 +36,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "LemonSpace.io",
-    description: "LemonSpace.io is a platform for creating and managing marketing boards to share on social media.",
+    description:
+      "LemonSpace.io is a platform for creating and managing marketing boards to share on social media.",
     images: ["/og-image.png"], // Platzhalter Bild-URL
   },
 };
