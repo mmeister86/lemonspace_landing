@@ -44,7 +44,7 @@
   --muted-foreground: oklch(0.552 0.016 285.938);
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
-  
+
   /* Brand colors */
   --brand: 210 100% 50%;
   --brand-foreground: 213 100% 60%;
@@ -70,15 +70,15 @@
 
   --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
+    0 1px 2px -1px hsl(0 0% 0% / 0.1);
   --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-  --shadow-md:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
-  --shadow-lg:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
-  --shadow-xl:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
+    0 2px 4px -1px hsl(0 0% 0% / 0.1);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
+    0 4px 6px -1px hsl(0 0% 0% / 0.1);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
+    0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 
   /* Shadcnblocks.com */
@@ -129,7 +129,7 @@
   --muted-foreground: oklch(0.705 0.015 286.067);
   --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
-  
+
   /* Brand colors */
   --brand: 213 100% 60%;
   --brand-foreground: 210 100% 50%;
@@ -647,14 +647,10 @@
 
   @keyframes aurora-background {
     from {
-      background-position:
-        50% 50%,
-        50% 50%;
+      background-position: 50% 50%, 50% 50%;
     }
     to {
-      background-position:
-        350% 50%,
-        350% 50%;
+      background-position: 350% 50%, 350% 50%;
     }
   }
 
@@ -826,7 +822,29 @@ html body[data-scroll-locked] {
   --removed-body-scroll-bar-size: 0 !important;
   margin-right: 0 !important;
   margin-top: 60px !important;
+
+  /* Fix für Navbar-Verschiebung: Nur Navbar und Header korrigieren, nicht die Sidebar */
+  nav,
+  header {
+    margin-top: -60px !important;
+  }
+
+  /* Sidebar ihre ursprüngliche Position beibehalten */
+  [data-sidebar="sidebar"],
+  .sidebar {
+    margin-top: 0 !important;
+  }
+
   &#explorer {
     margin-top: 0px !important;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

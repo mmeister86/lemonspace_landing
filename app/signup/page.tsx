@@ -16,11 +16,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function SignIn() {
+export default function SignUp() {
   const router = useRouter();
-  const { signin } = useAuth();
+  const { signup } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,18 +30,24 @@ export default function SignIn() {
     setError("");
     setLoading(true);
 
-    if (!email || !password) {
+    if (!email || !password || !name) {
       setError("Bitte füllen Sie alle Felder aus");
       setLoading(false);
       return;
     }
 
-    const result = await signin(email, password);
+    if (password.length < 8) {
+      setError("Das Passwort muss mindestens 8 Zeichen lang sein");
+      setLoading(false);
+      return;
+    }
+
+    const result = await signup(email, password, name);
 
     if (result.success) {
       router.push("/dashboard");
     } else {
-      setError(result.error || "Anmeldung fehlgeschlagen");
+      setError(result.error || "Registrierung fehlgeschlagen");
       setLoading(false);
     }
   };
@@ -49,8 +56,10 @@ export default function SignIn() {
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Anmeldung</CardTitle>
-          <CardDescription>Melden Sie sich mit Ihrem Konto an</CardDescription>
+          <CardTitle>Registrierung</CardTitle>
+          <CardDescription>
+            Erstellen Sie ein neues Konto, um fortzufahren
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -59,6 +68,18 @@ export default function SignIn() {
                 {error}
               </div>
             )}
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Ihr Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">E-Mail</Label>
               <Input
@@ -76,22 +97,23 @@ export default function SignIn() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Ihr Passwort"
+                placeholder="Mindestens 8 Zeichen"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                minLength={8}
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Anmeldung läuft..." : "Anmelden"}
+              {loading ? "Registrierung läuft..." : "Registrieren"}
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              Noch kein Konto?{" "}
-              <Link href="/signup" className="text-primary hover:underline">
-                Registrieren
+              Bereits ein Konto?{" "}
+              <Link href="/signin" className="text-primary hover:underline">
+                Anmelden
               </Link>
             </div>
           </CardFooter>

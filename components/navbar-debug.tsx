@@ -90,7 +90,26 @@ export default function Navbar() {
                 {!loading && (
                   <>
                     {user ? (
-                      <DropdownMenu>
+                      <DropdownMenu
+                        onOpenChange={(open) => {
+                          console.log("Dropdown open state:", open);
+                          console.log(
+                            "Body data-scroll-locked:",
+                            document.body.getAttribute("data-scroll-locked")
+                          );
+                          console.log(
+                            "Body margin-top:",
+                            window.getComputedStyle(document.body).marginTop
+                          );
+                          const navbar = document.querySelector("nav");
+                          if (navbar) {
+                            console.log(
+                              "Navbar position:",
+                              window.getComputedStyle(navbar).position
+                            );
+                          }
+                        }}
+                      >
                         <DropdownMenuTrigger asChild>
                           <button className="focus:outline-none inline-flex items-center justify-center">
                             <Avatar className="h-8 w-8">
