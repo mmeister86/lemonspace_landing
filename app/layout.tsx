@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://lemonspace.io"),
   title: "LemonSpace.io",
   description:
     "LemonSpace.io is a platform for creating and managing marketing boards to share on social media.",
