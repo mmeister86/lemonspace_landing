@@ -22,7 +22,17 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [menuState, setMenuState] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
   const { user, loading, logout } = useAuth();
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const menuItems = [
     { name: t("features"), href: "#features" },
@@ -54,7 +64,9 @@ export default function Navbar() {
     <header>
       <nav
         data-state={menuState && "active"}
-        className="fixed z-20 w-full border-b border-dashed bg-white backdrop-blur md:relative dark:bg-zinc-950/50 lg:dark:bg-transparent"
+        className={`fixed top-0 z-20 w-full border-b border-dashed bg-white backdrop-blur transition-all duration-200 dark:bg-zinc-950/50 lg:dark:bg-transparent ${
+          isScrolled ? "border-transparent shadow-sm" : "border-zinc-200 dark:border-zinc-800"
+        }`}
       >
         <div className="m-auto max-w-5xl px-6">
           <div className="flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
