@@ -41,8 +41,8 @@ export default function SignIn() {
       router.push("/dashboard");
     } else {
       setError(result.error || "Anmeldung fehlgeschlagen");
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   return (

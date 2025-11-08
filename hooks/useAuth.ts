@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { account } from '@/lib/appwrite'
-import { ID } from 'appwrite'
+import { ID, AppwriteException } from 'appwrite'
 import { Models } from 'appwrite'
 
 export function useAuth() {
@@ -33,8 +33,7 @@ export function useAuth() {
       setUser(currentUser)
       return { success: true, user: currentUser }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Registrierung fehlgeschlagen'
-      return { success: false, error: errorMessage }
+      return { success: false, error: extractErrorMessage(error, 'Registrierung fehlgeschlagen') }
     }
   }
 
@@ -46,18 +45,21 @@ export function useAuth() {
       return { success: true, user: currentUser }
     } catch (error) {
       // Verbesserte Fehlerbehandlung mit mehr Details
-      let errorMessage = 'Anmeldung fehlgeschlagen'
-      if (error instanceof Error) {
-        errorMessage = error.message
-        // Logge zusätzliche Details in Development
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[useAuth] Signin Fehler:', {
-            message: error.message,
-            name: error.name,
-            stack: error.stack,
-          })
-        }
+      const errorMessage = extractErrorMessage(error, 'Anmeldung fehlgeschlagen')
+
+      // Logge zusätzliche Details in Development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[useAuth] Signin Fehler:', {
+          error,
+          message: errorMessage,
+          ...(error instanceof AppwriteException && {
+            code: error.code,
+            type: error.type,
+            response: error.response,
+          }),
+        })
       }
+
       return { success: false, error: errorMessage }
     }
   }
@@ -68,9 +70,71 @@ export function useAuth() {
       setUser(null)
       return { success: true }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Abmeldung fehlgeschlagen'
-      return { success: false, error: errorMessage }
+      return { success: false, error: extractErrorMessage(error, 'Abmeldung fehlgeschlagen') }
     }
+  }
+
+  /**
+   * Extrahiert eine benutzerfreundliche Fehlermeldung aus einem Appwrite-Fehler
+   * @param error - Der aufgetretene Fehler
+   * @param defaultMessage - Standard-Fehlermeldung falls keine spezifische gefunden wird
+   * @returns Benutzerfreundliche Fehlermeldung
+   */
+  function extractErrorMessage(error: unknown, defaultMessage: string): string {
+    // AppwriteException hat zusätzliche Eigenschaften
+    if (error instanceof AppwriteException) {
+      const { code, message } = error
+
+      // Spezifische Fehlermeldungen basierend auf Status-Code
+      switch (code) {
+        case 401:
+          // Unauthorized - Falsche Credentials oder Benutzer existiert nicht
+          if (message.toLowerCase().includes('invalid') || message.toLowerCase().includes('credentials')) {
+            return 'E-Mail oder Passwort ist falsch. Bitte versuchen Sie es erneut.'
+          }
+          if (message.toLowerCase().includes('user') && message.toLowerCase().includes('not found')) {
+            return 'Kein Konto mit dieser E-Mail-Adresse gefunden.'
+          }
+          return message || 'E-Mail oder Passwort ist falsch.'
+
+        case 403:
+          // Forbidden - Email-Verifizierung erforderlich
+          if (message.toLowerCase().includes('verif') || message.toLowerCase().includes('email')) {
+            return 'Bitte verifizieren Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden.'
+          }
+          return message || 'Zugriff verweigert. Bitte überprüfen Sie Ihre Berechtigungen.'
+
+        case 429:
+          // Too Many Requests
+          return 'Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.'
+
+        case 400:
+          // Bad Request
+          return message || 'Ungültige Anfrage. Bitte überprüfen Sie Ihre Eingaben.'
+
+        case 404:
+          // Not Found
+          return message || 'Die angeforderte Ressource wurde nicht gefunden.'
+
+        case 500:
+        case 502:
+        case 503:
+          // Server Errors
+          return 'Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.'
+
+        default:
+          // Verwende die Appwrite-Fehlermeldung oder Standard-Meldung
+          return message || defaultMessage
+      }
+    }
+
+    // Fallback für normale Error-Objekte
+    if (error instanceof Error) {
+      return error.message || defaultMessage
+    }
+
+    // Fallback für unbekannte Fehlertypen
+    return defaultMessage
   }
 
   return {

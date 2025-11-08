@@ -48,8 +48,8 @@ export default function SignUp() {
       router.push("/dashboard");
     } else {
       setError(result.error || "Registrierung fehlgeschlagen");
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   return (
