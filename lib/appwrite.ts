@@ -36,8 +36,15 @@ function normalizeEndpointUrl(url: string): string {
 
 function getClient(): Client {
   if (!clientInstance) {
-    const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
-    const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+    // Entferne Anführungszeichen aus den Umgebungsvariablen (können durch Docker/Coolify hinzugefügt werden)
+    const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(
+      /^["']|["']$/g,
+      ""
+    );
+    const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID?.replace(
+      /^["']|["']$/g,
+      ""
+    );
 
     // Nur initialisieren wenn Umgebungsvariablen vorhanden sind
     // Während des Builds (SSR) werden diese Services nicht verwendet, da sie nur in Client-Komponenten genutzt werden
@@ -55,7 +62,8 @@ function getClient(): Client {
       // Debug-Logging nur in Development
       if (process.env.NODE_ENV === "development") {
         console.log(`[Appwrite] Endpoint Konfiguration:`, {
-          original: endpoint,
+          rawEnv: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+          cleaned: endpoint,
           normalized: normalizedEndpoint,
           projectId: projectId,
         });
@@ -87,17 +95,22 @@ function getClient(): Client {
         );
 
         // Zusätzliches Logging für Debugging
-        console.error(`[Appwrite] Debug Info:`, {
-          originalEndpoint: endpoint,
-          normalizedEndpoint: normalizedEndpoint,
-          endpointType: typeof endpoint,
-          normalizedType: typeof normalizedEndpoint,
-          isProduction: process.env.NODE_ENV === "production",
-          hostname:
-            typeof window !== "undefined"
-              ? window.location.hostname
-              : "server-side",
-        });
+        if (process.env.NODE_ENV === "development") {
+          console.error(`[Appwrite] Debug Info:`, {
+            rawEnvVar: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+            cleanedEndpoint: endpoint,
+            normalizedEndpoint: normalizedEndpoint,
+            endpointType: typeof endpoint,
+            normalizedType: typeof normalizedEndpoint,
+            hostname:
+              typeof window !== "undefined"
+                ? window.location.hostname
+                : "server-side",
+            envKeys: Object.keys(process.env).filter((key) =>
+              key.includes("APPWRITE")
+            ),
+          });
+        }
 
         throw new Error(
           `Ungültige Appwrite Endpoint URL: "${normalizedEndpoint}". ` +
