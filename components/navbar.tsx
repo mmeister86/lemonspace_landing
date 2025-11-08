@@ -64,7 +64,7 @@ export default function Navbar() {
     <header>
       <nav
         data-state={menuState && "active"}
-        className={`fixed top-0 z-20 w-full border-b border-dashed bg-white backdrop-blur transition-all duration-200 dark:bg-zinc-950/50 lg:dark:bg-transparent ${
+        className={`fixed top-0 z-50 w-full border-b border-dashed bg-white backdrop-blur transition-all duration-200 dark:bg-zinc-950/50 lg:dark:bg-transparent ${
           isScrolled ? "border-transparent shadow-sm" : "border-zinc-200 dark:border-zinc-800"
         }`}
       >
