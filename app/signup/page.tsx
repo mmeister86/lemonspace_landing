@@ -42,14 +42,24 @@ export default function SignUp() {
       return;
     }
 
-    const result = await signup(email, password, name);
+    try {
+      const result = await signup(email, password, name);
 
-    if (result.success) {
-      router.push("/dashboard");
-    } else {
-      setError(result.error || "Registrierung fehlgeschlagen");
+      if (result.success) {
+        router.push("/dashboard");
+      } else {
+        setError(result.error || "Registrierung fehlgeschlagen");
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.";
+      setError(errorMessage);
+      console.error("Signup error:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
