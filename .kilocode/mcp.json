@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "appwrite-api": {
+      "command": "uvx",
+      "args": ["mcp-server-appwrite", "--sites"],
+      "env": {
+        "APPWRITE_PROJECT_ID": "690bb979000e5ba2e734",
+        "APPWRITE_API_KEY": "standard_33cf479ef73ba806b09680802b617833ff63db41d4be1ba4b17ba2c68dc122fb18e2087be3d7a324b5bafecf416cbb0ecd6837b2d38b14f7b5adc6611d9a6d927f20ac191c87ecdce43007b7fd39b4c55cceaa494aae0e5d82278da01c5e69b4fe0ac3551990dc58ca417d918d53d6e50e9dfcf251ad7bf90524c21f5a41658f",
+        "APPWRITE_ENDPOINT": "https://backend.lemonspace.io/v1"
+      }
+    }
+  }
+}

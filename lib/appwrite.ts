@@ -85,6 +85,20 @@ function getClient(): Client {
           `[Appwrite] Fehler beim Initialisieren des Clients mit Endpoint "${normalizedEndpoint}":`,
           errorMessage
         );
+
+        // Zusätzliches Logging für Debugging
+        console.error(`[Appwrite] Debug Info:`, {
+          originalEndpoint: endpoint,
+          normalizedEndpoint: normalizedEndpoint,
+          endpointType: typeof endpoint,
+          normalizedType: typeof normalizedEndpoint,
+          isProduction: process.env.NODE_ENV === "production",
+          hostname:
+            typeof window !== "undefined"
+              ? window.location.hostname
+              : "server-side",
+        });
+
         throw new Error(
           `Ungültige Appwrite Endpoint URL: "${normalizedEndpoint}". ` +
             `Bitte überprüfe die Umgebungsvariable NEXT_PUBLIC_APPWRITE_ENDPOINT. ` +
