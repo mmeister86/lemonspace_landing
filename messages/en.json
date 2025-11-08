@@ -1,0 +1,164 @@
+{
+  "metadata": {
+    "title": "LemonSpace.io",
+    "description": "LemonSpace.io is a platform for creating and managing marketing boards to share on social media."
+  },
+  "navbar": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About Us",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "login": "Login",
+    "signup": "Sign Up",
+    "user": "User",
+    "closeMenu": "Close Menu",
+    "openMenu": "Open Menu"
+  },
+  "hero": {
+    "title": "Professional Marketing Boards for",
+    "words": {
+      "salespeople": "Salespeople",
+      "marketingTeams": "Marketing Teams",
+      "sellers": "Sellers",
+      "salesPros": "Sales Pros",
+      "accountManagers": "Account Managers"
+    },
+    "description": "Create interactive, engaging sales materials without technical knowledge. As simple as PowerPoint, as powerful as a modern web application.",
+    "descriptionMobile": "Create interactive sales materials without technical knowledge. Simple, professional, measurable.",
+    "cta": "Get Started Free"
+  },
+  "features": {
+    "dragDrop": {
+      "title": "Drag & Drop Builder",
+      "description": "Create boards with intuitive drag & drop. No technical knowledge required."
+    },
+    "mediaLibrary": {
+      "title": "Personal Media Library",
+      "description": "Upload images, videos and documents. Everything securely stored in your own, isolated media library."
+    },
+    "analytics": {
+      "title": "Analytics Dashboard",
+      "description": "Track how your customers interact with your boards. Measurable results for better follow-ups."
+    },
+    "templates": {
+      "title": "Template System",
+      "description": "Get started quickly with pre-made templates or create your own for repeated use."
+    },
+    "sharing": {
+      "title": "Easy Sharing",
+      "description": "Share your boards via personalized links. With password protection and time limits for maximum control."
+    }
+  },
+  "stats": {
+    "title": "Why LemonSpace?",
+    "description": "The perfect solution for salespeople who want to create professional sales materials without technical barriers.",
+    "noTechnicalSkills": "Technical skills required",
+    "customizable": "Customizable to your brand",
+    "possibilities": "Possibilities for your presentations"
+  },
+  "pricing": {
+    "title": "Pricing that fits you",
+    "subtitle": "Start for free and upgrade when you need more features. All plans can be cancelled at any time.",
+    "free": {
+      "name": "Free",
+      "price": "€0 / Month",
+      "description": "For getting started",
+      "cta": "Get Started Now",
+      "features": [
+        "Max. 3 boards simultaneously",
+        "Basic blocks (Text, Images, Buttons)",
+        "Standard color schemes",
+        "Simple Analytics",
+        "50MB video upload limit"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "€19 / Month",
+      "yearly": "or €199 / Year",
+      "description": "For professionals",
+      "cta": "Upgrade Now",
+      "badge": "Popular",
+      "features": [
+        "Everything from the Free Plan",
+        "Unlimited boards",
+        "All premium blocks",
+        "Custom color schemes",
+        "White-label (no branding)",
+        "Detailed Analytics",
+        "Custom Link IDs",
+        "Password protection & time limits",
+        "Save your own templates",
+        "500MB video upload limit",
+        "Priority Support"
+      ]
+    },
+    "lifetime": {
+      "name": "Lifetime",
+      "price": "€399",
+      "description": "One-time payment",
+      "cta": "Buy Now",
+      "features": [
+        "Everything from the Pro Plan",
+        "Lifetime access",
+        "Early access to new features",
+        "No monthly costs",
+        "One-time payment"
+      ]
+    }
+  },
+  "cta": {
+    "title": "Ready to create your first boards?",
+    "subtitle": "Start for free and create professional marketing boards in minutes.",
+    "emailPlaceholder": "Your email address",
+    "button": "Get Started",
+    "buttonMobile": "Get Started",
+    "trustedBy": "Trusted by salespeople worldwide"
+  },
+  "footer": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About Us",
+    "help": "Help",
+    "privacy": "Privacy",
+    "imprint": "Imprint",
+    "copyright": "© {year} LemonSpace.io, All rights reserved"
+  },
+  "signin": {
+    "title": "Sign In",
+    "description": "Sign in to your account",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "submit": "Sign In",
+    "submitting": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "signup": "Sign Up",
+    "error": {
+      "fillAll": "Please fill in all fields",
+      "failed": "Sign in failed"
+    }
+  },
+  "signup": {
+    "title": "Sign Up",
+    "description": "Create a new account to continue",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "submit": "Sign Up",
+    "submitting": "Signing up...",
+    "hasAccount": "Already have an account?",
+    "signin": "Sign In",
+    "error": {
+      "fillAll": "Please fill in all fields",
+      "passwordLength": "Password must be at least 8 characters long",
+      "failed": "Sign up failed",
+      "tryAgain": "Sign up failed. Please try again."
+    }
+  }
+}

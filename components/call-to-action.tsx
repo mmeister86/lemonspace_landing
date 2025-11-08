@@ -1,18 +1,22 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Mail, SendHorizonal } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 export default function CallToAction() {
+  const t = useTranslations("cta");
+
   return (
     <>
       <section>
         <div className="mx-auto max-w-5xl px-6">
           <div className="text-center">
             <h2 className="text-balance text-4xl font-semibold lg:text-5xl">
-              Bereit, deine ersten Boards zu erstellen?
+              {t("title")}
             </h2>
             <p className="mt-4">
-              Starte kostenlos und erstelle professionelle Marketing Boards in wenigen Minuten.
+              {t("subtitle")}
             </p>
 
             <form action="" className="mx-auto mt-10 max-w-sm lg:mt-12">
@@ -20,14 +24,14 @@ export default function CallToAction() {
                 <Mail className="text-caption pointer-events-none absolute inset-y-0 left-5 my-auto size-5" />
 
                 <input
-                  placeholder="Deine E-Mail-Adresse"
+                  placeholder={t("emailPlaceholder")}
                   className="h-14 w-full bg-transparent pl-12 focus:outline-none"
                   type="email"
                 />
 
                 <div className="md:pr-1.5 lg:pr-0">
                   <Button aria-label="submit" className="rounded-(--radius)">
-                    <span className="hidden md:block">Jetzt starten</span>
+                    <span className="hidden md:block">{t("button")}</span>
                     <SendHorizonal
                       className="relative mx-auto size-5 md:hidden"
                       strokeWidth={2}
@@ -42,7 +46,7 @@ export default function CallToAction() {
       <section className="bg-white relative z-10 pb-16 py-16">
         <div className="m-auto max-w-5xl px-6">
           <h2 className="text-center text-lg font-medium">
-            Vertraut von Vertrieblern weltweit
+            {t("trustedBy")}
           </h2>
           <div className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center justify-center gap-x-12 gap-y-6">
             <Image

@@ -1,8 +1,11 @@
+"use client";
 import { Card, CardContent } from '@/components/ui/card'
 import { Shield, Users } from 'lucide-react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
 export default function FeaturesSection() {
+    const t = useTranslations("features");
     return (
         <section className="bg-gray-50 py-16 md:py-32 dark:bg-transparent">
             <div className="mx-auto max-w-5xl px-6">
@@ -23,9 +26,9 @@ export default function FeaturesSection() {
                                     </svg>
                                     <span className="mx-auto block w-fit text-5xl font-semibold">100%</span>
                                 </div>
-                                <h2 className="mt-6 text-center text-3xl font-semibold">Drag & Drop Builder</h2>
+                                <h2 className="mt-6 text-center text-3xl font-semibold">{t("dragDrop.title")}</h2>
                                 <p className="mt-4 text-center text-sm text-muted-foreground">
-                                    Erstelle Boards mit intuitivem Drag & Drop. Keine technischen Kenntnisse erforderlich.
+                                    {t("dragDrop.description")}
                                 </p>
                             </CardContent>
                         </Card>
@@ -85,8 +88,8 @@ export default function FeaturesSection() {
                                     </svg>
                                 </div>
                                 <div className="relative z-10 mt-6 space-y-2 text-center">
-                                    <h2 className="group-hover:text-secondary-950 text-lg font-medium transition dark:text-white">Persönliche Mediathek</h2>
-                                    <p className="text-foreground">Lade Bilder, Videos und Dokumente hoch. Alles sicher in deiner eigenen, isolierten Mediathek gespeichert.</p>
+                                    <h2 className="group-hover:text-secondary-950 text-lg font-medium transition dark:text-white">{t("mediaLibrary.title")}</h2>
+                                    <p className="text-foreground">{t("mediaLibrary.description")}</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -177,8 +180,8 @@ export default function FeaturesSection() {
                                     </svg>
                                 </div>
                                 <div className="relative z-10 mt-14 space-y-2 text-center">
-                                    <h2 className="text-lg font-medium transition">Analytics Dashboard</h2>
-                                    <p className="text-foreground">Verfolge, wie deine Kunden mit deinen Boards interagieren. Messbare Ergebnisse für bessere Follow-ups.</p>
+                                    <h2 className="text-lg font-medium transition">{t("analytics.title")}</h2>
+                                    <p className="text-foreground">{t("analytics.description")}</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -192,8 +195,8 @@ export default function FeaturesSection() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <h2 className="group-hover:text-secondary-950 text-lg font-medium text-zinc-800 transition dark:text-white">Template-System</h2>
-                                        <p className="text-foreground">Starte schnell mit vorgefertigten Templates oder erstelle deine eigenen für wiederholte Verwendung.</p>
+                                        <h2 className="group-hover:text-secondary-950 text-lg font-medium text-zinc-800 transition dark:text-white">{t("templates.title")}</h2>
+                                        <p className="text-foreground">{t("templates.description")}</p>
                                     </div>
                                 </div>
                                 <div className="rounded-tl-(--radius) relative -mb-6 -mr-6 mt-6 h-fit border-l border-t p-6 py-6 sm:ml-6">
@@ -253,8 +256,8 @@ export default function FeaturesSection() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <h2 className="text-lg font-medium transition">Einfaches Teilen</h2>
-                                        <p className="text-foreground">Teile deine Boards über personalisierte Links. Mit Passwortschutz und zeitlichen Limits für maximale Kontrolle.</p>
+                                        <h2 className="text-lg font-medium transition">{t("sharing.title")}</h2>
+                                        <p className="text-foreground">{t("sharing.description")}</p>
                                     </div>
                                 </div>
                                 <div className="before:bg-(--color-border) relative mt-6 before:absolute before:inset-0 before:mx-auto before:w-px sm:-my-6 sm:-mr-6">

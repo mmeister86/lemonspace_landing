@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { Logo } from "@/components/logo";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -14,23 +14,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
-
-const menuItems = [
-  { name: "Features", href: "#features" },
-  { name: "Preise", href: "#pricing" },
-  { name: "Über uns", href: "#about" },
-];
+import { routing } from "@/i18n/routing";
 
 export default function Navbar() {
-  const [menuState, setMenuState] = React.useState(false);
+  const t = useTranslations("navbar");
+  const locale = useLocale();
+  const pathname = usePathname();
   const router = useRouter();
+  const [menuState, setMenuState] = React.useState(false);
   const { user, loading, logout } = useAuth();
+
+  const menuItems = [
+    { name: t("features"), href: "#features" },
+    { name: t("pricing"), href: "#pricing" },
+    { name: t("about"), href: "#about" },
+  ];
 
   const handleLogout = async () => {
     const result = await logout();
     if (result.success) {
-      router.push("/");
+      router.replace("/");
     }
+  };
+
+  const handleLocaleChange = (newLocale: string) => {
+    router.replace(pathname, { locale: newLocale });
   };
 
   const getInitials = (name: string) => {
@@ -61,7 +69,7 @@ export default function Navbar() {
 
               <button
                 onClick={() => setMenuState(!menuState)}
-                aria-label={menuState == true ? "Close Menu" : "Open Menu"}
+                aria-label={menuState == true ? t("closeMenu") : t("openMenu")}
                 className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden"
               >
                 <Menu className="in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
@@ -86,6 +94,25 @@ export default function Navbar() {
               </div>
 
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit lg:border-l lg:pl-6">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Globe className="size-4" />
+                      <span className="hidden sm:inline">{locale.toUpperCase()}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {routing.locales.map((loc) => (
+                      <DropdownMenuItem
+                        key={loc}
+                        onClick={() => handleLocaleChange(loc)}
+                        className={locale === loc ? "bg-accent" : ""}
+                      >
+                        {loc === "en" ? "English" : "Deutsch"}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 {!loading && (
                   <>
                     {user ? (
@@ -112,7 +139,7 @@ export default function Navbar() {
                         >
                           <div className="px-2 py-1.5 text-sm">
                             <div className="font-medium">
-                              {user.name || "Benutzer"}
+                              {user.name || t("user")}
                             </div>
                             <div className="text-muted-foreground text-xs">
                               {user.email}
@@ -121,7 +148,7 @@ export default function Navbar() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
                             <Link href="/dashboard" className="cursor-pointer">
-                              Dashboard
+                              {t("dashboard")}
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -129,7 +156,7 @@ export default function Navbar() {
                             onClick={handleLogout}
                             className="cursor-pointer"
                           >
-                            Abmelden
+                            {t("logout")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -137,12 +164,12 @@ export default function Navbar() {
                       <>
                         <Button asChild variant="outline" size="sm">
                           <Link href="/signin">
-                            <span>Login</span>
+                            <span>{t("login")}</span>
                           </Link>
                         </Button>
                         <Button asChild size="sm">
                           <Link href="/signup">
-                            <span>Registrieren</span>
+                            <span>{t("signup")}</span>
                           </Link>
                         </Button>
                       </>

@@ -1,34 +1,38 @@
+"use client";
 import { Logo } from "@/components/logo";
 import Link from "next/link";
-
-const links = [
-  {
-    title: "Funktionen",
-    href: "#features",
-  },
-  {
-    title: "Preise",
-    href: "#pricing",
-  },
-  {
-    title: "Über uns",
-    href: "#about",
-  },
-  {
-    title: "Hilfe",
-    href: "#help",
-  },
-  {
-    title: "Datenschutz",
-    href: "#privacy",
-  },
-  {
-    title: "Impressum",
-    href: "#imprint",
-  },
-];
+import { useTranslations } from "next-intl";
 
 export default function FooterSection() {
+  const t = useTranslations("footer");
+
+  const links = [
+    {
+      title: t("features"),
+      href: "#features",
+    },
+    {
+      title: t("pricing"),
+      href: "#pricing",
+    },
+    {
+      title: t("about"),
+      href: "#about",
+    },
+    {
+      title: t("help"),
+      href: "#help",
+    },
+    {
+      title: t("privacy"),
+      href: "#privacy",
+    },
+    {
+      title: t("imprint"),
+      href: "#imprint",
+    },
+  ];
+
   return (
     <footer className="bg-linear-to-b from-white to-gray-200 py-16 md:py-32">
       <div className="mx-auto max-w-5xl px-6">
@@ -175,8 +179,7 @@ export default function FooterSection() {
           </Link>
         </div>
         <span className="text-muted-foreground block text-center text-sm">
-          {" "}
-          © {new Date().getFullYear()} LemonSpace.io, Alle Rechte vorbehalten
+          {t("copyright", { year: new Date().getFullYear() })}
         </span>
       </div>
     </footer>
