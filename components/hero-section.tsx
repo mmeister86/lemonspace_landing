@@ -24,8 +24,8 @@ export default function HeroSection() {
                     "Sales-Profis",
                     "Account Manager",
                   ]}
-                  duration={3000}
-                  wordClassName="inline-block text-6xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700 bg-transparent border-0 shadow-none ring-0 px-0 py-0 rounded-none overflow-visible dark:bg-transparent dark:text-gray-700"
+                  duration={5000}
+                  wordClassName="inline-block text-6xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700 bg-transparent border-0 shadow-none ring-0 px-0 py-0 rounded-none overflow-visible dark:bg-transparent dark:text-gray-700 text-lemonspace"
                 />
               </h1>
               <p className="mx-auto mt-6 hidden max-w-2xl text-wrap text-lg sm:block text-gray-800">
@@ -38,10 +38,10 @@ export default function HeroSection() {
                 Kenntnisse. Einfach, professionell, messbar.
               </p>
 
-              <div className="mt-8">
+              <div className="relative z-20 mt-8">
                 <Button
                   size="lg"
-                  className="bg-lemonspace hover:bg-lemonspace/90"
+                  className="bg-black hover:bg-gray-800/90 text-white cursor-pointer"
                   asChild
                 >
                   <Link href="/signup">
@@ -53,7 +53,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="relative mx-auto mt-[-50px] max-w-[90%] h-[40vw] overflow-hidden">
+          <div className="relative mx-auto mt-[-60px] max-w-[90%] h-[40vw] overflow-hidden z-10 pointer-events-none">
             <HeroSvg className="w-full h-full object-cover object-top" />
           </div>
         </div>

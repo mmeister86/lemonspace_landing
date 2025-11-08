@@ -33,7 +33,10 @@ export const LayoutTextFlip = ({
       {showText && text && (
         <motion.span
           layoutId="subtext"
-          className={cn("text-2xl font-bold tracking-tight drop-shadow-lg md:text-4xl", className)}
+          className={cn(
+            "text-2xl font-bold tracking-tight drop-shadow-lg md:text-4xl",
+            className
+          )}
         >
           {text}
         </motion.span>
@@ -42,24 +45,33 @@ export const LayoutTextFlip = ({
       <motion.span
         layout
         className={cn(
-          "relative w-fit overflow-hidden rounded-md border border-transparent bg-white px-4 py-2 font-sans text-2xl font-bold tracking-tight text-black shadow-sm ring shadow-black/10 ring-black/10 drop-shadow-lg md:text-4xl dark:bg-neutral-900 dark:text-white dark:shadow-sm dark:ring-1 dark:shadow-white/10 dark:ring-white/10",
+          "relative w-fit overflow-hidden rounded-md border border-transparent bg-white px-4 py-2 font-sans text-2xl font-bold tracking-tight text-black shadow-sm ring shadow-black/10 ring-black/10 md:text-4xl dark:bg-neutral-900 dark:text-white dark:shadow-sm dark:ring-1 dark:shadow-white/10 dark:ring-white/10",
           wordClassName
         )}
+        style={{
+          perspective: "1000px",
+          transformStyle: "preserve-3d",
+        }}
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="wait">
           <motion.span
             key={currentIndex}
-            initial={{ y: -40, filter: "blur(10px)" }}
+            initial={{ rotateX: -90, opacity: 0 }}
             animate={{
-              y: 0,
-              filter: "blur(0px)",
+              rotateX: 0,
+              opacity: 1,
             }}
-            exit={{ y: 50, filter: "blur(10px)", opacity: 0 }}
+            exit={{ rotateX: 90, opacity: 0 }}
             transition={{
               duration: 0.5,
+              ease: "easeInOut",
             }}
             className={cn("inline-block whitespace-nowrap")}
-            style={{ display: "inline-block" }}
+            style={{
+              display: "inline-block",
+              backfaceVisibility: "hidden",
+              transformStyle: "preserve-3d",
+            }}
           >
             {words[currentIndex]}
           </motion.span>
