@@ -45,7 +45,19 @@ export function useAuth() {
       setUser(currentUser)
       return { success: true, user: currentUser }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Anmeldung fehlgeschlagen'
+      // Verbesserte Fehlerbehandlung mit mehr Details
+      let errorMessage = 'Anmeldung fehlgeschlagen'
+      if (error instanceof Error) {
+        errorMessage = error.message
+        // Logge zusätzliche Details in Development
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[useAuth] Signin Fehler:', {
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+          })
+        }
+      }
       return { success: false, error: errorMessage }
     }
   }

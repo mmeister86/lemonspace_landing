@@ -4,6 +4,36 @@ import { Client, Account, Databases, Storage } from "appwrite";
 // Verhindert Fehler während des Build-Prozesses (SSR) wenn Umgebungsvariablen nicht gesetzt sind
 let clientInstance: Client | null = null;
 
+/**
+ * Normalisiert die Appwrite Endpoint URL.
+ * Stellt sicher, dass die URL mit `/v1` endet, wie von Appwrite erwartet.
+ * Entfernt doppelte trailing slashes und normalisiert die URL.
+ *
+ * @param url - Die zu normalisierende URL
+ * @returns Die normalisierte URL mit `/v1` am Ende
+ *
+ * @example
+ * normalizeEndpointUrl("https://backend.lemonspace.io") // "https://backend.lemonspace.io/v1"
+ * normalizeEndpointUrl("https://backend.lemonspace.io/") // "https://backend.lemonspace.io/v1"
+ * normalizeEndpointUrl("https://backend.lemonspace.io/v1") // "https://backend.lemonspace.io/v1"
+ * normalizeEndpointUrl("https://backend.lemonspace.io/v1/") // "https://backend.lemonspace.io/v1"
+ */
+function normalizeEndpointUrl(url: string): string {
+  if (!url) return url;
+
+  let normalized = url.trim();
+
+  // Entferne alle trailing slashes
+  normalized = normalized.replace(/\/+$/, "");
+
+  // Stelle sicher, dass die URL mit /v1 endet
+  if (!normalized.endsWith("/v1")) {
+    normalized = normalized + "/v1";
+  }
+
+  return normalized;
+}
+
 function getClient(): Client {
   if (!clientInstance) {
     const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
@@ -19,7 +49,49 @@ function getClient(): Client {
         .setEndpoint("https://cloud.appwrite.io/v1")
         .setProject("build-placeholder");
     } else {
-      clientInstance = new Client().setEndpoint(endpoint).setProject(projectId);
+      // Normalisiere die Endpoint URL (entfernt /v1 falls vorhanden)
+      const normalizedEndpoint = normalizeEndpointUrl(endpoint);
+
+      // Debug-Logging nur in Development
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[Appwrite] Endpoint Konfiguration:`, {
+          original: endpoint,
+          normalized: normalizedEndpoint,
+          projectId: projectId,
+        });
+        if (endpoint !== normalizedEndpoint) {
+          console.log(
+            `[Appwrite] Endpoint URL wurde normalisiert: "${endpoint}" -> "${normalizedEndpoint}"`
+          );
+        }
+      }
+
+      try {
+        clientInstance = new Client()
+          .setEndpoint(normalizedEndpoint)
+          .setProject(projectId);
+
+        // Debug-Logging: Überprüfe die tatsächlich verwendete URL
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `[Appwrite] Client erfolgreich initialisiert mit Endpoint: "${normalizedEndpoint}"`
+          );
+        }
+      } catch (error) {
+        // Verbesserte Fehlerbehandlung für ungültige URLs
+        const errorMessage =
+          error instanceof Error ? error.message : "Unbekannter Fehler";
+        console.error(
+          `[Appwrite] Fehler beim Initialisieren des Clients mit Endpoint "${normalizedEndpoint}":`,
+          errorMessage
+        );
+        throw new Error(
+          `Ungültige Appwrite Endpoint URL: "${normalizedEndpoint}". ` +
+            `Bitte überprüfe die Umgebungsvariable NEXT_PUBLIC_APPWRITE_ENDPOINT. ` +
+            `Die URL sollte mit /v1 enden (z.B. "https://backend.lemonspace.io/v1"). ` +
+            `Original URL: "${endpoint}"`
+        );
+      }
     }
   }
   return clientInstance;

@@ -20,6 +20,33 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Umgebungsvariablen
+
+Für die Appwrite-Integration müssen folgende Umgebungsvariablen gesetzt werden:
+
+### Lokale Entwicklung (.env.local)
+
+```env
+NEXT_PUBLIC_APPWRITE_ENDPOINT="https://backend.lemonspace.io"
+NEXT_PUBLIC_APPWRITE_PROJECT_ID="690bb979000e5ba2e734"
+NEXT_PUBLIC_APPWRITE_PROJECT_NAME="LemonSpace"
+```
+
+### Production (Coolify)
+
+```env
+NEXT_PUBLIC_APPWRITE_ENDPOINT="https://backend.lemonspace.io"
+NEXT_PUBLIC_APPWRITE_PROJECT_ID="690bb979000e5ba2e734"
+NEXT_PUBLIC_APPWRITE_PROJECT_NAME="LemonSpace"
+```
+
+**Wichtig:** Die `NEXT_PUBLIC_APPWRITE_ENDPOINT` URL sollte **mit** `/v1` am Ende sein, wie von Appwrite erwartet. Die App normalisiert URLs automatisch und fügt `/v1` hinzu falls es fehlt.
+
+**Beispiele:**
+- ✅ Korrekt: `"https://backend.lemonspace.io/v1"`
+- ✅ Auch korrekt (wird automatisch normalisiert): `"https://backend.lemonspace.io"`
+- ❌ Falsch: `"https://backend.lemonspace.io/"`
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
