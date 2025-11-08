@@ -16,7 +16,8 @@
     "openMenu": "Menü öffnen"
   },
   "hero": {
-    "title": "Professionelle Marketing Boards für",
+    "title": "Professionelle Marketing Boards",
+    "titleSuffix": "für",
     "words": {
       "salespeople": "Vertriebler",
       "marketingTeams": "Marketing-Teams",

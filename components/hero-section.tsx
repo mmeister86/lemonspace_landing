@@ -25,7 +25,9 @@ export default function HeroSection() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="max-w-5xl text-center sm:mx-auto lg:mr-auto lg:mt-0 lg:w-4/5">
               <h1 className="mt-8 text-balance text-6xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700">
-                {t("title")}{" "}
+                {t("title")}
+                <br />
+                {t("titleSuffix")}{" "}
                 <LayoutTextFlip
                   showText={false}
                   words={words}
