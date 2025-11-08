@@ -85,7 +85,7 @@ export default function SignIn() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full mt-4" disabled={loading}>
               {loading ? "Anmeldung läuft..." : "Anmelden"}
             </Button>
             <div className="text-center text-sm text-muted-foreground">
