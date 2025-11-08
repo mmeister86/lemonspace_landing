@@ -3,28 +3,28 @@ import Link from "next/link";
 
 const links = [
   {
-    title: "Features",
-    href: "#",
+    title: "Funktionen",
+    href: "#features",
   },
   {
-    title: "Solution",
-    href: "#",
+    title: "Preise",
+    href: "#pricing",
   },
   {
-    title: "Customers",
-    href: "#",
+    title: "Über uns",
+    href: "#about",
   },
   {
-    title: "Pricing",
-    href: "#",
+    title: "Hilfe",
+    href: "#help",
   },
   {
-    title: "Help",
-    href: "#",
+    title: "Datenschutz",
+    href: "#privacy",
   },
   {
-    title: "About",
-    href: "#",
+    title: "Impressum",
+    href: "#imprint",
   },
 ];
 
@@ -176,7 +176,7 @@ export default function FooterSection() {
         </div>
         <span className="text-muted-foreground block text-center text-sm">
           {" "}
-          © {new Date().getFullYear()} Tailark, All rights reserved
+          © {new Date().getFullYear()} LemonSpace.io, Alle Rechte vorbehalten
         </span>
       </div>
     </footer>

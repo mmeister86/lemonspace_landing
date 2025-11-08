@@ -16,10 +16,9 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 
 const menuItems = [
-  { name: "Features", href: "#" },
-  { name: "Solution", href: "#" },
-  { name: "Pricing", href: "#" },
-  { name: "About", href: "#" },
+  { name: "Features", href: "#features" },
+  { name: "Preise", href: "#pricing" },
+  { name: "Über uns", href: "#about" },
 ];
 
 export default function Navbar() {

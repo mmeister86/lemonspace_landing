@@ -44,6 +44,7 @@
   --muted-foreground: oklch(0.552 0.016 285.938);
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
+  --lemonspace: oklch(0.5849 0.1797 138.97);
 
   /* Brand colors */
   --brand: 210 100% 50%;
@@ -182,6 +183,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-lemonspace: var(--lemonspace);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);

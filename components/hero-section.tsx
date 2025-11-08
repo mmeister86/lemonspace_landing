@@ -1,9 +1,10 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Rocket } from "lucide-react";
+import { Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import HeroSvg from "@/components/hero-svg";
+import { LayoutTextFlip } from "@/components/ui/layout-text-flip";
 
 export default function HeroSection() {
   return (
@@ -11,59 +12,49 @@ export default function HeroSection() {
       <section className="bg-[linear-gradient(to_bottom,#ffffff_0%,#ffffff_70%,#f9fafb_100%)]">
         <div className="relative pt-24 pb-16">
           <div className="mx-auto max-w-7xl px-6">
-            <div className="max-w-3xl text-center sm:mx-auto lg:mr-auto lg:mt-0 lg:w-4/5">
-              <Link
-                href="/"
-                className="rounded-(--radius) mx-auto flex w-fit items-center gap-2 border p-1 pr-3"
-              >
-                <span className="bg-muted rounded-[calc(var(--radius)-0.25rem)] px-2 py-1 text-xs">
-                  New
-                </span>
-                <span className="text-sm">Introduction Tailark Html</span>
-                <span className="bg-(--color-border) block h-4 w-px"></span>
-
-                <ArrowRight className="size-4" />
-              </Link>
-
-              <h1 className="mt-8 text-balance text-4xl font-semibold md:text-5xl xl:text-6xl xl:leading-[1.125]">
-                Modern Software testing reimagined
+            <div className="max-w-5xl text-center sm:mx-auto lg:mr-auto lg:mt-0 lg:w-4/5">
+              <h1 className="mt-8 text-balance text-6xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700">
+                Professionelle Marketing Boards für{" "}
+                <LayoutTextFlip
+                  showText={false}
+                  words={[
+                    "Vertriebler",
+                    "Marketing-Teams",
+                    "Verkäufer",
+                    "Sales-Profis",
+                    "Account Manager",
+                  ]}
+                  duration={3000}
+                  wordClassName="inline-block text-6xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700 bg-transparent border-0 shadow-none ring-0 px-0 py-0 rounded-none overflow-visible dark:bg-transparent dark:text-gray-700"
+                />
               </h1>
-              <p className="mx-auto mt-8 hidden max-w-2xl text-wrap text-lg sm:block">
-                Tailwindcss highly customizable components for building modern
-                websites and applications that look and feel the way you mean
-                it.
+              <p className="mx-auto mt-6 hidden max-w-2xl text-wrap text-lg sm:block text-gray-800">
+                Erstelle interaktive, ansprechende Verkaufsunterlagen ohne
+                technische Kenntnisse. So einfach wie PowerPoint, so
+                leistungsfähig wie eine moderne Webanwendung.
               </p>
               <p className="mx-auto mt-6 max-w-2xl text-wrap sm:hidden">
-                Highly customizable components for building modern websites and
-                applications, with your personal spark.
+                Erstelle interaktive Verkaufsunterlagen ohne technische
+                Kenntnisse. Einfach, professionell, messbar.
               </p>
 
               <div className="mt-8">
-                <Button size="lg" asChild>
-                  <Link href="#">
+                <Button
+                  size="lg"
+                  className="bg-lemonspace hover:bg-lemonspace/90"
+                  asChild
+                >
+                  <Link href="/signup">
                     <Rocket className="relative size-4" />
-                    <span className="text-nowrap">Start Building</span>
+                    <span className="text-nowrap">Kostenlos starten</span>
                   </Link>
                 </Button>
               </div>
             </div>
           </div>
 
-          <div className="mask-b-from-55% relative mx-auto mt-16 max-w-6xl overflow-hidden px-4">
-            <Image
-              className="z-2 border-border/25 relative hidden rounded-2xl border dark:block"
-              src="/music.png"
-              alt="app screen"
-              width={2796}
-              height={2008}
-            />
-            <Image
-              className="z-2 border-border/25 relative rounded-2xl border dark:hidden"
-              src="/music-light.png"
-              alt="app screen"
-              width={2796}
-              height={2008}
-            />
+          <div className="relative mx-auto mt-[-50px] max-w-[90%] h-[40vw] overflow-hidden">
+            <HeroSvg className="w-full h-full object-cover object-top" />
           </div>
         </div>
       </section>
