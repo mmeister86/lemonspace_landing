@@ -805,6 +805,14 @@
     @apply bg-background text-foreground font-sans antialiased;
     scrollbar-gutter: stable;
   }
+  ::selection {
+    background-color: var(--lemonspace);
+    color: white;
+  }
+  ::-moz-selection {
+    background-color: var(--lemonspace);
+    color: white;
+  }
 }
 
 #wrapper {
