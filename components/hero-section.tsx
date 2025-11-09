@@ -24,7 +24,7 @@ export default function HeroSection() {
         <div className="relative pt-24 pb-16">
           <div className="mx-auto max-w-7xl px-6">
             <div className="max-w-5xl text-center sm:mx-auto lg:mr-auto lg:mt-0 lg:w-4/5">
-              <h1 className="mt-8 text-balance text-6xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700">
+              <h1 className="mt-8 text-balance text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700">
                 {t("title")}
                 <br />
                 {t("titleSuffix")}{" "}
@@ -32,7 +32,7 @@ export default function HeroSection() {
                   showText={false}
                   words={words}
                   duration={5000}
-                  wordClassName="inline-block text-6xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700 bg-transparent border-0 shadow-none ring-0 px-0 py-0 rounded-none overflow-visible dark:bg-transparent dark:text-gray-700 text-lemonspace"
+                  wordClassName="inline-block text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700 bg-transparent border-0 shadow-none ring-0 px-0 py-0 rounded-none overflow-visible dark:bg-transparent dark:text-gray-700 text-lemonspace"
                 />
               </h1>
               <p className="mx-auto mt-6 hidden max-w-2xl text-wrap text-lg sm:block text-gray-800">
