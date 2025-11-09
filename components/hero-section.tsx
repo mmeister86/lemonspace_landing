@@ -57,7 +57,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="relative mx-auto mt-[-60px] max-w-[90%] h-[40vw] overflow-hidden z-10 pointer-events-none">
+          <div className="hidden md:block relative mx-auto mt-[-100px] max-w-[90%] h-[40vw] overflow-hidden z-10 pointer-events-none">
             <HeroSvg className="w-full h-full object-cover object-top" />
           </div>
         </div>
