@@ -40,7 +40,7 @@ export default function SignIn() {
     const result = await signin(email, password);
 
     if (result.success) {
-      router.push("/dashboard");
+      router.push("/builder");
     } else {
       setError(result.error || t("error.failed"));
     }

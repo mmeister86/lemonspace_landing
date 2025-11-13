@@ -50,7 +50,7 @@ Eine Plattform zu schaffen, die die Lücke zwischen einfachen E-Mails und aufwen
 
 ### 2. Mediathek
 - **Persönlicher Speicher**: Jeder Nutzer hat eigenen, isolierten Bereich
-- **Upload-Funktionen**: 
+- **Upload-Funktionen**:
   - Bilder (bis 10MB)
   - Videos (bis 50MB Free / 500MB Pro)
   - PDFs und andere Dokumente
@@ -146,7 +146,7 @@ Eine Plattform zu schaffen, die die Lücke zwischen einfachen E-Mails und aufwen
 - **State Management**: Zustand
 - **API Client**: TanStack Query
 - **Forms**: React Hook Form + Zod
-- **Animationen**: Framer Motion (für Transitions)
+- **Animationen**: Motion (für Transitions)
 
 ### Backend
 - **BaaS**: AppWrite
@@ -340,7 +340,7 @@ Builder:
 ## 🚧 Potenzielle Herausforderungen & Lösungen
 
 ### Challenge: Performance bei vielen Medien
-**Lösung**: 
+**Lösung**:
 - Lazy Loading
 - Cloudflare CDN
 - Optimierte Thumbnails

@@ -159,8 +159,8 @@ export default function Navbar() {
                           </div>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
-                            <Link href="/dashboard" className="cursor-pointer">
-                              {t("dashboard")}
+                            <Link href="/builder" className="cursor-pointer">
+                              {t("builder")}
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />

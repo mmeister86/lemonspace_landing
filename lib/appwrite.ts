@@ -1,8 +1,63 @@
-import { Client, Account, Databases, Storage } from "appwrite";
+import { Client, Account, Databases, Storage, ID } from "appwrite";
+
+// Debug logging to track module initialization
+if (process.env.NODE_ENV === "development") {
+  console.log(
+    "[Appwrite] Module initialization - checking if this runs during build time"
+  );
+  console.log("[Appwrite] Environment variables available:", {
+    NEXT_PUBLIC_APPWRITE_ENDPOINT: !!process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+    NEXT_PUBLIC_APPWRITE_PROJECT_ID:
+      !!process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID,
+    NEXT_PUBLIC_APPWRITE_DATABASE_ID:
+      !!process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+    NEXT_PUBLIC_APPWRITE_BOARDS_COLLECTION_ID:
+      !!process.env.NEXT_PUBLIC_APPWRITE_BOARDS_COLLECTION_ID,
+    NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID:
+      !!process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+  });
+}
 
 // Lazy Appwrite Client-Initialisierung
 // Verhindert Fehler während des Build-Prozesses (SSR) wenn Umgebungsvariablen nicht gesetzt sind
 let clientInstance: Client | null = null;
+
+/**
+ * Entfernt Anführungszeichen am Anfang und Ende eines Strings.
+ * Diese können durch Docker/Coolify oder andere Umgebungstools hinzugefügt werden.
+ *
+ * @param value - Der zu bereinigende String
+ * @returns Der bereinigte String ohne Anführungszeichen
+ *
+ * @example
+ * stripQuotes('"value"') // "value"
+ * stripQuotes("'value'") // "value"
+ * stripQuotes("value") // "value"
+ */
+function stripQuotes(value: string | undefined): string | undefined {
+  return value?.replace(/^["']|["']$/g, "");
+}
+
+/**
+ * Liest eine erforderliche Umgebungsvariable und wirft einen Fehler, wenn sie fehlt.
+ *
+ * @param envVarName - Der Name der Umgebungsvariable
+ * @returns Der bereinigte Wert der Umgebungsvariable
+ * @throws Error wenn die Umgebungsvariable fehlt oder leer ist
+ */
+function getRequiredEnv(envVarName: string): string {
+  const rawValue = process.env[envVarName];
+  const cleanedValue = stripQuotes(rawValue);
+
+  if (!cleanedValue || cleanedValue.trim() === "") {
+    throw new Error(
+      `Erforderliche Umgebungsvariable "${envVarName}" ist nicht gesetzt oder leer. ` +
+        `Bitte überprüfe deine Umgebungsvariablen-Konfiguration.`
+    );
+  }
+
+  return cleanedValue;
+}
 
 /**
  * Normalisiert die Appwrite Endpoint URL.
@@ -37,14 +92,8 @@ function normalizeEndpointUrl(url: string): string {
 function getClient(): Client {
   if (!clientInstance) {
     // Entferne Anführungszeichen aus den Umgebungsvariablen (können durch Docker/Coolify hinzugefügt werden)
-    const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(
-      /^["']|["']$/g,
-      ""
-    );
-    const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID?.replace(
-      /^["']|["']$/g,
-      ""
-    );
+    const endpoint = stripQuotes(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT);
+    const projectId = stripQuotes(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
 
     // Nur initialisieren wenn Umgebungsvariablen vorhanden sind
     // Während des Builds (SSR) werden diese Services nicht verwendet, da sie nur in Client-Komponenten genutzt werden
@@ -174,6 +223,89 @@ export const storage = new Proxy({} as Storage, {
     return value;
   },
 }) as Storage;
+
+export function getDatabaseId(): string {
+  try {
+    const value = getRequiredEnv("NEXT_PUBLIC_APPWRITE_DATABASE_ID");
+    // Debug logging to confirm lazy evaluation
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "[Appwrite] getDatabaseId(): Successfully resolved environment variable"
+      );
+    }
+    return value;
+  } catch (error) {
+    // Debug logging to confirm fallback is used
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "[Appwrite] getDatabaseId(): Using build-placeholder fallback",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
+    }
+    return "build-placeholder";
+  }
+}
+
+export function getBoardsCollectionId(): string {
+  try {
+    const value = getRequiredEnv("NEXT_PUBLIC_APPWRITE_BOARDS_COLLECTION_ID");
+    // Debug logging to confirm lazy evaluation
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "[Appwrite] getBoardsCollectionId(): Successfully resolved environment variable"
+      );
+    }
+    return value;
+  } catch (error) {
+    // Debug logging to confirm fallback is used
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "[Appwrite] getBoardsCollectionId(): Using build-placeholder fallback",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
+    }
+    return "build-placeholder";
+  }
+}
+
+// Cache for lazy evaluation
+let usersCollectionIdCache: string | null = null;
+
+export function getUsersCollectionId(): string {
+  if (usersCollectionIdCache) {
+    return usersCollectionIdCache;
+  }
+
+  try {
+    const value = getRequiredEnv("NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID");
+    // Debug logging to confirm lazy evaluation
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "[Appwrite] getUsersCollectionId(): Successfully resolved environment variable"
+      );
+    }
+    usersCollectionIdCache = value;
+    return value;
+  } catch (error) {
+    // Debug logging to confirm fallback is used
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "[Appwrite] getUsersCollectionId(): Using build-placeholder fallback",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
+    }
+    usersCollectionIdCache = "build-placeholder";
+    return "build-placeholder";
+  }
+}
+
+export { ID };
 
 // Export als Funktion, damit der Client nicht sofort initialisiert wird
 export default getClient;

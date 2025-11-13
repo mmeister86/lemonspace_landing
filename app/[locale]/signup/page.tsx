@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -48,15 +47,13 @@ export default function SignUp() {
       const result = await signup(email, password, name);
 
       if (result.success) {
-        router.push("/dashboard");
+        router.push("/builder");
       } else {
         setError(result.error || t("error.failed"));
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : t("error.tryAgain");
+        error instanceof Error ? error.message : t("error.tryAgain");
       setError(errorMessage);
       console.error("Signup error:", error);
     } finally {
@@ -69,9 +66,7 @@ export default function SignUp() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{t("title")}</CardTitle>
-          <CardDescription>
-            {t("description")}
-          </CardDescription>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">

@@ -7,7 +7,7 @@
     "features": "Features",
     "pricing": "Pricing",
     "about": "About Us",
-    "dashboard": "Dashboard",
+    "builder": "Builder",
     "logout": "Logout",
     "login": "Login",
     "signup": "Sign Up",
@@ -161,5 +161,36 @@
       "failed": "Sign up failed",
       "tryAgain": "Sign up failed. Please try again."
     }
+  },
+  "authError": {
+    "title": "Session Expired",
+    "message": "Your session has expired. Please sign in again.",
+    "redirecting": "Redirecting to sign in...",
+    "retry": "Retry",
+    "signIn": "Go to Sign In",
+    "dismiss": "Dismiss",
+    "maxRetriesReached": "Maximum retry attempts reached",
+    "retryAttempts": "Retry attempts"
+  },
+  "authGuard": {
+    "notLoggedIn": "Not Logged In",
+    "pleaseSignIn": "Please sign in to continue.",
+    "backToHomepage": "Back to Homepage"
+  },
+  "dropArea": {
+    "dropHere": "Drop here",
+    "addMore": "Add more blocks",
+    "dropContent": "Drop content here",
+    "instructions": "Drag blocks from the sidebar here to create your board"
+  },
+  "project": {
+    "delete": {
+      "title": "Delete project?",
+      "description": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete"
   }
 }

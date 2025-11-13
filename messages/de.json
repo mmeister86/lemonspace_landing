@@ -7,7 +7,7 @@
     "features": "Features",
     "pricing": "Preise",
     "about": "Über uns",
-    "dashboard": "Dashboard",
+    "builder": "Builder",
     "logout": "Abmelden",
     "login": "Login",
     "signup": "Registrieren",
@@ -161,5 +161,36 @@
       "failed": "Registrierung fehlgeschlagen",
       "tryAgain": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
     }
+  },
+  "authError": {
+    "title": "Sitzung abgelaufen",
+    "message": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+    "redirecting": "Weiterleitung zur Anmeldung...",
+    "retry": "Erneut versuchen",
+    "signIn": "Zur Anmeldung",
+    "dismiss": "Schließen",
+    "maxRetriesReached": "Maximale Wiederholungsversuche erreicht",
+    "retryAttempts": "Wiederholungsversuche"
+  },
+  "authGuard": {
+    "notLoggedIn": "Nicht eingeloggt",
+    "pleaseSignIn": "Bitte melde dich an, um fortzufahren.",
+    "backToHomepage": "Zurück zur Homepage"
+  },
+  "dropArea": {
+    "dropHere": "Hier ablegen",
+    "addMore": "Weiteren Block hinzufügen",
+    "dropContent": "Inhalte hier ablegen",
+    "instructions": "Ziehe Blöcke aus der Sidebar hierher, um dein Board zu erstellen"
+  },
+  "project": {
+    "delete": {
+      "title": "Projekt löschen?",
+      "description": "Sind Sie sicher, dass Sie \"{name}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+    }
+  },
+  "common": {
+    "cancel": "Abbrechen",
+    "delete": "Löschen"
   }
 }
