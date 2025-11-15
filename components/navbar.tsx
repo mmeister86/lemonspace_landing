@@ -133,12 +133,12 @@ export default function Navbar() {
                           <button className="focus:outline-none inline-flex items-center justify-center">
                             <Avatar className="h-8 w-8">
                               <AvatarImage
-                                src={(user.prefs as { avatar?: string })?.avatar}
-                                alt={user.name}
+                                src={user.user_metadata?.avatar_url}
+                                alt={user.user_metadata?.display_name || user.email || "User"}
                               />
                               <AvatarFallback>
-                                {user.name
-                                  ? getInitials(user.name)
+                                {user.user_metadata?.display_name
+                                  ? getInitials(user.user_metadata.display_name)
                                   : user.email?.[0].toUpperCase() || "U"}
                               </AvatarFallback>
                             </Avatar>
@@ -151,7 +151,7 @@ export default function Navbar() {
                         >
                           <div className="px-2 py-1.5 text-sm">
                             <div className="font-medium">
-                              {user.name || t("user")}
+                              {user.user_metadata?.display_name || user.email?.split("@")[0] || t("user")}
                             </div>
                             <div className="text-muted-foreground text-xs">
                               {user.email}

@@ -125,7 +125,7 @@ export function BoardSlugDialog({ open, onOpenChange }: BoardSlugDialogProps) {
 
       try {
         const exists = await checkSlugExistsForUser(
-          user.$id,
+          user.id,
           debouncedSlug,
           currentBoard.id
         );
@@ -169,7 +169,7 @@ export function BoardSlugDialog({ open, onOpenChange }: BoardSlugDialogProps) {
     debouncedSlug,
     currentBoard?.slug,
     currentBoard?.id,
-    user?.$id,
+    user?.id,
     user,
     currentBoard,
   ]);
@@ -188,7 +188,7 @@ export function BoardSlugDialog({ open, onOpenChange }: BoardSlugDialogProps) {
     // Prüfe nochmal auf Eindeutigkeit
     if (data.slug !== currentBoard.slug) {
       const exists = await checkSlugExistsForUser(
-        user.$id,
+        user.id,
         data.slug,
         currentBoard.id
       );

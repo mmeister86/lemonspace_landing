@@ -1,36 +1,5 @@
-import {
-  databases,
-  getDatabaseId,
-  getUsersCollectionId,
-  ID,
-} from "@/lib/appwrite";
-import type { User, UserDocument, UserDocumentData } from "@/lib/types/user";
-import { Query, AppwriteException } from "appwrite";
-
-/**
- * Konvertiert User zu UserDocumentData (für AppWrite)
- */
-function userToDocument(user: Partial<User>): Partial<UserDocumentData> {
-  return {
-    appwrite_user_id: user.appwrite_user_id || "",
-    username: user.username || "",
-    display_name: user.display_name,
-  };
-}
-
-/**
- * Konvertiert UserDocument zu User (von AppWrite)
- */
-function documentToUser(doc: UserDocument): User {
-  return {
-    id: doc.$id,
-    appwrite_user_id: doc.appwrite_user_id,
-    username: doc.username,
-    display_name: doc.display_name,
-    created_at: doc.$createdAt,
-    updated_at: doc.$updatedAt,
-  };
-}
+import { supabase } from "@/lib/supabase";
+import type { User, UserData } from "@/lib/types/user";
 
 /**
  * Validiert Username-Format
@@ -88,20 +57,23 @@ export async function checkUsernameExists(
   username: string,
   excludeUserId?: string
 ): Promise<boolean> {
-  const queries = [Query.equal("username", username)];
-
-  if (excludeUserId) {
-    queries.push(Query.notEqual("$id", excludeUserId));
-  }
-
   try {
-    const result = await databases.listDocuments<UserDocument>(
-      getDatabaseId(),
-      getUsersCollectionId(),
-      queries
-    );
+    let query = supabase
+      .from("users")
+      .select("id", { count: "exact", head: true })
+      .eq("username", username);
 
-    return result.total > 0;
+    if (excludeUserId) {
+      query = query.neq("id", excludeUserId);
+    }
+
+    const { count, error } = await query;
+
+    if (error) {
+      throw error;
+    }
+
+    return (count ?? 0) > 0;
   } catch (error) {
     // Log error with context
     console.error(
@@ -148,23 +120,27 @@ export async function generateUniqueUsername(
 }
 
 /**
- * Lädt einen User anhand der AppWrite User-ID
+ * Lädt einen User anhand der Auth User-ID
  */
-export async function getUserByAppwriteId(
-  appwriteUserId: string
+export async function getUserByAuthId(
+  authUserId: string
 ): Promise<User | null> {
   try {
-    const result = await databases.listDocuments<UserDocument>(
-      getDatabaseId(),
-      getUsersCollectionId(),
-      [Query.equal("appwrite_user_id", appwriteUserId)]
-    );
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("auth_user_id", authUserId)
+      .single();
 
-    if (result.documents.length === 0) {
-      return null;
+    if (error) {
+      // 'PGRST116' = No rows found - das ist kein Fehler, sondern bedeutet User existiert nicht
+      if (error.code === "PGRST116") {
+        return null;
+      }
+      throw error;
     }
 
-    return documentToUser(result.documents[0]);
+    return data;
   } catch (error) {
     console.error("Fehler beim Laden des Users:", error);
     return null;
@@ -178,17 +154,21 @@ export async function getUserByUsername(
   username: string
 ): Promise<User | null> {
   try {
-    const result = await databases.listDocuments<UserDocument>(
-      getDatabaseId(),
-      getUsersCollectionId(),
-      [Query.equal("username", username)]
-    );
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username)
+      .single();
 
-    if (result.documents.length === 0) {
-      return null;
+    if (error) {
+      // 'PGRST116' = No rows found
+      if (error.code === "PGRST116") {
+        return null;
+      }
+      throw error;
     }
 
-    return documentToUser(result.documents[0]);
+    return data;
   } catch (error) {
     console.error("Fehler beim Laden des Users:", error);
     return null;
@@ -200,7 +180,7 @@ export async function getUserByUsername(
  * Behandelt Race Conditions durch Retry-Logik mit automatischer Username-Regenerierung
  */
 export async function createUser(
-  appwriteUserId: string,
+  authUserId: string,
   username: string,
   displayName?: string,
   maxRetries: number = 3
@@ -210,10 +190,10 @@ export async function createUser(
     throw new Error("Ungültiger Username-Format");
   }
 
-  // Prüfe ob AppWrite User-ID bereits existiert (nur einmal prüfen, nicht in Retry-Loop)
-  const existingUser = await getUserByAppwriteId(appwriteUserId);
+  // Prüfe ob Auth User-ID bereits existiert (nur einmal prüfen, nicht in Retry-Loop)
+  const existingUser = await getUserByAuthId(authUserId);
   if (existingUser) {
-    throw new Error("User mit dieser AppWrite User-ID existiert bereits");
+    throw new Error("User mit dieser Auth User-ID existiert bereits");
   }
 
   let currentUsername = username;
@@ -227,30 +207,30 @@ export async function createUser(
         continue;
       }
 
-      const documentId = ID.unique();
-      const permissions = [
-        `read("user(\"${appwriteUserId}\")")`,
-        `write("user(\"${appwriteUserId}\")")`,
-      ];
+      const userData: UserData = {
+        auth_user_id: authUserId,
+        username: currentUsername,
+        display_name: displayName,
+      };
 
-      const doc = await databases.createDocument<UserDocument>(
-        getDatabaseId(),
-        getUsersCollectionId(),
-        documentId,
-        userToDocument({
-          appwrite_user_id: appwriteUserId,
-          username: currentUsername,
-          display_name: displayName,
-        }) as UserDocumentData,
-        permissions
-      );
+      const { data, error } = await supabase
+        .from("users")
+        .insert(userData)
+        .select()
+        .single();
 
-      return documentToUser(doc);
+      if (error) {
+        throw error;
+      }
+
+      return data;
     } catch (error: unknown) {
-      // Prüfe ob es ein Conflict-Fehler ist (409)
+      // Prüfe ob es ein Unique Constraint Violation ist (23505 = unique_violation in PostgreSQL)
       if (
-        error instanceof AppwriteException &&
-        error.code === 409 &&
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "23505" &&
         attempt < maxRetries - 1
       ) {
         // Regeneriere Username und retry
@@ -291,19 +271,25 @@ export async function updateUsername(
         continue;
       }
 
-      const doc = await databases.updateDocument<UserDocument>(
-        getDatabaseId(),
-        getUsersCollectionId(),
-        userId,
-        { username: currentUsername } as Partial<UserDocumentData>
-      );
+      const { data, error } = await supabase
+        .from("users")
+        .update({ username: currentUsername })
+        .eq("id", userId)
+        .select()
+        .single();
 
-      return documentToUser(doc);
+      if (error) {
+        throw error;
+      }
+
+      return data;
     } catch (error: unknown) {
-      // Prüfe ob es ein Conflict-Fehler ist (409)
+      // Prüfe ob es ein Unique Constraint Violation ist (23505)
       if (
-        error instanceof AppwriteException &&
-        error.code === 409 &&
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "23505" &&
         attempt < maxRetries - 1
       ) {
         // Regeneriere Username und retry
@@ -322,16 +308,16 @@ export async function updateUsername(
 }
 
 /**
- * Erstellt oder lädt einen User für einen AppWrite User
+ * Erstellt oder lädt einen User für einen Auth User
  * Falls der User nicht existiert, wird er mit automatischem Username erstellt
  */
 export async function getOrCreateUser(
-  appwriteUserId: string,
+  authUserId: string,
   email: string,
   displayName?: string
 ): Promise<User> {
   // Versuche zuerst den User zu laden
-  const existingUser = await getUserByAppwriteId(appwriteUserId);
+  const existingUser = await getUserByAuthId(authUserId);
   if (existingUser) {
     return existingUser;
   }
@@ -340,5 +326,5 @@ export async function getOrCreateUser(
   const baseUsername = generateUsernameFromEmail(email);
   const uniqueUsername = await generateUniqueUsername(baseUsername);
 
-  return createUser(appwriteUserId, uniqueUsername, displayName);
+  return createUser(authUserId, uniqueUsername, displayName);
 }

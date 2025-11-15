@@ -2,8 +2,6 @@
  * Board Types basierend auf Masterplan-Datenmodell
  */
 
-import type { Models } from "appwrite";
-
 export interface GridConfig {
   columns: number; // Maximal 4 Spalten auf Desktop
   gap: number; // Gap zwischen Blöcken in px
@@ -36,6 +34,29 @@ export type BlockType =
   | "accordion"
   | "code";
 
+/**
+ * Board-Datenfelder für Supabase (ohne Metadaten)
+ * Diese Felder werden an insert/update übergeben
+ *
+ * Hinweis: grid_config und blocks werden als JSONB gespeichert
+ */
+export interface BoardData {
+  user_id: string;
+  title: string;
+  slug: string;
+  grid_config: GridConfig; // Als JSONB in Supabase
+  blocks: Block[]; // Als JSONB in Supabase
+  template_id?: string;
+  is_template?: boolean;
+  password_hash?: string;
+  expires_at?: string;
+  published_at?: string;
+}
+
+/**
+ * Board-Interface für die Anwendung
+ * Repräsentiert einen vollständigen Board-Datensatz aus der Datenbank
+ */
 export interface Board {
   id: string;
   user_id: string;
@@ -51,29 +72,3 @@ export interface Board {
   updated_at: string;
   published_at?: string;
 }
-
-/**
- * Board-Datenfelder für AppWrite (ohne Document-Metadaten)
- * Diese Felder werden an createDocument/updateDocument übergeben
- *
- * Hinweis: grid_config und blocks werden als JSON-Strings gespeichert,
- * da selbstgehostete AppWrite-Installationen keinen JSON-Attribut-Typ unterstützen
- */
-export interface BoardDocumentData {
-  user_id: string;
-  title: string;
-  slug: string;
-  grid_config: string; // JSON als String gespeichert
-  blocks: string; // JSON als String gespeichert
-  template_id?: string;
-  is_template?: boolean;
-  password_hash?: string;
-  expires_at?: string;
-  published_at?: string;
-}
-
-/**
- * Board-Daten für AppWrite (JSON-Felder als Strings)
- * Erweitert Models.Document mit Board-spezifischen Feldern
- */
-export interface BoardDocument extends Models.Document, BoardDocumentData {}

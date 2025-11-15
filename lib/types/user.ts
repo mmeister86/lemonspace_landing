@@ -1,31 +1,24 @@
 /**
- * User Types für die Users Collection in AppWrite
- * Diese Collection erweitert die AppWrite User-Daten um zusätzliche Felder wie username
+ * User Types für die Users Tabelle in Supabase
+ * Diese Tabelle erweitert die Supabase Auth User-Daten um zusätzliche Felder wie username
  */
-
-import type { Models } from "appwrite";
 
 /**
- * User-Datenfelder für AppWrite (ohne Document-Metadaten)
+ * User-Datenfelder für Supabase (ohne Metadaten)
  */
-export interface UserDocumentData {
-  appwrite_user_id: string;
+export interface UserData {
+  auth_user_id: string;
   username: string;
   display_name?: string;
 }
 
 /**
- * User-Daten für AppWrite
- * Erweitert Models.Document mit User-spezifischen Feldern
- */
-export interface UserDocument extends Models.Document, UserDocumentData {}
-
-/**
  * User-Interface für die Anwendung
+ * Repräsentiert einen vollständigen User-Datensatz aus der Datenbank
  */
 export interface User {
   id: string;
-  appwrite_user_id: string;
+  auth_user_id: string;
   username: string;
   display_name?: string;
   created_at: string;

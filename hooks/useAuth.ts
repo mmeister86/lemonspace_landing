@@ -1,21 +1,32 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { account } from '@/lib/appwrite'
-import { ID, AppwriteException } from 'appwrite'
-import { Models } from 'appwrite'
+import { supabase } from '@/lib/supabase'
+import { User, type Session } from '@supabase/supabase-js'
+import { AuthError } from '@supabase/supabase-js'
 
 export function useAuth() {
-  const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Initial user check
     checkUser()
+
+    // Subscribe to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   const checkUser = async () => {
     try {
-      const currentUser = await account.get()
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
       setUser(currentUser)
     } catch {
       setUser(null)
@@ -26,12 +37,22 @@ export function useAuth() {
 
   const signup = async (email: string, password: string, name: string) => {
     try {
-      await account.create(ID.unique(), email, password, name)
-      // Nach erfolgreicher Registrierung direkt einloggen
-      await account.createEmailPasswordSession(email, password)
-      const currentUser = await account.get()
-      setUser(currentUser)
-      return { success: true, user: currentUser }
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            display_name: name,
+          },
+        },
+      })
+
+      if (error) {
+        return { success: false, error: extractErrorMessage(error, 'Registrierung fehlgeschlagen') }
+      }
+
+      setUser(data.user)
+      return { success: true, user: data.user }
     } catch (error) {
       return { success: false, error: extractErrorMessage(error, 'Registrierung fehlgeschlagen') }
     }
@@ -39,24 +60,37 @@ export function useAuth() {
 
   const signin = async (email: string, password: string) => {
     try {
-      await account.createEmailPasswordSession(email, password)
-      const currentUser = await account.get()
-      setUser(currentUser)
-      return { success: true, user: currentUser }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        // Verbesserte Fehlerbehandlung mit mehr Details
+        const errorMessage = extractErrorMessage(error, 'Anmeldung fehlgeschlagen')
+
+        // Logge zusätzliche Details in Development
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[useAuth] Signin Fehler:', {
+            error,
+            message: errorMessage,
+            status: error.status,
+            name: error.name,
+          })
+        }
+
+        return { success: false, error: errorMessage }
+      }
+
+      setUser(data.user)
+      return { success: true, user: data.user }
     } catch (error) {
-      // Verbesserte Fehlerbehandlung mit mehr Details
       const errorMessage = extractErrorMessage(error, 'Anmeldung fehlgeschlagen')
 
-      // Logge zusätzliche Details in Development
       if (process.env.NODE_ENV === 'development') {
         console.error('[useAuth] Signin Fehler:', {
           error,
           message: errorMessage,
-          ...(error instanceof AppwriteException && {
-            code: error.code,
-            type: error.type,
-            response: error.response,
-          }),
         })
       }
 
@@ -66,7 +100,12 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await account.deleteSession('current')
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        return { success: false, error: extractErrorMessage(error, 'Abmeldung fehlgeschlagen') }
+      }
+
       setUser(null)
       return { success: true }
     } catch (error) {
@@ -75,27 +114,31 @@ export function useAuth() {
   }
 
   /**
-   * Extrahiert eine benutzerfreundliche Fehlermeldung aus einem Appwrite-Fehler
+   * Extrahiert eine benutzerfreundliche Fehlermeldung aus einem Supabase-Fehler
    * @param error - Der aufgetretene Fehler
    * @param defaultMessage - Standard-Fehlermeldung falls keine spezifische gefunden wird
    * @returns Benutzerfreundliche Fehlermeldung
    */
   function extractErrorMessage(error: unknown, defaultMessage: string): string {
-    // AppwriteException hat zusätzliche Eigenschaften
-    if (error instanceof AppwriteException) {
-      const { code, message } = error
+    // Supabase AuthError hat zusätzliche Eigenschaften
+    if (error instanceof AuthError) {
+      const { status, message } = error
 
       // Spezifische Fehlermeldungen basierend auf Status-Code
-      switch (code) {
-        case 401:
-          // Unauthorized - Falsche Credentials oder Benutzer existiert nicht
+      switch (status) {
+        case 400:
+          // Bad Request - Meist ungültige Credentials
           if (message.toLowerCase().includes('invalid') || message.toLowerCase().includes('credentials')) {
             return 'E-Mail oder Passwort ist falsch. Bitte versuchen Sie es erneut.'
           }
-          if (message.toLowerCase().includes('user') && message.toLowerCase().includes('not found')) {
-            return 'Kein Konto mit dieser E-Mail-Adresse gefunden.'
+          if (message.toLowerCase().includes('email') && message.toLowerCase().includes('not confirmed')) {
+            return 'Bitte verifizieren Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden.'
           }
-          return message || 'E-Mail oder Passwort ist falsch.'
+          return message || 'Ungültige Anfrage. Bitte überprüfen Sie Ihre Eingaben.'
+
+        case 401:
+          // Unauthorized - Falsche Credentials
+          return 'E-Mail oder Passwort ist falsch. Bitte versuchen Sie es erneut.'
 
         case 403:
           // Forbidden - Email-Verifizierung erforderlich
@@ -104,17 +147,19 @@ export function useAuth() {
           }
           return message || 'Zugriff verweigert. Bitte überprüfen Sie Ihre Berechtigungen.'
 
+        case 422:
+          // Unprocessable Entity - Meist Validierungsfehler
+          if (message.toLowerCase().includes('password')) {
+            return 'Das Passwort erfüllt nicht die Anforderungen. Es muss mindestens 6 Zeichen lang sein.'
+          }
+          if (message.toLowerCase().includes('email')) {
+            return 'Bitte geben Sie eine gültige E-Mail-Adresse ein.'
+          }
+          return message || 'Ungültige Eingabe. Bitte überprüfen Sie Ihre Daten.'
+
         case 429:
           // Too Many Requests
           return 'Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.'
-
-        case 400:
-          // Bad Request
-          return message || 'Ungültige Anfrage. Bitte überprüfen Sie Ihre Eingaben.'
-
-        case 404:
-          // Not Found
-          return message || 'Die angeforderte Ressource wurde nicht gefunden.'
 
         case 500:
         case 502:
@@ -123,7 +168,7 @@ export function useAuth() {
           return 'Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.'
 
         default:
-          // Verwende die Appwrite-Fehlermeldung oder Standard-Meldung
+          // Verwende die Supabase-Fehlermeldung oder Standard-Meldung
           return message || defaultMessage
       }
     }

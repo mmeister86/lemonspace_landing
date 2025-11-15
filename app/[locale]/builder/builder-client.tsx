@@ -17,7 +17,6 @@ import {
 import Canvas from "./components/Canvas";
 import { BuilderMenubar } from "./components/BuilderMenubar";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
-import { ID } from "@/lib/appwrite";
 import type { Block, BlockType } from "@/lib/types/board";
 import { BlockDeleteDialog } from "./components/BlockDeleteDialog";
 
@@ -93,7 +92,7 @@ export function BuilderClient() {
       }
 
       const newBlock: Block = {
-        id: ID.unique(),
+        id: crypto.randomUUID(),
         type: validatedType,
         data: validatedData,
       };

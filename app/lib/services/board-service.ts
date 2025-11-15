@@ -1,15 +1,5 @@
-import {
-  databases,
-  getDatabaseId,
-  getBoardsCollectionId,
-  ID,
-} from "@/lib/appwrite";
-import type {
-  Board,
-  BoardDocument,
-  BoardDocumentData,
-} from "@/lib/types/board";
-import { Query } from "appwrite";
+import { supabase } from "@/lib/supabase";
+import type { Board, BoardData, GridConfig, Block } from "@/lib/types/board";
 import { getUserByUsername } from "./user-service";
 import { handleAuthError } from "../auth-utils";
 import { z } from "zod";
@@ -64,167 +54,33 @@ const blockSchema = z.object({
 const blocksArraySchema = z.array(blockSchema);
 
 /**
- * Type Guard für Runtime-Validierung
+ * Validiert Grid Config mit Fallback
  */
-type TypeGuard<T> = (value: unknown) => value is T;
-
-/**
- * Konvertiert Board zu BoardDocumentData (für AppWrite)
- * Gibt nur die Datenfelder zurück (ohne Document-Metadaten wie $id, $createdAt, etc.)
- *
- * Hinweis: grid_config und blocks werden als JSON-Strings serialisiert,
- * da selbstgehostete AppWrite-Installationen keinen JSON-Attribut-Typ unterstützen
- */
-function boardToDocument(board: Partial<Board>): Partial<BoardDocumentData> {
-  return {
-    user_id: board.user_id,
-    title: board.title,
-    slug: board.slug,
-    grid_config: JSON.stringify(board.grid_config || { columns: 4, gap: 16 }),
-    blocks: JSON.stringify(board.blocks || []),
-    template_id: board.template_id,
-    is_template: board.is_template,
-    password_hash: board.password_hash,
-    expires_at: board.expires_at,
-    published_at: board.published_at,
-  };
-}
-
-/**
- * Hilfsfunktion zum Erstellen sicherer Metadaten für Logging
- */
-function createSafeMetadata(value: string): {
-  length: number;
-  isString: boolean;
-  preview?: string;
-} {
-  const metadata: {
-    length: number;
-    isString: boolean;
-    preview?: string;
-  } = {
-    length: value.length,
-    isString: typeof value === "string",
-  };
-
-  // Nur eine abgeschnittene Vorschau (max 50 Zeichen) für Debugging
-  if (value.length > 0) {
-    metadata.preview = value.slice(0, 50) + (value.length > 50 ? "..." : "");
-  }
-
-  return metadata;
-}
-
-/**
- * Parst und validiert ein Board-Feld mit Runtime-Validierung
- *
- * @param value - Der JSON-String-Wert aus der Datenbank
- * @param validator - Zod-Schema oder Type-Guard-Funktion für Validierung
- * @param fallback - Fallback-Wert bei Parse- oder Validierungsfehler
- * @param boardId - Board-ID für Logging
- * @param field - Feldname für Logging
- * @returns Den geparsten und validierten Wert oder den Fallback
- */
-function parseBoardField<T>(
-  value: string,
-  validator: z.ZodSchema<T> | TypeGuard<T>,
-  fallback: T,
-  boardId: string,
-  field: string
-): T {
-  let parsed: unknown;
-
-  // Schritt 1: JSON parsen
+function validateGridConfig(value: unknown): GridConfig {
   try {
-    parsed = JSON.parse(value);
-  } catch (parseError) {
-    const safeMetadata = createSafeMetadata(value);
-    console.error(
-      `[board-service] Failed to parse JSON for ${field} on board ${boardId}`,
-      {
-        error:
-          parseError instanceof Error ? parseError.message : String(parseError),
-        metadata: safeMetadata,
-      }
-    );
-    return fallback;
-  }
-
-  // Schritt 2: Runtime-Validierung
-  try {
-    if (typeof validator === "function") {
-      // Type Guard Funktion
-      if (validator(parsed)) {
-        return parsed;
-      } else {
-        throw new Error("Type guard validation failed");
-      }
-    } else {
-      // Zod Schema
-      const validated = validator.parse(parsed);
-      return validated;
-    }
-  } catch (validationError) {
-    const safeMetadata = createSafeMetadata(value);
-    const errorDetails =
-      validationError instanceof z.ZodError
-        ? {
-            issues: validationError.issues.map((issue) => ({
-              path: issue.path.join("."),
-              message: issue.message,
-              code: issue.code,
-            })),
-          }
-        : {
-            message:
-              validationError instanceof Error
-                ? validationError.message
-                : String(validationError),
-          };
-
-    console.error(
-      `[board-service] Validation failed for ${field} on board ${boardId}`,
-      {
-        ...errorDetails,
-        metadata: safeMetadata,
-      }
-    );
-    return fallback;
+    return gridConfigSchema.parse(value);
+  } catch (error) {
+    console.error("[board-service] Invalid grid_config, using fallback", {
+      error: error instanceof z.ZodError ? error.issues : error,
+      value,
+    });
+    return { columns: 4, gap: 16 };
   }
 }
 
-function documentToBoard(doc: BoardDocument): Board {
-  const boardId = doc.$id || "<unknown>";
-  const gridConfig = parseBoardField(
-    doc.grid_config,
-    gridConfigSchema,
-    { columns: 4, gap: 16 },
-    boardId,
-    "grid_config"
-  );
-  const blocks = parseBoardField(
-    doc.blocks,
-    blocksArraySchema,
-    [],
-    boardId,
-    "blocks"
-  );
-
-  return {
-    id: doc.$id,
-    user_id: doc.user_id,
-    title: doc.title,
-    slug: doc.slug,
-    grid_config: gridConfig,
-    blocks: blocks,
-    template_id: doc.template_id,
-    is_template: doc.is_template,
-    password_hash: doc.password_hash,
-    expires_at: doc.expires_at,
-    created_at: doc.$createdAt,
-    updated_at: doc.$updatedAt,
-    published_at: doc.published_at,
-  };
+/**
+ * Validiert Blocks mit Fallback
+ */
+function validateBlocks(value: unknown): Block[] {
+  try {
+    return blocksArraySchema.parse(value);
+  } catch (error) {
+    console.error("[board-service] Invalid blocks, using fallback", {
+      error: error instanceof z.ZodError ? error.issues : error,
+      value,
+    });
+    return [];
+  }
 }
 
 /**
@@ -286,19 +142,29 @@ export async function checkSlugExistsForUser(
   slug: string,
   excludeBoardId?: string
 ): Promise<boolean> {
-  const queries = [Query.equal("user_id", userId), Query.equal("slug", slug)];
+  try {
+    let query = supabase
+      .from("boards")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("slug", slug);
 
-  if (excludeBoardId) {
-    queries.push(Query.notEqual("$id", excludeBoardId));
+    if (excludeBoardId) {
+      query = query.neq("id", excludeBoardId);
+    }
+
+    const { count, error } = await query;
+
+    if (error) {
+      throw error;
+    }
+
+    return (count ?? 0) > 0;
+  } catch (error) {
+    console.error("Fehler beim Prüfen des Slugs:", error);
+    // Return true (treat slug as taken) to avoid crashes/duplicates
+    return true;
   }
-
-  const result = await databases.listDocuments<BoardDocument>(
-    getDatabaseId(),
-    getBoardsCollectionId(),
-    queries
-  );
-
-  return result.total > 0;
 }
 
 /**
@@ -372,19 +238,30 @@ export async function createBoard(
       throw new Error("Slug oder Titel muss angegeben werden");
     }
 
-    const documentId = boardData.id || ID.unique();
-    const permissions = [`read("user:${userId}")`, `write("user:${userId}")`];
+    const insertData: BoardData = {
+      user_id: userId,
+      title: boardData.title || "Untitled",
+      slug: slug,
+      grid_config: validateGridConfig(boardData.grid_config),
+      blocks: validateBlocks(boardData.blocks),
+      template_id: boardData.template_id,
+      is_template: boardData.is_template,
+      password_hash: boardData.password_hash,
+      expires_at: boardData.expires_at,
+      published_at: boardData.published_at,
+    };
 
-    const doc = await databases.createDocument<BoardDocument>(
-      getDatabaseId(),
-      getBoardsCollectionId(),
-      documentId,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      boardToDocument({ ...boardData, user_id: userId, slug }) as any,
-      permissions
-    );
+    const { data, error } = await supabase
+      .from("boards")
+      .insert(insertData)
+      .select()
+      .single();
 
-    return documentToBoard(doc);
+    if (error) {
+      throw error;
+    }
+
+    return data;
   } catch (error) {
     // handleAuthError gibt true zurück, wenn ein Auth-Fehler erkannt wurde
     // und ein Redirect zur Landingpage durchgeführt wurde (nur in Production).
@@ -402,13 +279,22 @@ export async function createBoard(
  */
 export async function getBoard(boardId: string): Promise<Board> {
   try {
-    const doc = await databases.getDocument<BoardDocument>(
-      getDatabaseId(),
-      getBoardsCollectionId(),
-      boardId
-    );
+    const { data, error } = await supabase
+      .from("boards")
+      .select("*")
+      .eq("id", boardId)
+      .single();
 
-    return documentToBoard(doc);
+    if (error) {
+      throw error;
+    }
+
+    // Validiere JSONB-Felder
+    return {
+      ...data,
+      grid_config: validateGridConfig(data.grid_config),
+      blocks: validateBlocks(data.blocks),
+    };
   } catch (error) {
     // handleAuthError gibt true zurück, wenn ein Auth-Fehler erkannt wurde
     // und ein Redirect zur Landingpage durchgeführt wurde (nur in Production).
@@ -417,10 +303,7 @@ export async function getBoard(boardId: string): Promise<Board> {
     if (handleAuthError(error, "BoardService.getBoard")) {
       throw error;
     }
-    console.error(
-      `[board-service] Failed to get board ${boardId} from collection ${getBoardsCollectionId()}`,
-      error
-    );
+    console.error(`[board-service] Failed to get board ${boardId}`, error);
     throw error;
   }
 }
@@ -432,15 +315,43 @@ export async function updateBoard(
   boardId: string,
   boardData: Partial<Board>
 ): Promise<Board> {
-  const doc = await databases.updateDocument<BoardDocument>(
-    getDatabaseId(),
-    getBoardsCollectionId(),
-    boardId,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    boardToDocument(boardData) as any
-  );
+  const updateData: Partial<BoardData> = {
+    title: boardData.title,
+    slug: boardData.slug,
+    grid_config: boardData.grid_config
+      ? validateGridConfig(boardData.grid_config)
+      : undefined,
+    blocks: boardData.blocks ? validateBlocks(boardData.blocks) : undefined,
+    template_id: boardData.template_id,
+    is_template: boardData.is_template,
+    password_hash: boardData.password_hash,
+    expires_at: boardData.expires_at,
+    published_at: boardData.published_at,
+  };
 
-  return documentToBoard(doc);
+  // Entferne undefined Werte
+  Object.keys(updateData).forEach((key) => {
+    if (updateData[key as keyof BoardData] === undefined) {
+      delete updateData[key as keyof BoardData];
+    }
+  });
+
+  const { data, error } = await supabase
+    .from("boards")
+    .update(updateData)
+    .eq("id", boardId)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    ...data,
+    grid_config: validateGridConfig(data.grid_config),
+    blocks: validateBlocks(data.blocks),
+  };
 }
 
 /**
@@ -448,11 +359,11 @@ export async function updateBoard(
  */
 export async function deleteBoard(boardId: string): Promise<void> {
   try {
-    await databases.deleteDocument(
-      getDatabaseId(),
-      getBoardsCollectionId(),
-      boardId
-    );
+    const { error } = await supabase.from("boards").delete().eq("id", boardId);
+
+    if (error) {
+      throw error;
+    }
   } catch (error) {
     // handleAuthError gibt true zurück, wenn ein Auth-Fehler erkannt wurde
     // und ein Redirect zur Landingpage durchgeführt wurde (nur in Production).
@@ -461,10 +372,7 @@ export async function deleteBoard(boardId: string): Promise<void> {
     if (handleAuthError(error, "BoardService.deleteBoard")) {
       throw error;
     }
-    console.error(
-      `[board-service] Failed to delete board ${boardId} from collection ${getBoardsCollectionId()}`,
-      error
-    );
+    console.error(`[board-service] Failed to delete board ${boardId}`, error);
     throw error;
   }
 }
@@ -474,13 +382,20 @@ export async function deleteBoard(boardId: string): Promise<void> {
  */
 export async function listBoards(userId: string): Promise<Board[]> {
   try {
-    const response = await databases.listDocuments<BoardDocument>(
-      getDatabaseId(),
-      getBoardsCollectionId(),
-      [Query.equal("user_id", userId)]
-    );
+    const { data, error } = await supabase
+      .from("boards")
+      .select("*")
+      .eq("user_id", userId);
 
-    return response.documents.map(documentToBoard);
+    if (error) {
+      throw error;
+    }
+
+    return data.map((board: Board) => ({
+      ...board,
+      grid_config: validateGridConfig(board.grid_config),
+      blocks: validateBlocks(board.blocks),
+    }));
   } catch (error) {
     // handleAuthError gibt true zurück, wenn ein Auth-Fehler erkannt wurde
     // und ein Redirect zur Landingpage durchgeführt wurde (nur in Production).
@@ -508,17 +423,26 @@ export async function getBoardByUsernameAndSlug(
     }
 
     // Lade dann das Board per user_id und slug
-    const result = await databases.listDocuments<BoardDocument>(
-      getDatabaseId(),
-      getBoardsCollectionId(),
-      [Query.equal("user_id", user.appwrite_user_id), Query.equal("slug", slug)]
-    );
+    const { data, error } = await supabase
+      .from("boards")
+      .select("*")
+      .eq("user_id", user.auth_user_id)
+      .eq("slug", slug)
+      .single();
 
-    if (result.documents.length === 0) {
-      return null;
+    if (error) {
+      // 'PGRST116' = No rows found
+      if (error.code === "PGRST116") {
+        return null;
+      }
+      throw error;
     }
 
-    return documentToBoard(result.documents[0]);
+    return {
+      ...data,
+      grid_config: validateGridConfig(data.grid_config),
+      blocks: validateBlocks(data.blocks),
+    };
   } catch (error) {
     if (handleAuthError(error, "BoardService.getBoardByUsernameAndSlug")) {
       return null; // Redirect erfolgt, aber wir geben null zurück

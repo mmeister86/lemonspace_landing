@@ -1,19 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getUserByAppwriteId,
+  getUserByAuthId,
   getUserByUsername,
   createUser,
   updateUsername,
 } from "../services/user-service";
 
 /**
- * Lädt einen User anhand der AppWrite User-ID
+ * Lädt einen User anhand der Auth User-ID
  */
-export function useUserByAppwriteId(appwriteUserId: string | null) {
+export function useUserByAuthId(authUserId: string | null) {
   return useQuery({
-    queryKey: ["user", "appwrite", appwriteUserId],
-    queryFn: () => getUserByAppwriteId(appwriteUserId!),
-    enabled: !!appwriteUserId,
+    queryKey: ["user", "auth", authUserId],
+    queryFn: () => getUserByAuthId(authUserId!),
+    enabled: !!authUserId,
   });
 }
 
@@ -36,18 +36,18 @@ export function useCreateUser() {
 
   return useMutation({
     mutationFn: ({
-      appwriteUserId,
+      authUserId,
       username,
       displayName,
     }: {
-      appwriteUserId: string;
+      authUserId: string;
       username: string;
       displayName?: string;
-    }) => createUser(appwriteUserId, username, displayName),
+    }) => createUser(authUserId, username, displayName),
     onSuccess: (data) => {
       // Setze User in Cache
       queryClient.setQueryData(
-        ["user", "appwrite", data.appwrite_user_id],
+        ["user", "auth", data.auth_user_id],
         data
       );
       queryClient.setQueryData(["user", "username", data.username], data);
@@ -75,13 +75,13 @@ export function useUpdateUsername() {
       // Fetch old user data to get previous username
       const oldUser = queryClient.getQueryData<typeof data>([
         "user",
-        "appwrite",
-        data.appwrite_user_id,
+        "auth",
+        data.auth_user_id,
       ]);
 
       // Update User in Cache
       queryClient.setQueryData(
-        ["user", "appwrite", data.appwrite_user_id],
+        ["user", "auth", data.auth_user_id],
         data
       );
       queryClient.setQueryData(["user", "username", data.username], data);

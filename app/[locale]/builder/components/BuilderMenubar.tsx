@@ -48,8 +48,7 @@ import {
 } from "@/components/ui/menubar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/app/lib/user-context";
-import { storage } from "@/lib/appwrite";
-import { Models } from "appwrite";
+import { supabase } from "@/lib/supabase";
 import { BoardTitleDialog } from "./BoardTitleDialog";
 import { BoardSlugDialog } from "./BoardSlugDialog";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
@@ -87,70 +86,51 @@ export function BuilderMenubar({
   const [titleDialogOpen, setTitleDialogOpen] = React.useState(false);
   const [slugDialogOpen, setSlugDialogOpen] = React.useState(false);
 
-  // User-Daten aus AppWrite in das Format für User-Menü umwandeln
-  const userName = user?.name || user?.email?.split("@")[0] || "User";
+  // User-Daten aus Supabase in das Format für User-Menü umwandeln
+  const userName = user?.user_metadata?.display_name || user?.email?.split("@")[0] || "User";
   const userEmail = user?.email || "";
   const userInitials = getInitials(userName);
 
-  // Avatar-URL aus AppWrite Storage abrufen
+  // Avatar-URL aus Supabase Storage abrufen
   React.useEffect(() => {
-    function fetchAvatarUrl() {
+    async function fetchAvatarUrl() {
       if (!user) {
         setUserAvatar("");
         return;
       }
 
-      // Prüfe verschiedene mögliche Feldnamen für Avatar-ID
-      // AppWrite User kann Avatar-ID in prefs oder als direktes Feld haben
-      type UserWithAvatar = typeof user & {
-        avatarId?: string;
-        imageId?: string;
-        avatar?: string;
-        prefs?: Models.Preferences & {
-          avatarId?: string;
-          imageId?: string;
-          avatar?: string;
-        };
-      };
+      // Prüfe ob User Metadata eine Avatar-URL enthält
+      const avatarUrl = user.user_metadata?.avatar_url;
 
-      const userWithAvatar = user as UserWithAvatar;
-      const avatarIdOrUrl =
-        userWithAvatar.avatarId ||
-        userWithAvatar.imageId ||
-        userWithAvatar.avatar ||
-        userWithAvatar.prefs?.avatarId ||
-        userWithAvatar.prefs?.imageId ||
-        userWithAvatar.prefs?.avatar;
-
-      if (!avatarIdOrUrl) {
+      if (!avatarUrl) {
         setUserAvatar("");
         return;
       }
 
       // Wenn bereits eine vollständige URL, direkt verwenden
-      if (
-        typeof avatarIdOrUrl === "string" &&
-        avatarIdOrUrl.startsWith("http")
-      ) {
-        setUserAvatar(avatarIdOrUrl);
+      if (typeof avatarUrl === "string" && avatarUrl.startsWith("http")) {
+        setUserAvatar(avatarUrl);
         return;
       }
 
-      // Bucket-ID aus Umgebungsvariable oder Standard-Wert
-      const bucketId =
-        process.env.NEXT_PUBLIC_APPWRITE_AVATAR_BUCKET_ID || "avatars";
+      // Falls es eine Datei-ID ist, hole die URL aus Supabase Storage
+      const bucketName = process.env.NEXT_PUBLIC_SUPABASE_AVATAR_BUCKET || "avatars";
 
       try {
-        // Hole Preview-URL für Avatar-Bild (optimiert für Avatar-Größe: 128x128)
-        // getFilePreview ist synchron und gibt eine URL zurück
-        const avatarUrl = storage.getFilePreview(
-          bucketId,
-          avatarIdOrUrl,
-          128,
-          128
-        );
-        // getFilePreview gibt eine URL-String zurück
-        setUserAvatar(String(avatarUrl));
+        const { data } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(avatarUrl, {
+            transform: {
+              width: 128,
+              height: 128,
+            },
+          });
+
+        if (data?.publicUrl) {
+          setUserAvatar(data.publicUrl);
+        } else {
+          setUserAvatar("");
+        }
       } catch (error) {
         // Bei Fehler (z.B. Datei nicht gefunden, keine Berechtigung) auf leeren String zurückfallen
         console.warn("Avatar konnte nicht geladen werden:", error);
@@ -164,7 +144,7 @@ export function BuilderMenubar({
   // Neues Board erstellen
   const handleNewBoard = React.useCallback(async () => {
     // Prüfe ob User eingeloggt ist
-    if (!user?.$id) {
+    if (!user?.id) {
       toast.error("Bitte melde dich an, um ein neues Board zu erstellen");
       return;
     }
@@ -172,7 +152,7 @@ export function BuilderMenubar({
     try {
       // Erstelle neues Board mit Standardwerten
       const newBoard = await createBoardMutation.mutateAsync({
-        userId: user.$id,
+        userId: user.id,
         boardData: {
           title: "Neues Board",
           grid_config: { columns: 4, gap: 16 },
@@ -191,7 +171,7 @@ export function BuilderMenubar({
           error instanceof Error ? error.message : "Unbekannter Fehler",
       });
     }
-  }, [user?.$id, createBoardMutation, setCurrentBoard]);
+  }, [user?.id, createBoardMutation, setCurrentBoard]);
 
   const handleOpenBoard = React.useCallback(() => {
     console.log("Board öffnen");
@@ -326,9 +306,19 @@ export function BuilderMenubar({
     console.log("Notifications");
   }, []);
 
-  const handleLogout = React.useCallback(() => {
-    console.log("Logout (Platzhalter)");
-    // TODO: Implementiere Logout mit AppWrite account.deleteSession()
+  const handleLogout = React.useCallback(async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      // Redirect zur Landingpage nach Logout
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout-Fehler:", error);
+      toast.error("Fehler beim Abmelden", {
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
+      });
+    }
   }, []);
 
   // Globale Keyboard-Shortcuts
