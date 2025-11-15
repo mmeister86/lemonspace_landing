@@ -20,32 +20,32 @@ export default function HeroSection() {
 
   return (
     <main className="overflow-hidden">
-      <section className="bg-[linear-gradient(to_bottom,#ffffff_0%,#ffffff_70%,#f9fafb_100%)]">
+      <section className="bg-background">
         <div className="relative pt-24 pb-16">
           <div className="mx-auto max-w-7xl px-6">
             <div className="max-w-5xl text-center sm:mx-auto lg:mr-auto lg:mt-0 lg:w-4/5">
-              <h1 className="mt-8 text-balance text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700">
+              <h1 className="mt-8 text-balance text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-foreground">
                 {t("title")}
                 <br />
                 {t("titleSuffix")}{" "}
                 <LayoutTextFlip
                   showText={false}
                   words={words}
-                  duration={5000}
-                  wordClassName="inline-block text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-gray-700 bg-transparent border-0 shadow-none ring-0 px-0 py-0 rounded-none overflow-visible dark:bg-transparent dark:text-gray-700 text-lemonspace"
+                  duration={6000}
+                  wordClassName="inline-block text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] bg-transparent shadow-none ring-0 border-0 px-0 py-0 rounded-none overflow-visible dark:bg-transparent dark:shadow-none dark:ring-0 text-lemonspace dark:text-lemonspace"
                 />
               </h1>
-              <p className="mx-auto mt-6 hidden max-w-2xl text-wrap text-lg sm:block text-gray-800">
+              <p className="mx-auto mt-6 hidden max-w-2xl text-wrap text-lg sm:block text-muted-foreground">
                 {t("description")}
               </p>
-              <p className="mx-auto mt-6 max-w-2xl text-wrap sm:hidden">
+              <p className="mx-auto mt-6 max-w-2xl text-wrap sm:hidden text-muted-foreground">
                 {t("descriptionMobile")}
               </p>
 
               <div className="relative z-20 mt-8">
                 <Button
                   size="lg"
-                  className="bg-black hover:bg-gray-800/90 text-white cursor-pointer"
+                  className="bg-lemonspace hover:bg-green-800/90 dark:bg-lemonspace dark:hover:bg-green-800 text-white dark:text-white cursor-pointer"
                   asChild
                 >
                   <Link href="/signup">

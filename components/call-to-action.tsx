@@ -9,19 +9,19 @@ export default function CallToAction() {
 
   return (
     <>
-      <section>
+      <section className="py-16">
         <div className="mx-auto max-w-5xl px-6">
           <div className="text-center">
             <h2 className="text-balance text-4xl font-semibold lg:text-5xl">
               {t("title")}
             </h2>
-            <p className="mt-4">
+            <p className="mt-4 text-muted-foreground">
               {t("subtitle")}
             </p>
 
             <form action="" className="mx-auto mt-10 max-w-sm lg:mt-12">
-              <div className="bg-background has-[input:focus]:ring-muted relative grid grid-cols-[1fr_auto] items-center rounded-[calc(var(--radius)+0.75rem)] border pr-3 shadow shadow-zinc-950/5 has-[input:focus]:ring-2">
-                <Mail className="text-caption pointer-events-none absolute inset-y-0 left-5 my-auto size-5" />
+              <div className="bg-background has-[input:focus]:ring-muted relative grid grid-cols-[1fr_auto] items-center rounded-[calc(var(--radius)+0.75rem)] border pr-3 shadow shadow-zinc-950/5 dark:shadow-zinc-950/50 has-[input:focus]:ring-2">
+                <Mail className="text-muted-foreground pointer-events-none absolute inset-y-0 left-5 my-auto size-5" />
 
                 <input
                   placeholder={t("emailPlaceholder")}
@@ -43,7 +43,7 @@ export default function CallToAction() {
           </div>
         </div>
       </section>
-      <section className="bg-white relative z-10 pb-16 py-16">
+      <section className="bg-background relative z-10 pb-16 py-16">
         <div className="m-auto max-w-5xl px-6">
           <h2 className="text-center text-lg font-medium">
             {t("trustedBy")}

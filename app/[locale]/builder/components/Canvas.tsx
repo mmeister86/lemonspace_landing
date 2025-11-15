@@ -3,6 +3,7 @@
 import { ViewportSize } from "@/components/viewport-switcher";
 import { DropArea } from "./DropArea";
 import { BlockDeleteButton } from "./BlockDeleteButton";
+import { BlockEditButton } from "./BlockEditor";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { cn } from "@/lib/utils";
 
@@ -92,6 +93,7 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                             }
                           }}
                         >
+                          <BlockEditButton block={block} />
                           {isSelected && (
                             <BlockDeleteButton blockId={block.id} />
                           )}

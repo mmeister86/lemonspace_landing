@@ -19,6 +19,9 @@ import { BuilderMenubar } from "./components/BuilderMenubar";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import type { Block, BlockType } from "@/lib/types/board";
 import { BlockDeleteDialog } from "./components/BlockDeleteDialog";
+import { useUser } from "@/app/lib/user-context";
+import { useBoards, useCreateBoard, useUpdateBoard } from "@/app/lib/hooks/use-boards";
+import { toast } from "sonner";
 
 const VALID_BLOCK_TYPES: BlockType[] = [
   "text",
@@ -41,6 +44,76 @@ export function BuilderClient() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const addBlock = useCanvasStore((state) => state.addBlock);
   const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
+  const currentBoard = useCanvasStore((state) => state.currentBoard);
+  const setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
+  const blocks = useCanvasStore((state) => state.blocks);
+
+  const { user } = useUser();
+  const { data: boards, isLoading: boardsLoading } = useBoards(user?.id || null);
+  const createBoardMutation = useCreateBoard();
+  const updateBoardMutation = useUpdateBoard();
+
+  // Lade oder erstelle ein Board beim Start
+  useEffect(() => {
+    async function initializeBoard() {
+      if (!user?.id || boardsLoading || currentBoard) {
+        return;
+      }
+
+      // Wenn der User Boards hat, lade das erste
+      if (boards && boards.length > 0) {
+        setCurrentBoard(boards[0]);
+        return;
+      }
+
+      // Sonst erstelle ein neues Board
+      if (boards && boards.length === 0) {
+        try {
+          const newBoard = await createBoardMutation.mutateAsync({
+            userId: user.id,
+            boardData: {
+              title: "Mein erstes Board",
+              grid_config: { columns: 4, gap: 16 },
+              blocks: [],
+            },
+          });
+          setCurrentBoard(newBoard);
+          toast.success("Neues Board erstellt");
+        } catch (error) {
+          console.error("Fehler beim Erstellen des Boards:", error);
+          toast.error("Fehler beim Erstellen des Boards");
+        }
+      }
+    }
+
+    initializeBoard();
+  }, [user?.id, boards, boardsLoading, currentBoard, setCurrentBoard, createBoardMutation]);
+
+  // Auto-Save für Block-Änderungen
+  useEffect(() => {
+    if (!currentBoard || !user?.id) return;
+
+    // Speichere Blöcke, wenn sie sich geändert haben
+    const saveBlocks = async () => {
+      try {
+        await updateBoardMutation.mutateAsync({
+          boardId: currentBoard.id,
+          boardData: {
+            ...currentBoard,
+            blocks: blocks,
+          },
+        });
+      } catch (error) {
+        console.error("Fehler beim Speichern der Blöcke:", error);
+        // Kein Toast bei Auto-Save, da es störend wäre
+      }
+    };
+
+    // Debounce, um zu viele Speicherungen zu vermeiden
+    const timeoutId = setTimeout(saveBlocks, 1000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [blocks, currentBoard, user?.id, updateBoardMutation]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;

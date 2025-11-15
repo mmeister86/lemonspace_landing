@@ -313,7 +313,6 @@ export function BuilderMenubar({
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
-      // Redirect zur Landingpage nach Logout
       router.replace("/");
     } catch (error) {
       console.error("Logout-Fehler:", error);

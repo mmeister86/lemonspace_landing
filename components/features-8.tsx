@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl'
 export default function FeaturesSection() {
     const t = useTranslations("features");
     return (
-        <section className="bg-gray-50 py-16 md:py-32 dark:bg-transparent">
+        <section className="bg-muted py-16 md:py-32">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="relative">
                     <div className="relative z-10 grid grid-cols-6 gap-3">
@@ -34,7 +34,7 @@ export default function FeaturesSection() {
                         </Card>
                         <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
                             <CardContent className="pt-6">
-                                <div className="relative mx-auto flex aspect-square size-32 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
+                                <div className="relative mx-auto flex aspect-square size-32 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-border dark:before:border-border">
                                     <svg
                                         className="m-auto h-fit w-24"
                                         viewBox="0 0 212 143"
@@ -188,22 +188,22 @@ export default function FeaturesSection() {
                         <Card className="card variant-outlined relative col-span-full overflow-hidden lg:col-span-3">
                             <CardContent className="grid pt-6 sm:grid-cols-2">
                                 <div className="relative z-10 flex flex-col justify-between space-y-12 lg:space-y-6">
-                                    <div className="relative flex aspect-square size-12 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
+                                    <div className="relative flex aspect-square size-12 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-border dark:before:border-border">
                                         <Shield
                                             className="m-auto size-5"
                                             strokeWidth={1}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <h2 className="group-hover:text-secondary-950 text-lg font-medium text-zinc-800 transition dark:text-white">{t("templates.title")}</h2>
+                                        <h2 className="group-hover:text-secondary-950 text-lg font-medium text-foreground transition">{t("templates.title")}</h2>
                                         <p className="text-foreground">{t("templates.description")}</p>
                                     </div>
                                 </div>
                                 <div className="rounded-tl-(--radius) relative -mb-6 -mr-6 mt-6 h-fit border-l border-t p-6 py-6 sm:ml-6">
                                     <div className="absolute left-3 top-2 flex gap-1">
-                                        <span className="block size-2 rounded-full border dark:border-white/10 dark:bg-white/10"></span>
-                                        <span className="block size-2 rounded-full border dark:border-white/10 dark:bg-white/10"></span>
-                                        <span className="block size-2 rounded-full border dark:border-white/10 dark:bg-white/10"></span>
+                                        <span className="block size-2 rounded-full border dark:border-border dark:bg-border"></span>
+                                        <span className="block size-2 rounded-full border dark:border-border dark:bg-border"></span>
+                                        <span className="block size-2 rounded-full border dark:border-border dark:bg-border"></span>
                                     </div>
                                     <svg
                                         className="w-full sm:w-[150%]"
@@ -249,7 +249,7 @@ export default function FeaturesSection() {
                         <Card className="card variant-outlined relative col-span-full overflow-hidden lg:col-span-3">
                             <CardContent className="grid h-full pt-6 sm:grid-cols-2">
                                 <div className="relative z-10 flex flex-col justify-between space-y-12 lg:space-y-6">
-                                    <div className="relative flex aspect-square size-12 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
+                                    <div className="relative flex aspect-square size-12 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-border dark:before:border-border">
                                         <Users
                                             className="m-auto size-6"
                                             strokeWidth={1}

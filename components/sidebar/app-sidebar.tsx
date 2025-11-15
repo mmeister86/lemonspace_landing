@@ -14,25 +14,42 @@ import {
 import { NavMain, type NavMainItem } from "@/components/sidebar/nav-main";
 import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavBlocks } from "@/components/sidebar/nav-blocks";
+import { useRecentBoards } from "@/app/lib/hooks/use-boards";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import ThemeSwitcher from "@/components/theme-switcher-03";
 
-const data: {
-  navMain: NavMainItem[];
-  navSecondary: Array<{
-    id: string;
-    title: string;
-    url: string;
-    icon: LucideIcon;
-  }>;
-} = {
-  navMain: [
+const navSecondary: Array<{
+  id: string;
+  title: string;
+  url: string;
+  icon: LucideIcon;
+}> = [
+  {
+    id: "support",
+    title: "Support",
+    url: "#",
+    icon: LifeBuoy,
+  },
+  {
+    id: "feedback",
+    title: "Feedback",
+    url: "#",
+    icon: Send,
+  },
+];
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: recentBoards } = useRecentBoards();
+
+  const navMain: NavMainItem[] = [
     {
       id: "boards",
       title: "Boards",
@@ -59,31 +76,11 @@ const data: {
           id: "boards-separator",
           type: "separator",
         },
-        {
-          id: "board-1",
-          title: "Mein erstes Board",
-          url: "#",
-        },
-        {
-          id: "board-2",
-          title: "Produktpräsentation Q4",
-          url: "#",
-        },
-        {
-          id: "board-3",
-          title: "Kundenvorstellung 2024",
-          url: "#",
-        },
-        {
-          id: "board-4",
-          title: "Marketing Kampagne",
-          url: "#",
-        },
-        {
-          id: "board-5",
-          title: "Demo Board",
-          url: "#",
-        },
+        ...(recentBoards?.map((board) => ({
+          id: board.id,
+          title: board.title,
+          url: `/builder/${board.slug}`,
+        })) || []),
       ],
     },
     {
@@ -127,24 +124,8 @@ const data: {
         },
       ],
     },
-  ],
-  navSecondary: [
-    {
-      id: "support",
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      id: "feedback",
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-};
+  ];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -165,10 +146,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
         <NavBlocks />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
+      <SidebarFooter>
+        <div className="flex items-center justify-between px-2 py-2">
+          <span className="text-xs text-muted-foreground">Theme</span>
+          <ThemeSwitcher />
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }

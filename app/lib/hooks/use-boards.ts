@@ -1,30 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  createBoard,
-  getBoard,
-  updateBoard,
-  deleteBoard,
-  listBoards,
-  getBoardByUsernameAndSlug,
-} from "../services/board-service";
+import { listBoards, createBoard, updateBoard, deleteBoard } from "../services/board-service";
+import { useUser } from "../user-context";
 import type { Board } from "@/lib/types/board";
+import { toast } from "sonner";
 
 /**
- * Lädt ein einzelnes Board
- */
-export function useBoard(boardId: string | null) {
-  return useQuery({
-    queryKey: ["board", boardId],
-    queryFn: () => getBoard(boardId!),
-    enabled: !!boardId,
-  });
-}
-
-/**
- * Lädt alle Boards eines Users
+ * Hook to fetch all boards for the current user.
  */
 export function useBoards(userId: string | null) {
-  return useQuery({
+  return useQuery<Board[], Error>({
     queryKey: ["boards", userId],
     queryFn: () => listBoards(userId!),
     enabled: !!userId,
@@ -32,174 +16,124 @@ export function useBoards(userId: string | null) {
 }
 
 /**
- * Mutation für Board-Erstellung
+ * Hook to fetch the 5 most recently updated boards for the current user.
+ */
+export function useRecentBoards() {
+  const { user } = useUser();
+
+  return useQuery<Board[], Error>({
+    queryKey: ["recent-boards", user?.id],
+    queryFn: async () => {
+      if (!user?.id) {
+        return [];
+      }
+      const allBoards = await listBoards(user.id);
+      // Sort by updated_at in descending order and take the top 5
+      return allBoards
+        .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+        .slice(0, 5);
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+/**
+ * Hook to create a new board.
  */
 export function useCreateBoard() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      userId,
-      boardData,
-    }: {
-      userId: string;
-      boardData: Partial<Board>;
-    }) => createBoard(userId, boardData),
-    onSuccess: (data) => {
-      // Invalidate boards list
-      queryClient.invalidateQueries({ queryKey: ["boards", data.user_id] });
-      // Set new board in cache
-      queryClient.setQueryData(["board", data.id], data);
+  return useMutation<Board, Error, { userId: string; boardData: Partial<Board> }>({
+    mutationFn: ({ userId, boardData }) => createBoard(userId, boardData),
+    onSuccess: (newBoard) => {
+      // Invalidate and refetch boards
+      queryClient.invalidateQueries({ queryKey: ["boards"] });
+      queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
+      toast.success(`Board "${newBoard.title}" erstellt`);
+    },
+    onError: (error) => {
+      console.error("Fehler beim Erstellen des Boards:", error);
+      toast.error("Fehler beim Erstellen des Boards");
     },
   });
 }
 
 /**
- * Mutation für Board-Update
+ * Hook to update an existing board.
  */
 export function useUpdateBoard() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      boardId,
-      boardData,
-    }: {
-      boardId: string;
-      boardData: Partial<Board>;
-    }) => updateBoard(boardId, boardData),
-    onSuccess: (data) => {
-      // Update board in cache
-      queryClient.setQueryData(["board", data.id], data);
-      // Invalidate boards list
-      queryClient.invalidateQueries({ queryKey: ["boards", data.user_id] });
-      // Get username from user cache and invalidate username/slug cache
-      const user = queryClient.getQueryData<{ username: string }>([
-        "user",
-        "appwrite",
-        data.user_id,
-      ]);
-      if (user?.username) {
-        queryClient.invalidateQueries({
-          queryKey: ["board", "username", user.username, "slug", data.slug],
-        });
-      }
+  return useMutation<Board, Error, { boardId: string; boardData: Partial<Board> }>({
+    mutationFn: ({ boardId, boardData }) => updateBoard(boardId, boardData),
+    onSuccess: (updatedBoard) => {
+      // Update the board in the cache
+      queryClient.setQueryData(["boards", updatedBoard.user_id], (oldBoards: Board[] | undefined) =>
+        oldBoards?.map((board) => (board.id === updatedBoard.id ? updatedBoard : board))
+      );
+      // Invalidate recent boards as it might affect the order
+      queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
+      toast.success(`Board "${updatedBoard.title}" gespeichert`);
+    },
+    onError: (error) => {
+      console.error("Fehler beim Aktualisieren des Boards:", error);
+      toast.error("Fehler beim Speichern des Boards");
     },
   });
 }
 
 /**
- * Mutation für Board-Löschung
- */
-export function useDeleteBoard() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ boardId }: { boardId: string; userId: string }) =>
-      deleteBoard(boardId),
-    onSuccess: (_, variables) => {
-      const { boardId, userId } = variables;
-      // Remove board from cache
-      queryClient.removeQueries({ queryKey: ["board", boardId] });
-      // Invalidate boards list for specific user
-      queryClient.invalidateQueries({ queryKey: ["boards", userId] });
-    },
-  });
-}
-
-/**
- * Lädt ein Board anhand von Username und Slug
- */
-export function useBoardByUsernameAndSlug(
-  username: string | null,
-  slug: string | null
-) {
-  return useQuery({
-    queryKey: ["board", "username", username, "slug", slug],
-    queryFn: () => getBoardByUsernameAndSlug(username!, slug!),
-    enabled: !!username && !!slug,
-  });
-}
-
-/**
- * Mutation für Board-Titel-Update
- */
-export function useUpdateBoardTitle() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ boardId, title }: { boardId: string; title: string }) =>
-      updateBoard(boardId, { title }),
-    onSuccess: (data) => {
-      // Update board in cache
-      queryClient.setQueryData(["board", data.id], data);
-      // Invalidate boards list
-      queryClient.invalidateQueries({ queryKey: ["boards", data.user_id] });
-      // Get username from user cache and invalidate username/slug cache
-      const user = queryClient.getQueryData<{ username: string }>([
-        "user",
-        "appwrite",
-        data.user_id,
-      ]);
-      if (user?.username) {
-        queryClient.invalidateQueries({
-          queryKey: ["board", "username", user.username, "slug", data.slug],
-        });
-      }
-    },
-  });
-}
-
-/**
- * Mutation für Board-Slug-Update
+ * Hook to update a board's slug.
  */
 export function useUpdateBoardSlug() {
   const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ boardId, slug }: { boardId: string; slug: string }) =>
-      updateBoard(boardId, { slug }),
-    onMutate: async (variables) => {
-      // Capture old board from cache before mutation to get previous slug
-      const oldBoard = queryClient.getQueryData<Board>([
-        "board",
-        variables.boardId,
-      ]);
-      return { previousSlug: oldBoard?.slug };
+  const updateBoard = useUpdateBoard();
+  return useMutation<Board, Error, { boardId: string; slug: string }>({
+    mutationFn: ({ boardId, slug }) => updateBoard.mutateAsync({ boardId, boardData: { slug } }),
+    onSuccess: () => {
+      // Invalidate recent boards as it might affect the order
+      queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
     },
-    onSuccess: (data, variables, context) => {
-      const previousSlug = context?.previousSlug;
+  });
+}
 
-      // Update board in cache
-      queryClient.setQueryData(["board", data.id], data);
-      // Invalidate boards list
-      queryClient.invalidateQueries({ queryKey: ["boards", data.user_id] });
+/**
+ * Hook to update a board's title.
+ */
+export function useUpdateBoardTitle() {
+  const queryClient = useQueryClient();
+  const updateBoard = useUpdateBoard();
+  return useMutation<Board, Error, { boardId: string; title: string }>({
+    mutationFn: ({ boardId, title }) => updateBoard.mutateAsync({ boardId, boardData: { title } }),
+    onSuccess: () => {
+      // Invalidate recent boards as it might affect the order
+      queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
+    },
+  });
+}
 
-      // Get username from user cache
-      const user = queryClient.getQueryData<{ username: string }>([
-        "user",
-        "appwrite",
-        data.user_id,
-      ]);
+/**
+ * Hook to delete a board.
+ */
+export function useDeleteBoard() {
+  const queryClient = useQueryClient();
+  const { user } = useUser();
 
-      if (user?.username) {
-        // Invalidate new slug cache
-        queryClient.invalidateQueries({
-          queryKey: ["board", "username", user.username, "slug", data.slug],
-        });
-        // Invalidate old slug cache if previous slug exists and differs from new slug
-        if (previousSlug && previousSlug !== data.slug) {
-          queryClient.invalidateQueries({
-            queryKey: [
-              "board",
-              "username",
-              user.username,
-              "slug",
-              previousSlug,
-            ],
-          });
-        }
-      }
+  return useMutation<void, Error, string>({
+    mutationFn: (boardId) => deleteBoard(boardId),
+    onSuccess: (_, boardId) => {
+      // Remove the board from the cache
+      queryClient.setQueryData(["boards", user?.id], (oldBoards: Board[] | undefined) =>
+        oldBoards?.filter((board) => board.id !== boardId)
+      );
+      // Invalidate recent boards
+      queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
+      toast.success("Board gelöscht");
+    },
+    onError: (error) => {
+      console.error("Fehler beim Löschen des Boards:", error);
+      toast.error("Fehler beim Löschen des Boards");
     },
   });
 }
