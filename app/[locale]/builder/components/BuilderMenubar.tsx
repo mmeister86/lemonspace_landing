@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   File,
   FolderOpen,
@@ -76,6 +77,7 @@ export function BuilderMenubar({
   zoomLevel,
   onZoomChange,
 }: BuilderMenubarProps) {
+  const router = useRouter();
   const { user } = useUser();
   const currentBoard = useCanvasStore((state) => state.currentBoard);
   const setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
@@ -312,14 +314,14 @@ export function BuilderMenubar({
       if (error) throw error;
 
       // Redirect zur Landingpage nach Logout
-      window.location.href = "/";
+      router.replace("/");
     } catch (error) {
       console.error("Logout-Fehler:", error);
       toast.error("Fehler beim Abmelden", {
         description: error instanceof Error ? error.message : "Unbekannter Fehler",
       });
     }
-  }, []);
+  }, [router]);
 
   // Globale Keyboard-Shortcuts
   React.useEffect(() => {
