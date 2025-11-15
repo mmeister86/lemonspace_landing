@@ -188,12 +188,12 @@ export default function Navbar() {
                       </DropdownMenu>
                     ) : (
                       <>
-                        <Button asChild variant="outline" size="sm">
+                        <Button asChild variant="outline" size="sm" className="h-9">
                           <Link href="/signin">
                             <span>{t("login")}</span>
                           </Link>
                         </Button>
-                        <Button asChild size="sm">
+                        <Button asChild size="sm" className="h-9">
                           <Link href="/signup">
                             <span>{t("signup")}</span>
                           </Link>
