@@ -93,6 +93,52 @@ export async function checkUsernameExists(
 }
 
 /**
+ * Generiert einen eindeutigen, validen Username mit alphabetischem Präfix
+ * - Beginnt immer mit einem Kleinbuchstaben (a-z)
+ * - Gefolgt von alphanumerischem Suffix
+ * - Prüft Einzigartigkeit in der Datenbank
+ * - Retry mit begrenzter Anzahl an Versuchen
+ */
+export async function generateUniqueAlphabeticUsername(
+  maxRetries: number = 10
+): Promise<string> {
+  const letters = "abcdefghijklmnopqrstuvwxyz";
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    // Wähle zufälligen Buchstaben als Präfix
+    const letterPrefix = letters[Math.floor(Math.random() * letters.length)];
+
+    // Generiere alphanumerischen Suffix (7 Zeichen für insgesamt 8 Zeichen Username)
+    const randomSuffix = Math.random().toString(36).substring(2, 9);
+
+    // Kombiniere zu Username
+    const username = `${letterPrefix}${randomSuffix}`;
+
+    // Validiere das Format (sollte immer gültig sein, aber sicherheitshalber prüfen)
+    if (!validateUsername(username)) {
+      console.warn(
+        `[UserService] Generated invalid username format: ${username}, retrying...`
+      );
+      continue;
+    }
+
+    // Prüfe Einzigartigkeit
+    const exists = await checkUsernameExists(username);
+    if (!exists) {
+      return username;
+    }
+
+    console.warn(
+      `[UserService] Generated username ${username} already exists, attempt ${attempt + 1}/${maxRetries}`
+    );
+  }
+
+  throw new Error(
+    `Fehler beim Generieren eines eindeutigen Usernames nach ${maxRetries} Versuchen`
+  );
+}
+
+/**
  * Erstellt einen eindeutigen Username
  * Falls der Username bereits existiert, wird ein Suffix hinzugefügt
  */
@@ -101,9 +147,18 @@ export async function generateUniqueUsername(
 ): Promise<string> {
   let username = baseUsername;
   let counter = 1;
-  const MAX_ATTEMPTS = 100;
+  const MAX_ATTEMPTS = 20; // Reduced from 100 to prevent long waits
+  const startTime = Date.now();
+  const TIMEOUT = 5000; // 5 second timeout
 
   while (counter <= MAX_ATTEMPTS && (await checkUsernameExists(username))) {
+    // Check timeout
+    if (Date.now() - startTime > TIMEOUT) {
+      console.warn("[UserService] Username generation timeout, using random fallback");
+      // Generate random username as fallback using validated helper
+      return generateUniqueAlphabeticUsername();
+    }
+
     const suffix = `_${counter}`;
     const maxLength = 30 - suffix.length;
     username = baseUsername.slice(0, maxLength) + suffix;
@@ -111,9 +166,9 @@ export async function generateUniqueUsername(
   }
 
   if (counter > MAX_ATTEMPTS) {
-    throw new Error(
-      "Unable to generate unique username after maximum attempts"
-    );
+    console.warn("[UserService] Max attempts reached, using random fallback");
+    // Generate random username as fallback using validated helper
+    return generateUniqueAlphabeticUsername();
   }
 
   return username;

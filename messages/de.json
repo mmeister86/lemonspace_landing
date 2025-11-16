@@ -175,7 +175,17 @@
   "authGuard": {
     "notLoggedIn": "Nicht eingeloggt",
     "pleaseSignIn": "Bitte melde dich an, um fortzufahren.",
-    "backToHomepage": "Zurück zur Homepage"
+    "backToHomepage": "Zurück zur Homepage",
+    "loading": "Lade...",
+    "loadingSubtext": "Dies sollte nur einen Moment dauern",
+    "loadingError": {
+      "title": "Ladeproblem",
+      "messageFallback": "Ein unerwarteter Fehler ist aufgetreten",
+      "reloadButton": "Seite neu laden",
+      "homeButton": "Zur Startseite"
+    },
+    "warning": "Warnung",
+    "errorOccurred": "Ein Fehler ist aufgetreten"
   },
   "dropArea": {
     "dropHere": "Hier ablegen",
@@ -217,8 +227,24 @@
     },
     "success": "Board erfolgreich erstellt"
   },
+  "api": {
+    "newBoard": {
+      "error": {
+        "notAuthenticated": "Nicht authentifiziert",
+        "invalidData": "Ungültige Eingabedaten",
+        "invalidSlugFormat": "Ungültiger Slug-Format",
+        "slugOrTitleRequired": "Slug oder Titel muss angegeben werden",
+        "createFailed": "Fehler beim Erstellen des Boards",
+        "internalServerError": "Interner Serverfehler",
+        "noValidSession": "Keine gültige Session gefunden"
+      }
+    }
+  },
   "common": {
     "cancel": "Abbrechen",
     "delete": "Löschen"
+  },
+  "board": {
+    "created": "Board \"{title}\" erstellt"
   }
 }

@@ -19,14 +19,10 @@ import { Label } from "@/components/ui/label";
 import { useCreateBoard } from "@/app/lib/hooks/use-boards";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { useUser } from "@/app/lib/user-context";
-import {
-  validateSlug,
-  generateSlug,
-  checkSlugExistsForUser,
-} from "@/app/lib/services/board-service";
+import { generateSlug } from "@/app/lib/services/board-service";
 import { toast } from "sonner";
 
-// Zod Schema für Validierung
+// Zod Schema für Validierung (nur Titel ist Pflicht, Slug ist optional)
 const createBoardSchema = z.object({
   title: z
     .string()
@@ -36,7 +32,8 @@ const createBoardSchema = z.object({
     .string()
     .min(3, "validation.slugMinLength")
     .max(50, "validation.slugMaxLength")
-    .regex(/^[a-z0-9-]+$/, "validation.slugFormat"),
+    .regex(/^[a-z0-9-]+$/, "validation.slugFormat")
+    .optional(),
 });
 
 type CreateBoardFormData = z.infer<typeof createBoardSchema>;
@@ -55,9 +52,6 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
 
   // State für Slug-Management
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = React.useState(false);
-  const [debouncedSlug, setDebouncedSlug] = React.useState("");
-  const [isCheckingSlug, setIsCheckingSlug] = React.useState(false);
-  const [slugExistsError, setSlugExistsError] = React.useState<string | null>(null);
 
   const form = useForm<CreateBoardFormData>({
     resolver: zodResolver(createBoardSchema),
@@ -91,97 +85,16 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
         shouldValidate: true,
         shouldDirty: true
       });
-      // Clear any existing slug error when auto-generating
-      setSlugExistsError(null);
     }
   }, [titleValue, isSlugManuallyEdited, form]);
-
-  // Debounce für Slug-Änderungen
-  React.useEffect(() => {
-    if (!slugValue) {
-      setDebouncedSlug("");
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      setDebouncedSlug(slugValue);
-    }, 400); // 400ms Debounce
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [slugValue]);
 
   // Reset state wenn Dialog geschlossen wird
   React.useEffect(() => {
     if (!open) {
       form.reset();
       setIsSlugManuallyEdited(false);
-      setSlugExistsError(null);
-      setDebouncedSlug("");
-      setIsCheckingSlug(false);
     }
   }, [open, form]);
-
-  // Echtzeit-Validierung und Eindeutigkeitsprüfung für Slug
-  React.useEffect(() => {
-    if (!debouncedSlug) {
-      setIsCheckingSlug(false);
-      setSlugExistsError(null);
-      return;
-    }
-
-    // Format-Validierung vor der API-Prüfung
-    if (!validateSlug(debouncedSlug)) {
-      setSlugExistsError(t("validation.slugFormat"));
-      setIsCheckingSlug(false);
-      return;
-    }
-
-    // Prüfe ob der Slug gültig ist
-    if (debouncedSlug.length < 3 || debouncedSlug.length > 50) {
-      setIsCheckingSlug(false);
-      return;
-    }
-
-    let isCurrentRequest = true;
-
-    const checkSlugUniqueness = async () => {
-      setIsCheckingSlug(true);
-      setSlugExistsError(null);
-
-      try {
-        if (user?.id) {
-          const exists = await checkSlugExistsForUser(user.id, debouncedSlug);
-
-          if (!isCurrentRequest) {
-            return;
-          }
-
-          if (exists) {
-            setSlugExistsError(t("validation.slugExists"));
-          }
-        }
-      } catch (error) {
-        if (!isCurrentRequest) {
-          return;
-        }
-
-        console.error("Fehler bei Slug-Prüfung:", error);
-        setSlugExistsError(t("validation.slugFormat"));
-      } finally {
-        if (isCurrentRequest) {
-          setIsCheckingSlug(false);
-        }
-      }
-    };
-
-    checkSlugUniqueness();
-
-    return () => {
-      isCurrentRequest = false;
-    };
-  }, [debouncedSlug, user?.id, t]);
 
   // Handler für manuelle Slug-Bearbeitung
   const handleSlugChange = (value: string) => {
@@ -190,7 +103,6 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
       shouldValidate: true,
       shouldDirty: true
     });
-    setSlugExistsError(null);
   };
 
   // Handler für Auto-Generierung aus Titel
@@ -202,7 +114,6 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
         shouldValidate: true,
         shouldDirty: true
       });
-      setSlugExistsError(null);
     }
   };
 
@@ -213,28 +124,12 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
       return;
     }
 
-    // Finale Eindeutigkeitsprüfung
-    try {
-      const exists = await checkSlugExistsForUser(user.id, data.slug);
-      if (exists) {
-        setSlugExistsError(t("validation.slugExists"));
-        return;
-      }
-    } catch (error) {
-      console.error("Fehler bei finaler Slug-Prüfung:", error);
-      toast.error(t("error.createFailed"));
-      return;
-    }
-
     try {
       const newBoard = await createBoardMutation.mutateAsync({
-        userId: user.id,
-        boardData: {
-          title: data.title,
-          slug: data.slug,
-          grid_config: { columns: 4, gap: 16 },
-          blocks: [],
-        },
+        title: data.title,
+        slug: data.slug, // Optional - API generiert wenn nicht vorhanden
+        grid_config: { columns: 4, gap: 16 },
+        blocks: [],
       });
 
       setCurrentBoard(newBoard);
@@ -242,17 +137,14 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
       toast.success(t("success"));
     } catch (error) {
       console.error("Fehler beim Erstellen des Boards:", error);
-      toast.error(t("error.createFailed"));
+      // Die Fehlermeldung wird bereits im Hook angezeigt
     }
   };
 
   // Button Disable Logic
   const isSubmitDisabled =
     !titleValue || // Titel ist leer
-    !slugValue || // Slug ist leer
-    !form.formState.isValid || // Form-Validierung fehlgeschlagen (real-time mit onChange)
-    isCheckingSlug || // Noch am Prüfen
-    !!slugExistsError || // Slug bereits vergeben
+    !form.formState.isValid || // Form-Validierung fehlgeschlagen
     createBoardMutation.isPending; // API Request läuft
 
   return (
@@ -306,28 +198,14 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
                 onChange: (e) => handleSlugChange(e.target.value),
               })}
               placeholder={t("slugPlaceholder")}
-              aria-invalid={!!form.formState.errors.slug || !!slugExistsError}
+              aria-invalid={!!form.formState.errors.slug}
               aria-describedby={
-                form.formState.errors.slug
-                  ? "slug-error"
-                  : slugExistsError
-                    ? "slug-exists-error"
-                    : undefined
+                form.formState.errors.slug ? "slug-error" : undefined
               }
             />
             {form.formState.errors.slug && (
               <p id="slug-error" className="text-sm text-destructive">
                 {form.formState.errors.slug.message ? t(form.formState.errors.slug.message) : ""}
-              </p>
-            )}
-            {slugExistsError && (
-              <p id="slug-exists-error" className="text-sm text-destructive">
-                {slugExistsError}
-              </p>
-            )}
-            {isCheckingSlug && (
-              <p className="text-sm text-muted-foreground">
-                {t("validation.checkingSlug")}
               </p>
             )}
           </div>

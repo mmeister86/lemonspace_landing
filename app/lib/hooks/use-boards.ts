@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listBoards, createBoard, updateBoard, deleteBoard } from "../services/board-service";
+import { listBoards, updateBoard, deleteBoard } from "../services/board-service";
+import { createBoardViaAPI, type CreateBoardAPIRequest } from "../services/api-board-service";
 import { useUser } from "../user-context";
 import type { Board } from "@/lib/types/board";
 import { toast } from "sonner";
@@ -39,22 +40,22 @@ export function useRecentBoards() {
 }
 
 /**
- * Hook to create a new board.
+ * Hook to create a new board via API.
  */
 export function useCreateBoard() {
   const queryClient = useQueryClient();
 
-  return useMutation<Board, Error, { userId: string; boardData: Partial<Board> }>({
-    mutationFn: ({ userId, boardData }) => createBoard(userId, boardData),
+  return useMutation<Board, Error, CreateBoardAPIRequest>({
+    mutationFn: (data) => createBoardViaAPI(data),
     onSuccess: (newBoard) => {
       // Invalidate and refetch boards
       queryClient.invalidateQueries({ queryKey: ["boards"] });
       queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
-      toast.success(`Board "${newBoard.title}" erstellt`);
+      toast.success(`Board "${newBoard.title}" created`);
     },
     onError: (error) => {
-      console.error("Fehler beim Erstellen des Boards:", error);
-      toast.error("Fehler beim Erstellen des Boards");
+      console.error("Error creating board:", error);
+      toast.error(error.message || "Failed to create board");
     },
   });
 }

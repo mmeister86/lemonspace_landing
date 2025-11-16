@@ -55,20 +55,46 @@ export function BuilderClient() {
 
   // Lade oder erstelle ein Board beim Start
   useEffect(() => {
+    let isMounted = true;
+
     async function initializeBoard() {
-      if (!user?.id || boardsLoading || currentBoard) {
+      // Early return conditions with proper state checking
+      if (!user?.id) {
+        console.log("[Builder] No user ID available");
         return;
       }
 
+      if (boardsLoading) {
+        console.log("[Builder] Boards still loading");
+        return;
+      }
+
+      if (currentBoard) {
+        console.log("[Builder] Board already set:", currentBoard.id);
+        return;
+      }
+
+      // Wait for boards to be fully loaded
+      if (!boards) {
+        console.log("[Builder] Boards data not available yet");
+        return;
+      }
+
+      console.log("[Builder] Initializing board with boards:", boards.length);
+
       // Wenn der User Boards hat, lade das erste
-      if (boards && boards.length > 0) {
-        setCurrentBoard(boards[0]);
+      if (boards.length > 0) {
+        if (isMounted) {
+          console.log("[Builder] Setting existing board:", boards[0].id);
+          setCurrentBoard(boards[0]);
+        }
         return;
       }
 
       // Sonst erstelle ein neues Board
-      if (boards && boards.length === 0) {
+      if (boards.length === 0) {
         try {
+          console.log("[Builder] Creating new board for user:", user.id);
           const newBoard = await createBoardMutation.mutateAsync({
             userId: user.id,
             boardData: {
@@ -77,17 +103,27 @@ export function BuilderClient() {
               blocks: [],
             },
           });
-          setCurrentBoard(newBoard);
-          toast.success("Neues Board erstellt");
+
+          if (isMounted) {
+            console.log("[Builder] New board created:", newBoard.id);
+            setCurrentBoard(newBoard);
+            toast.success("Neues Board erstellt");
+          }
         } catch (error) {
           console.error("Fehler beim Erstellen des Boards:", error);
-          toast.error("Fehler beim Erstellen des Boards");
+          if (isMounted) {
+            toast.error("Fehler beim Erstellen des Boards");
+          }
         }
       }
     }
 
     initializeBoard();
-  }, [user?.id, boards, boardsLoading, currentBoard, setCurrentBoard, createBoardMutation]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id, boards, boardsLoading, currentBoard, setCurrentBoard, createBoardMutation.mutateAsync]);
 
   // Auto-Save für Block-Änderungen
   useEffect(() => {
@@ -111,7 +147,7 @@ export function BuilderClient() {
 
     // Debounce, um zu viele Speicherungen zu vermeiden
     const timeoutId = setTimeout(saveBlocks, 1000);
-    
+
     return () => clearTimeout(timeoutId);
   }, [blocks, currentBoard, user?.id, updateBoardMutation]);
 
