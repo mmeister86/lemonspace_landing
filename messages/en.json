@@ -189,6 +189,34 @@
       "description": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
     }
   },
+  "createBoard": {
+    "title": "Create New Board",
+    "description": "Enter a title and slug for your new board.",
+    "titleLabel": "Title",
+    "titlePlaceholder": "e.g. Project Planning Q4",
+    "slugLabel": "Slug",
+    "slugPlaceholder": "e.g. project-planning-q4",
+    "generateFromTitle": "Generate from title",
+    "cancel": "Cancel",
+    "create": "Create Board",
+    "creating": "Creating...",
+    "validation": {
+      "titleRequired": "Title is required",
+      "titleMinLength": "Title must be at least 3 characters long",
+      "titleMaxLength": "Title must be at most 100 characters long",
+      "slugRequired": "Slug is required",
+      "slugMinLength": "Slug must be at least 3 characters long",
+      "slugMaxLength": "Slug must be at most 50 characters long",
+      "slugFormat": "Slug can only contain lowercase letters, numbers and hyphens",
+      "slugExists": "This slug is already taken",
+      "checkingSlug": "Checking availability..."
+    },
+    "error": {
+      "notLoggedIn": "Please sign in to create a board",
+      "createFailed": "Failed to create board"
+    },
+    "success": "Board created successfully"
+  },
   "common": {
     "cancel": "Cancel",
     "delete": "Delete"

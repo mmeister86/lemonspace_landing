@@ -189,6 +189,34 @@
       "description": "Sind Sie sicher, dass Sie \"{name}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
     }
   },
+  "createBoard": {
+    "title": "Neues Board erstellen",
+    "description": "Geben Sie einen Titel und einen Slug für Ihr neues Board ein.",
+    "titleLabel": "Titel",
+    "titlePlaceholder": "z.B. Projektplanung Q4",
+    "slugLabel": "Slug",
+    "slugPlaceholder": "z.B. projektplanung-q4",
+    "generateFromTitle": "Aus Titel generieren",
+    "cancel": "Abbrechen",
+    "create": "Board erstellen",
+    "creating": "Wird erstellt...",
+    "validation": {
+      "titleRequired": "Titel ist erforderlich",
+      "titleMinLength": "Titel muss mindestens 3 Zeichen lang sein",
+      "titleMaxLength": "Titel darf maximal 100 Zeichen lang sein",
+      "slugRequired": "Slug ist erforderlich",
+      "slugMinLength": "Slug muss mindestens 3 Zeichen lang sein",
+      "slugMaxLength": "Slug darf maximal 50 Zeichen lang sein",
+      "slugFormat": "Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten",
+      "slugExists": "Dieser Slug ist bereits vergeben",
+      "checkingSlug": "Prüfe Verfügbarkeit..."
+    },
+    "error": {
+      "notLoggedIn": "Bitte melde dich an, um ein Board zu erstellen",
+      "createFailed": "Fehler beim Erstellen des Boards"
+    },
+    "success": "Board erfolgreich erstellt"
+  },
   "common": {
     "cancel": "Abbrechen",
     "delete": "Löschen"

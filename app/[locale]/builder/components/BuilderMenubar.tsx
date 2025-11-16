@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   File,
   FolderOpen,
@@ -46,6 +47,7 @@ import { useUser } from "@/app/lib/user-context";
 import { supabase } from "@/lib/supabase";
 import { BoardTitleDialog } from "./BoardTitleDialog";
 import { BoardSlugDialog } from "./BoardSlugDialog";
+import { CreateBoardDialog } from "./CreateBoardDialog";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { useCreateBoard } from "@/app/lib/hooks/use-boards";
 import { toast } from "sonner";
@@ -63,6 +65,7 @@ export function BuilderMenubar({
 }: BuilderMenubarProps) {
   const router = useRouter();
   const { user } = useUser();
+  const t = useTranslations('createBoard');
   const currentBoard = useCanvasStore((state) => state.currentBoard);
   const setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
   const createBoardMutation = useCreateBoard();
@@ -70,38 +73,19 @@ export function BuilderMenubar({
   const [showGrid, setShowGrid] = React.useState(true);
   const [titleDialogOpen, setTitleDialogOpen] = React.useState(false);
   const [slugDialogOpen, setSlugDialogOpen] = React.useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
 
   // Neues Board erstellen
-  const handleNewBoard = React.useCallback(async () => {
+  const handleNewBoard = React.useCallback(() => {
     // Prüfe ob User eingeloggt ist
     if (!user?.id) {
-      toast.error("Bitte melde dich an, um ein neues Board zu erstellen");
+      toast.error(t('error.notLoggedIn'));
       return;
     }
 
-    try {
-      // Erstelle neues Board mit Standardwerten
-      const newBoard = await createBoardMutation.mutateAsync({
-        userId: user.id,
-        boardData: {
-          title: "Neues Board",
-          grid_config: { columns: 4, gap: 16 },
-          blocks: [],
-        },
-      });
-
-      // Setze neues Board im Canvas-Store
-      setCurrentBoard(newBoard);
-
-      toast.success("Neues Board erfolgreich erstellt");
-    } catch (error) {
-      console.error("Fehler beim Erstellen des Boards:", error);
-      toast.error("Fehler beim Erstellen des Boards", {
-        description:
-          error instanceof Error ? error.message : "Unbekannter Fehler",
-      });
-    }
-  }, [user?.id, createBoardMutation, setCurrentBoard]);
+    // Öffne den CreateBoardDialog
+    setCreateDialogOpen(true);
+  }, [user?.id, t]);
 
   const handleOpenBoard = React.useCallback(() => {
     console.log("Board öffnen");
@@ -541,6 +525,10 @@ export function BuilderMenubar({
 
 
       {/* Dialoge */}
+      <CreateBoardDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
       <BoardTitleDialog
         open={titleDialogOpen}
         onOpenChange={setTitleDialogOpen}
