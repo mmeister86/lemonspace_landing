@@ -246,5 +246,33 @@
   },
   "board": {
     "created": "Board \"{title}\" erstellt"
+  },
+  "boardBuilder": {
+    "error": {
+      "unauthorized": {
+        "title": "Nicht authentifiziert",
+        "description": "Bitte melde dich an, um dieses Board zu bearbeiten.",
+        "button": "Zur Anmeldung"
+      },
+      "forbidden": {
+        "title": "Keine Berechtigung",
+        "description": "Du hast keine Berechtigung, dieses Board zu bearbeiten.",
+        "button": "Zurück zum Builder"
+      },
+      "notFound": {
+        "title": "Board nicht gefunden",
+        "description": "Das angeforderte Board existiert nicht oder wurde gelöscht.",
+        "button": "Neues Board erstellen"
+      },
+      "generic": {
+        "title": "Fehler beim Laden",
+        "descriptionFallback": "Ein unerwarteter Fehler ist aufgetreten.",
+        "button": "Erneut versuchen"
+      }
+    },
+    "readOnly": {
+      "title": "Nur Lesezugriff",
+      "description": "Du kannst dieses Board ansehen, aber nicht bearbeiten."
+    }
   }
 }

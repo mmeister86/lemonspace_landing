@@ -96,12 +96,9 @@ export function BuilderClient() {
         try {
           console.log("[Builder] Creating new board for user:", user.id);
           const newBoard = await createBoardMutation.mutateAsync({
-            userId: user.id,
-            boardData: {
-              title: "Mein erstes Board",
-              grid_config: { columns: 4, gap: 16 },
-              blocks: [],
-            },
+            title: "Mein erstes Board",
+            grid_config: { columns: 4, gap: 16 },
+            blocks: [],
           });
 
           if (isMounted) {
