@@ -14,6 +14,7 @@ import {
 import { NavMain, type NavMainItem } from "@/components/sidebar/nav-main";
 import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavBlocks } from "@/components/sidebar/nav-blocks";
+import { NavUser } from "@/components/sidebar/nav-user";
 import { useRecentBoards } from "@/app/lib/hooks/use-boards";
 import {
   Sidebar,
@@ -43,6 +44,12 @@ const navSecondary: Array<{
     title: "Feedback",
     url: "#",
     icon: Send,
+  },
+  {
+    id: "theme",
+    title: "Theme",
+    url: "#",
+    icon: Sparkles,
   },
 ];
 
@@ -151,10 +158,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center justify-between px-2 py-2">
-          <span className="text-xs text-muted-foreground">Theme</span>
-          <ThemeSwitcher />
-        </div>
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );
