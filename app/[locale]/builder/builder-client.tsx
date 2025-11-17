@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import AuthGuard from "./components/AuthGuard";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
@@ -38,6 +39,8 @@ const VALID_BLOCK_TYPES: BlockType[] = [
 ] as const;
 
 export function BuilderClient() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [currentViewport, setCurrentViewport] =
     useState<ViewportSize>("desktop");
   const [zoomLevel, setZoomLevel] = useState(100);
@@ -52,6 +55,20 @@ export function BuilderClient() {
   const { data: boards, isLoading: boardsLoading } = useBoards(user?.id || null);
   const createBoardMutation = useCreateBoard();
   const updateBoardMutation = useUpdateBoard();
+
+  // Refs to avoid stale closures and infinite loops
+  const createBoardMutationRef = useRef(createBoardMutation);
+  const updateBoardMutationRef = useRef(updateBoardMutation);
+  const lastSavedBlocksRef = useRef<string>("");
+
+  // Keep refs up to date
+  useEffect(() => {
+    createBoardMutationRef.current = createBoardMutation;
+  }, [createBoardMutation]);
+
+  useEffect(() => {
+    updateBoardMutationRef.current = updateBoardMutation;
+  }, [updateBoardMutation]);
 
   // Lade oder erstelle ein Board beim Start
   useEffect(() => {
@@ -87,6 +104,9 @@ export function BuilderClient() {
         if (isMounted) {
           console.log("[Builder] Setting existing board:", boards[0].id);
           setCurrentBoard(boards[0]);
+          if (boards[0].slug && !pathname.startsWith('/builder/')) {
+            router.replace(`/builder/${boards[0].slug}`);
+          }
         }
         return;
       }
@@ -95,7 +115,7 @@ export function BuilderClient() {
       if (boards.length === 0) {
         try {
           console.log("[Builder] Creating new board for user:", user.id);
-          const newBoard = await createBoardMutation.mutateAsync({
+          const newBoard = await createBoardMutationRef.current.mutateAsync({
             title: "Mein erstes Board",
             grid_config: { columns: 4, gap: 16 },
             blocks: [],
@@ -105,6 +125,9 @@ export function BuilderClient() {
             console.log("[Builder] New board created:", newBoard.id);
             setCurrentBoard(newBoard);
             toast.success("Neues Board erstellt");
+            if (newBoard.slug) {
+              router.replace(`/builder/${newBoard.slug}`);
+            }
           }
         } catch (error) {
           console.error("Fehler beim Erstellen des Boards:", error);
@@ -120,22 +143,37 @@ export function BuilderClient() {
     return () => {
       isMounted = false;
     };
-  }, [user?.id, boards, boardsLoading, currentBoard, setCurrentBoard, createBoardMutation.mutateAsync]);
+  }, [user?.id, boards, boardsLoading, currentBoard, setCurrentBoard, pathname, router]);
+
+  // URL-Synchronisation bei Board-Wechsel
+  useEffect(() => {
+    if (currentBoard?.slug && !pathname.endsWith(currentBoard.slug)) {
+      router.replace(`/builder/${currentBoard.slug}`);
+    }
+  }, [currentBoard, pathname, router]);
 
   // Auto-Save für Block-Änderungen
   useEffect(() => {
     if (!currentBoard || !user?.id) return;
 
+    const currentBlocksJson = JSON.stringify(blocks);
+
+    // Skip if blocks haven't actually changed
+    if (currentBlocksJson === lastSavedBlocksRef.current) {
+      return;
+    }
+
     // Speichere Blöcke, wenn sie sich geändert haben
     const saveBlocks = async () => {
       try {
-        await updateBoardMutation.mutateAsync({
+        await updateBoardMutationRef.current.mutateAsync({
           boardId: currentBoard.id,
           boardData: {
             ...currentBoard,
             blocks: blocks,
           },
         });
+        lastSavedBlocksRef.current = currentBlocksJson;
       } catch (error) {
         console.error("Fehler beim Speichern der Blöcke:", error);
         // Kein Toast bei Auto-Save, da es störend wäre
@@ -146,7 +184,7 @@ export function BuilderClient() {
     const timeoutId = setTimeout(saveBlocks, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [blocks, currentBoard, user?.id, updateBoardMutation]);
+  }, [blocks, currentBoard, user?.id]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
