@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   File,
@@ -44,12 +43,10 @@ import {
   MenubarRadioItem,
 } from "@/components/ui/menubar";
 import { useUser } from "@/app/lib/user-context";
-import { supabase } from "@/lib/supabase";
 import { BoardTitleDialog } from "./BoardTitleDialog";
 import { BoardSlugDialog } from "./BoardSlugDialog";
 import { CreateBoardDialog } from "./CreateBoardDialog";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
-import { useCreateBoard } from "@/app/lib/hooks/use-boards";
 import { toast } from "sonner";
 
 
@@ -63,12 +60,9 @@ export function BuilderMenubar({
   zoomLevel,
   onZoomChange,
 }: BuilderMenubarProps) {
-  const router = useRouter();
   const { user } = useUser();
   const t = useTranslations('createBoard');
   const currentBoard = useCanvasStore((state) => state.currentBoard);
-  const setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
-  const createBoardMutation = useCreateBoard();
   const [isPreviewMode, setIsPreviewMode] = React.useState(false);
   const [showGrid, setShowGrid] = React.useState(true);
   const [titleDialogOpen, setTitleDialogOpen] = React.useState(false);

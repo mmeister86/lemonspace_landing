@@ -1,11 +1,18 @@
 import { create } from "zustand";
 import type { Board, Block } from "@/lib/types/board";
 
+type BoardLoadingState = 'idle' | 'loading' | 'ready' | 'error';
+
 interface CanvasState {
   currentBoard: Board | null;
   blocks: Block[];
   selectedBlockId: string | null;
   showDropArea: boolean;
+
+  // Navigation state
+  isNavigating: boolean;
+  lastBoardId: string | null;
+  boardLoadingState: BoardLoadingState;
 
   // Actions
   setCurrentBoard: (board: Board | null) => void;
@@ -16,6 +23,9 @@ interface CanvasState {
   setShowDropArea: (show: boolean) => void;
   updateBoardTitle: (title: string) => void;
   updateBoardSlug: (slug: string) => void;
+  setNavigating: (isNavigating: boolean) => void;
+  setLastBoardId: (id: string | null) => void;
+  setBoardLoadingState: (state: BoardLoadingState) => void;
   reset: () => void;
 }
 
@@ -24,6 +34,9 @@ const initialState = {
   blocks: [],
   selectedBlockId: null,
   showDropArea: true,
+  isNavigating: false,
+  lastBoardId: null,
+  boardLoadingState: 'idle' as const,
 };
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -91,6 +104,12 @@ export const useCanvasStore = create<CanvasState>((set) => ({
     set((state) => ({
       currentBoard: state.currentBoard ? { ...state.currentBoard, slug } : null,
     })),
+
+  setNavigating: (isNavigating) => set({ isNavigating }),
+
+  setLastBoardId: (id) => set({ lastBoardId: id }),
+
+  setBoardLoadingState: (boardLoadingState: BoardLoadingState) => set({ boardLoadingState }),
 
   reset: () => set(initialState),
 }));

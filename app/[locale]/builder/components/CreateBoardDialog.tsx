@@ -50,7 +50,6 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
   const { user } = useUser();
   const setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
   const createBoardMutation = useCreateBoard();
-  const titleInputRef = React.useRef<HTMLInputElement>(null);
 
   // State für Slug-Management
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = React.useState(false);
@@ -66,7 +65,7 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
   });
 
   const titleValue = form.watch("title");
-  const slugValue = form.watch("slug");
+  form.watch("slug"); // Keep slug watched for reactivity but don't need the value
 
   // Auto-Focus auf Titel-Feld beim Öffnen
   React.useEffect(() => {

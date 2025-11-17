@@ -25,7 +25,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import ThemeSwitcher from "@/components/theme-switcher-03";
 
 const navSecondary: Array<{
   id: string;

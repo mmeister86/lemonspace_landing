@@ -247,6 +247,13 @@
   "board": {
     "created": "Board \"{title}\" created"
   },
+  "builderPage": {
+    "creatingFirstBoard": "Creating your first board...",
+    "creatingBoardSubtext": "This will only take a moment",
+    "firstBoardTitle": "My First Board",
+    "firstBoardSlug": "my-first-board",
+    "tryAgain": "Try Again"
+  },
   "boardBuilder": {
     "error": {
       "unauthorized": {
@@ -273,6 +280,15 @@
     "readOnly": {
       "title": "Read-Only Access",
       "description": "You can view this board but cannot edit it."
+    }
+  },
+  "builder": {
+    "loading": {
+      "board": "Loading board..."
+    },
+    "error": {
+      "loadingBoard": "Error loading board",
+      "retry": "Try again"
     }
   }
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import type { Board, BoardData, GridConfig, Block } from "@/lib/types/board";
+import type { BoardData } from "@/lib/types/board";
 
 // Zod schema for request validation
 const gridConfigSchema = z.object({

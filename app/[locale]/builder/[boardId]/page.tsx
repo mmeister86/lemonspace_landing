@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useBoardWithInitialization } from "@/app/lib/hooks/use-board";
@@ -27,21 +27,66 @@ export default function BoardBuilderPage() {
     initializeCanvas,
   } = useBoardWithInitialization(boardIdentifier);
 
-  const canvasStore = useCanvasStore();
-  const hasInitialized = useRef(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Get stable references to store actions to avoid infinite loops
+  const storeActions = useCanvasStore((state) => ({
+    setNavigating: state.setNavigating,
+    setLastBoardId: state.setLastBoardId,
+    setBoardLoadingState: state.setBoardLoadingState,
+    setCurrentBoard: state.setCurrentBoard,
+    currentBoardId: state.currentBoard?.id || null,
+  }));
+
+  // Set navigating state when board identifier changes
+  useEffect(() => {
+    console.log(`[BoardBuilderPage] Board identifier changed to: ${boardIdentifier}`);
+
+    // Capture currentBoardId at the beginning of the effect to avoid dependency on it
+    const capturedCurrentBoardId = storeActions.currentBoardId;
+
+    storeActions.setNavigating(true);
+    storeActions.setLastBoardId(capturedCurrentBoardId);
+    storeActions.setBoardLoadingState('loading');
+
+    // Reset initialization state when board identifier changes
+    setIsInitialized(false);
+  }, [boardIdentifier, storeActions]);
+
+  // Handle redirect from /builder to first available board
+  useEffect(() => {
+    if (boardIdentifier === 'undefined' || !boardIdentifier) {
+      console.log('[BoardBuilderPage] Invalid board identifier, redirecting...');
+      router.push('/builder');
+      return;
+    }
+  }, [boardIdentifier, router]);
 
   // Initialize canvas only once when data loads for a specific board
   useEffect(() => {
-    if (boardData && !hasInitialized.current) {
-      initializeCanvas(canvasStore);
-      hasInitialized.current = true;
+    if (boardData && !isInitialized) {
+      console.log(`[BoardBuilderPage] Initializing canvas for board: ${boardData.boardMeta.title}`);
+      initializeCanvas({ setCurrentBoard: storeActions.setCurrentBoard });
+      setIsInitialized(true);
+      storeActions.setBoardLoadingState('ready');
     }
-  }, [boardData, initializeCanvas, canvasStore]);
+  }, [boardData, isInitialized, initializeCanvas, storeActions]);
 
-  // Reset initialization flag if the board identifier changes
+  // Clear navigating state immediately when initialization is complete
   useEffect(() => {
-    hasInitialized.current = false;
-  }, [boardIdentifier]);
+    if (isInitialized) {
+      console.log('[BoardBuilderPage] Navigation complete, clearing navigating state');
+      storeActions.setNavigating(false);
+    }
+  }, [isInitialized, storeActions]);
+
+  // Handle error state
+  useEffect(() => {
+    if (error) {
+      storeActions.setBoardLoadingState('error');
+      storeActions.setNavigating(false);
+    }
+  }, [error, storeActions]);
 
   // Loading state
   if (isLoading) {

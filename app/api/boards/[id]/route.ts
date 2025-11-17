@@ -665,9 +665,9 @@ export async function GET(
 
       connectionsData = result.data || [];
       connectionsError = result.error;
-    } catch (error) {
-      console.log("[API] element_connections table not available, using empty array");
-      connectionsError = null; // Don't treat this as an error
+    } catch (err) {
+      console.log("[API] element_connections table not available, using empty array:", err);
+      connectionsError = err as Error; // Preserve the error for debugging
     }
 
     if (connectionsError) {

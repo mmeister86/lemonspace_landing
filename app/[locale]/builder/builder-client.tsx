@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import AuthGuard from "./components/AuthGuard";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
@@ -22,7 +24,7 @@ import type { Block, BlockType } from "@/lib/types/board";
 import { BlockDeleteDialog } from "./components/BlockDeleteDialog";
 import { useUser } from "@/app/lib/user-context";
 import { useBoards, useCreateBoard, useUpdateBoard } from "@/app/lib/hooks/use-boards";
-import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 const VALID_BLOCK_TYPES: BlockType[] = [
   "text",
@@ -41,6 +43,7 @@ const VALID_BLOCK_TYPES: BlockType[] = [
 export function BuilderClient() {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations("builder");
   const [currentViewport, setCurrentViewport] =
     useState<ViewportSize>("desktop");
   const [zoomLevel, setZoomLevel] = useState(100);
@@ -48,11 +51,15 @@ export function BuilderClient() {
   const addBlock = useCanvasStore((state) => state.addBlock);
   const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
   const currentBoard = useCanvasStore((state) => state.currentBoard);
-  const setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
   const blocks = useCanvasStore((state) => state.blocks);
+  const isNavigating = useCanvasStore((state) => state.isNavigating);
+  const boardLoadingState = useCanvasStore((state) => state.boardLoadingState);
 
   const { user } = useUser();
-  const { data: boards, isLoading: boardsLoading } = useBoards(user?.id || null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: _boards, isLoading: _boardsLoading } = useBoards(user?.id || null);
   const createBoardMutation = useCreateBoard();
   const updateBoardMutation = useUpdateBoard();
 
@@ -60,6 +67,7 @@ export function BuilderClient() {
   const createBoardMutationRef = useRef(createBoardMutation);
   const updateBoardMutationRef = useRef(updateBoardMutation);
   const lastSavedBlocksRef = useRef<string>("");
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Keep refs up to date
   useEffect(() => {
@@ -70,84 +78,64 @@ export function BuilderClient() {
     updateBoardMutationRef.current = updateBoardMutation;
   }, [updateBoardMutation]);
 
-  // Lade oder erstelle ein Board beim Start
+  // NOTE: Board initialization is now handled by BoardBuilderPage component
+  // BuilderClient should only handle the UI and interactions, not board loading
+
+  // URL-Synchronisation bei Board-Wechsel (nur bei Slug-Änderungen)
+  const previousSlugRef = useRef<string | null>(null);
+  const currentBoardSlug = currentBoard?.slug;
+
   useEffect(() => {
-    let isMounted = true;
-
-    async function initializeBoard() {
-      // Early return conditions with proper state checking
-      if (!user?.id) {
-        console.log("[Builder] No user ID available");
-        return;
-      }
-
-      if (boardsLoading) {
-        console.log("[Builder] Boards still loading");
-        return;
-      }
-
-      if (currentBoard) {
-        console.log("[Builder] Board already set:", currentBoard.id);
-        return;
-      }
-
-      // Wait for boards to be fully loaded
-      if (!boards) {
-        console.log("[Builder] Boards data not available yet");
-        return;
-      }
-
-      console.log("[Builder] Initializing board with boards:", boards.length);
-
-      // Wenn der User Boards hat, lade das erste
-      if (boards.length > 0) {
-        if (isMounted) {
-          console.log("[Builder] Setting existing board:", boards[0].id);
-          setCurrentBoard(boards[0]);
-        }
-        return;
-      }
-
-      // Sonst erstelle ein neues Board
-      if (boards.length === 0) {
-        try {
-          console.log("[Builder] Creating new board for user:", user.id);
-          const newBoard = await createBoardMutationRef.current.mutateAsync({
-            title: "Mein erstes Board",
-            grid_config: { columns: 4, gap: 16 },
-            blocks: [],
-          });
-
-          if (isMounted) {
-            console.log("[Builder] New board created:", newBoard.id);
-            setCurrentBoard(newBoard);
-            toast.success("Neues Board erstellt");
-          }
-        } catch (error) {
-          console.error("Fehler beim Erstellen des Boards:", error);
-          if (isMounted) {
-            toast.error("Fehler beim Erstellen des Boards");
-          }
-        }
-      }
+    if (isNavigating || boardLoadingState === 'loading') {
+      console.log('[BuilderClient] Skipping URL sync during navigation/loading', {
+        isNavigating,
+        boardLoadingState,
+        currentBoardSlug
+      });
+      return;
     }
 
-    initializeBoard();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.id, boards, boardsLoading, currentBoard, setCurrentBoard]);
-
-  // URL-Synchronisation bei Board-Wechsel
-  useEffect(() => {
-    if (!currentBoard?.slug) return;
-
+    // Only update URL if the board's slug itself changed
+    // (e.g., user renamed the slug via BoardSlugDialog)
     const pathSlug = pathname.split('/').filter(Boolean).pop();
-    if (pathSlug !== currentBoard.slug) {
-      router.replace(`/builder/${currentBoard.slug}`);
+
+    // Log for debugging the exact path comparison
+    console.log('[BuilderClient] Path comparison debug', {
+      pathname,
+      extractedPathSlug: pathSlug,
+      previousSlug: previousSlugRef.current,
+      currentBoardSlug,
+      pathSlugIsEmpty: !pathSlug
+    });
+
+    // Ensure pathSlug is computed and non-empty
+    if (!pathSlug) {
+      console.log('[BuilderClient] PathSlug is empty, updating previousSlugRef and skipping');
+      previousSlugRef.current = currentBoardSlug || null;
+      return;
     }
-  }, [currentBoard, pathname, router]);
+
+    // Set slugChanged by comparing previousSlugRef.current === pathSlug
+    // and check previousSlugRef.current !== currentBoardSlug
+    const slugChanged = previousSlugRef.current === pathSlug &&
+                     previousSlugRef.current !== currentBoardSlug;
+
+    console.log('[BuilderClient] Slug change determination', {
+      slugChanged,
+      pathMatchesPrevious: previousSlugRef.current === pathSlug,
+      previousDiffersFromCurrent: previousSlugRef.current !== currentBoardSlug
+    });
+    if (slugChanged) {
+      console.log('[BuilderClient] URL sync needed - slug changed', {
+        pathSlug,
+        currentBoardSlug,
+        previousSlug: previousSlugRef.current
+      });
+      router.replace(`/builder/${currentBoardSlug}`);
+    }
+
+    previousSlugRef.current = currentBoardSlug || null;
+  }, [currentBoardSlug, pathname, router, isNavigating, boardLoadingState]);
 
   // Auto-Save für Block-Änderungen
   useEffect(() => {
@@ -171,6 +159,7 @@ export function BuilderClient() {
           },
         });
         lastSavedBlocksRef.current = currentBlocksJson;
+        saveTimeoutRef.current = null;
       } catch (error) {
         console.error("Fehler beim Speichern der Blöcke:", error);
         // Kein Toast bei Auto-Save, da es störend wäre
@@ -178,10 +167,63 @@ export function BuilderClient() {
     };
 
     // Debounce, um zu viele Speicherungen zu vermeiden
-    const timeoutId = setTimeout(saveBlocks, 1000);
+    saveTimeoutRef.current = setTimeout(saveBlocks, 1000);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
+    };
   }, [blocks, currentBoard, user?.id]);
+
+  // Function to immediately save any pending changes
+  const flushPendingSave = async (): Promise<boolean> => {
+    if (!currentBoard || !user?.id) return true;
+
+    const currentBlocksJson = JSON.stringify(blocks);
+
+    // If there are no pending changes, return immediately
+    if (currentBlocksJson === lastSavedBlocksRef.current) {
+      return true;
+    }
+
+    try {
+      // Clear any pending timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
+
+      // Save immediately
+      await updateBoardMutationRef.current.mutateAsync({
+        boardId: currentBoard.id,
+        boardData: {
+          ...currentBoard,
+          blocks: blocks,
+        },
+      });
+      lastSavedBlocksRef.current = currentBlocksJson;
+      console.log('[BuilderClient] Flushed pending save before refresh');
+      return true;
+    } catch (error) {
+      console.error("Fehler beim Speichern der Blöcke:", error);
+      return false;
+    }
+  };
+
+  // Handle retry with save and soft refresh
+  const handleRetry = async () => {
+    const saveSuccessful = await flushPendingSave();
+
+    if (saveSuccessful) {
+      console.log('[BuilderClient] Save successful, performing soft refresh');
+      router.refresh();
+    } else {
+      console.error('[BuilderClient] Save failed, showing error to user');
+      // Could show a toast or notification here
+    }
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -280,6 +322,65 @@ export function BuilderClient() {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedBlockId]);
+
+  // Show loading state during board transitions
+  if (boardLoadingState === 'loading' || isNavigating) {
+    return (
+      <AuthGuard>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <div className="border-b bg-background">
+              <div className="flex items-center justify-between px-4 py-2">
+                <div className="flex items-center gap-2">
+                  <SidebarTrigger className="-ml-1" />
+                  <Separator
+                    orientation="vertical"
+                    className="mr-2 data-[orientation=vertical]:h-4"
+                  />
+                  <div className="h-6 w-32 bg-muted animate-pulse rounded" />
+                </div>
+                <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+            <div className="flex h-[calc(100vh-73px)] items-center justify-center">
+              <div className="text-center space-y-4">
+                <Spinner size="lg" />
+                <p className="text-muted-foreground">{t("loading.board")}</p>
+              </div>
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </AuthGuard>
+    );
+  }
+
+  // Show error state
+  if (boardLoadingState === 'error') {
+    return (
+      <AuthGuard>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <div className="flex h-[calc(100vh-73px)] items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="h-12 w-12 bg-destructive/10 rounded-full flex items-center justify-center">
+                  <div className="h-6 w-6 bg-destructive rounded-full" />
+                </div>
+                <p className="text-destructive">{t("error.loadingBoard")}</p>
+                <button
+                  onClick={handleRetry}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                >
+                  {t("error.retry")}
+                </button>
+              </div>
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </AuthGuard>
+    );
+  }
 
   return (
     <AuthGuard>

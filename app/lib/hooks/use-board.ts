@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useQuery } from "@tanstack/react-query";
 import type { BoardResponse, APIResponse } from "@/lib/types/board-api";
 import type { Board, BlockType } from "@/lib/types/board";

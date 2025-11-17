@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { User as SupabaseUser, type Session, type UserResponse } from "@supabase/supabase-js";
 import { getOrCreateUser } from "./services/user-service";
@@ -43,7 +43,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const isAuthRedirectingRef = useRef(false);
 
   // Helper function to safely set loading state
-  const safeSetLoading = (isLoading: boolean) => {
+  const safeSetLoading = useCallback((isLoading: boolean) => {
     if (isMountedRef.current) {
       setLoading(isLoading);
       loadingRef.current = isLoading;
@@ -55,31 +55,31 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         console.log("[UserProvider] Loading completed, timeout cleared");
       }
     }
-  };
+  }, []);
 
   // Helper function to safely set error state
-  const safeSetError = (err: Error | null) => {
+  const safeSetError = useCallback((err: Error | null) => {
     if (isMountedRef.current) {
       setError(err);
     }
-  };
+  }, []);
 
   // Helper function to safely set user state
-  const safeSetUser = (currentUser: SupabaseUser | null) => {
+  const safeSetUser = useCallback((currentUser: SupabaseUser | null) => {
     if (isMountedRef.current) {
       setUser(currentUser);
     }
-  };
+  }, []);
 
   // Helper function to safely set user data state
-  const safeSetUserData = (data: User | null) => {
+  const safeSetUserData = useCallback((data: User | null) => {
     if (isMountedRef.current) {
       setUserData(data);
     }
-  };
+  }, []);
 
   // Timeout mechanism to prevent infinite loading
-  const setupLoadingTimeout = () => {
+  const setupLoadingTimeout = useCallback(() => {
     const timeoutId = setTimeout(() => {
       if (isMountedRef.current) {
         // Skip timeout error if auth redirect is in progress
@@ -94,10 +94,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }, LOADING_TIMEOUT);
 
     timeoutIdRef.current = timeoutId;
-  };
+  }, [safeSetLoading, safeSetError]);
 
   // Function to load or create user data
-  const loadUserData = async (currentUser: SupabaseUser): Promise<User | null> => {
+  const loadUserData = useCallback(async (currentUser: SupabaseUser): Promise<User | null> => {
     try {
       const userData = await getOrCreateUser(
         currentUser.id,
@@ -122,10 +122,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       throw userDataError;
     }
-  };
+  }, []);
 
   // Main user fetching function
-  const fetchUser = async (): Promise<void> => {
+  const fetchUser = useCallback(async (): Promise<void> => {
     try {
       // Load Supabase Auth User with timeout
       const userPromise = supabase.auth.getUser();
@@ -183,7 +183,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         );
       }
     }
-  };
+  }, [loadUserData, safeSetUser, safeSetUserData, safeSetLoading, safeSetError]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -255,7 +255,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
       subscription.unsubscribe();
     };
-  }, []);
+  }, [setupLoadingTimeout, fetchUser, loadUserData, safeSetUser, safeSetUserData, safeSetLoading, safeSetError]);
 
   return (
     <UserContext.Provider value={{ user, userData, loading, error }}>
