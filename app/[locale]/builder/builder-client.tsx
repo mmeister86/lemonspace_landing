@@ -104,9 +104,6 @@ export function BuilderClient() {
         if (isMounted) {
           console.log("[Builder] Setting existing board:", boards[0].id);
           setCurrentBoard(boards[0]);
-          if (boards[0].slug && !pathname.startsWith('/builder/')) {
-            router.replace(`/builder/${boards[0].slug}`);
-          }
         }
         return;
       }
@@ -125,9 +122,6 @@ export function BuilderClient() {
             console.log("[Builder] New board created:", newBoard.id);
             setCurrentBoard(newBoard);
             toast.success("Neues Board erstellt");
-            if (newBoard.slug) {
-              router.replace(`/builder/${newBoard.slug}`);
-            }
           }
         } catch (error) {
           console.error("Fehler beim Erstellen des Boards:", error);
@@ -143,11 +137,14 @@ export function BuilderClient() {
     return () => {
       isMounted = false;
     };
-  }, [user?.id, boards, boardsLoading, currentBoard, setCurrentBoard, pathname, router]);
+  }, [user?.id, boards, boardsLoading, currentBoard, setCurrentBoard]);
 
   // URL-Synchronisation bei Board-Wechsel
   useEffect(() => {
-    if (currentBoard?.slug && !pathname.endsWith(currentBoard.slug)) {
+    if (!currentBoard?.slug) return;
+
+    const pathSlug = pathname.split('/').filter(Boolean).pop();
+    if (pathSlug !== currentBoard.slug) {
       router.replace(`/builder/${currentBoard.slug}`);
     }
   }, [currentBoard, pathname, router]);
