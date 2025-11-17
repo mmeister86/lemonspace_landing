@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useBoardWithInitialization } from "@/app/lib/hooks/use-board";
@@ -29,29 +29,28 @@ export default function BoardBuilderPage() {
 
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Get stable references to store actions to avoid infinite loops
-  const storeActions = useCanvasStore((state) => ({
-    setNavigating: state.setNavigating,
-    setLastBoardId: state.setLastBoardId,
-    setBoardLoadingState: state.setBoardLoadingState,
-    setCurrentBoard: state.setCurrentBoard,
-    currentBoardId: state.currentBoard?.id || null,
-  }));
+  // Get stable references to store actions individually to avoid infinite loops
+  // Actions are stable references from Zustand, so selecting them individually is safe
+  const setNavigating = useCanvasStore((state) => state.setNavigating);
+  const setLastBoardId = useCanvasStore((state) => state.setLastBoardId);
+  const setBoardLoadingState = useCanvasStore((state) => state.setBoardLoadingState);
+  const setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
+  const currentBoardId = useCanvasStore((state) => state.currentBoard?.id || null);
 
   // Set navigating state when board identifier changes
   useEffect(() => {
     console.log(`[BoardBuilderPage] Board identifier changed to: ${boardIdentifier}`);
 
     // Capture currentBoardId at the beginning of the effect to avoid dependency on it
-    const capturedCurrentBoardId = storeActions.currentBoardId;
+    const capturedCurrentBoardId = currentBoardId;
 
-    storeActions.setNavigating(true);
-    storeActions.setLastBoardId(capturedCurrentBoardId);
-    storeActions.setBoardLoadingState('loading');
+    setNavigating(true);
+    setLastBoardId(capturedCurrentBoardId);
+    setBoardLoadingState('loading');
 
     // Reset initialization state when board identifier changes
     setIsInitialized(false);
-  }, [boardIdentifier, storeActions]);
+  }, [boardIdentifier, setNavigating, setLastBoardId, setBoardLoadingState, currentBoardId]);
 
   // Handle redirect from /builder to first available board
   useEffect(() => {
@@ -66,27 +65,27 @@ export default function BoardBuilderPage() {
   useEffect(() => {
     if (boardData && !isInitialized) {
       console.log(`[BoardBuilderPage] Initializing canvas for board: ${boardData.boardMeta.title}`);
-      initializeCanvas({ setCurrentBoard: storeActions.setCurrentBoard });
+      initializeCanvas({ setCurrentBoard });
       setIsInitialized(true);
-      storeActions.setBoardLoadingState('ready');
+      setBoardLoadingState('ready');
     }
-  }, [boardData, isInitialized, initializeCanvas, storeActions]);
+  }, [boardData, isInitialized, initializeCanvas, setCurrentBoard, setBoardLoadingState]);
 
   // Clear navigating state immediately when initialization is complete
   useEffect(() => {
     if (isInitialized) {
       console.log('[BoardBuilderPage] Navigation complete, clearing navigating state');
-      storeActions.setNavigating(false);
+      setNavigating(false);
     }
-  }, [isInitialized, storeActions]);
+  }, [isInitialized, setNavigating]);
 
   // Handle error state
   useEffect(() => {
     if (error) {
-      storeActions.setBoardLoadingState('error');
-      storeActions.setNavigating(false);
+      setBoardLoadingState('error');
+      setNavigating(false);
     }
-  }, [error, storeActions]);
+  }, [error, setBoardLoadingState, setNavigating]);
 
   // Loading state
   if (isLoading) {

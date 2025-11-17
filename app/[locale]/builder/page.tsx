@@ -20,7 +20,19 @@ export default function BuilderPage() {
   const [createError, setCreateError] = useState<string | null>(null);
   const creationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Ref to prevent board creation from running multiple times in Strict Mode
+  const hasInitializedRef = useRef(false);
+
   const createInitialBoard = useCallback(async () => {
+    console.log("[BuilderPage] createInitialBoard called");
+
+    // Prevent multiple calls in Strict Mode
+    if (hasInitializedRef.current) {
+      console.log("[BuilderPage] Already initialized, skipping");
+      return;
+    }
+
+    hasInitializedRef.current = true;
     setIsCreatingBoard(true);
     setCreateError(null);
 
@@ -72,8 +84,9 @@ export default function BuilderPage() {
     if (boards.length > 0) {
       // Redirect to first available board
       router.replace(`/builder/${boards[0].slug}`);
-    } else if (!isCreatingBoard) {
+    } else if (!isCreatingBoard && !hasInitializedRef.current) {
       // No boards found, create the first one automatically
+      // Only call if we haven't already initialized
       createInitialBoard();
     }
   }, [user, userLoading, boards, boardsLoading, router, isCreatingBoard, createInitialBoard]);
