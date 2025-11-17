@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { BoardResponse, APIResponse } from "@/lib/types/board-api";
+import type { Board, BlockType } from "@/lib/types/board";
 
 interface UseBoardOptions {
   enabled?: boolean;
@@ -83,7 +84,7 @@ export function useBoardWithInitialization(boardId: string | null) {
     ...query,
     // Helper to initialize canvas store
     initializeCanvas: (canvasStore: {
-      setCurrentBoard: (board: any) => void;
+      setCurrentBoard: (board: Board) => void;
     }) => {
       if (query.data) {
         // Transform to legacy Board format for backward compatibility
@@ -95,7 +96,7 @@ export function useBoardWithInitialization(boardId: string | null) {
           grid_config: query.data.boardMeta.gridConfig,
           blocks: query.data.elements.map((el) => ({
             id: el.id,
-            type: el.type,
+            type: el.type as BlockType,
             data: el.content,
             position: el.position,
             size: el.size,
@@ -103,7 +104,7 @@ export function useBoardWithInitialization(boardId: string | null) {
           is_template: query.data.boardMeta.isTemplate,
           created_at: query.data.boardMeta.createdAt,
           updated_at: query.data.boardMeta.updatedAt,
-          published_at: query.data.boardMeta.publishedAt,
+          published_at: query.data.boardMeta.publishedAt || undefined,
         };
         canvasStore.setCurrentBoard(legacyBoard);
       }

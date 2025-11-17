@@ -148,7 +148,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         try {
           const userData = await loadUserData(currentUser);
           safeSetUserData(userData);
-        } catch (userDataError: any) {
+        } catch (userDataError: unknown) {
           if (userDataError instanceof AuthRedirectError) {
             // Auth redirect in progress, set guard and clear timeout
             isAuthRedirectingRef.current = true;
@@ -209,7 +209,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         try {
           const userData = await loadUserData(currentUser);
           safeSetUserData(userData);
-        } catch (userDataError: any) {
+        } catch (userDataError: unknown) {
           if (userDataError instanceof AuthRedirectError) {
             // Auth redirect in progress, set guard and clear timeout
             isAuthRedirectingRef.current = true;

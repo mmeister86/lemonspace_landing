@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Board, BoardData, GridConfig, Block } from "@/lib/types/board";
 
@@ -40,6 +41,10 @@ const createBoardRequestSchema = z.object({
       "Slug can only contain lowercase letters, numbers and hyphens"
     )
     .optional(),
+  visibility: z
+    .enum(['private', 'public', 'shared'])
+    .optional()
+    .default('private'), // ← NEW: Visibility field
   grid_config: gridConfigSchema.optional(),
   blocks: z.array(blockSchema).optional(),
   template_id: z.string().uuid().optional(),
@@ -126,7 +131,7 @@ function validateSlug(slug: string): boolean {
  * Prüft ob ein Slug für einen bestimmten User bereits existiert
  */
 async function checkSlugExistsForUser(
-  supabase: any,
+  supabase: SupabaseClient,
   userId: string,
   slug: string
 ): Promise<boolean> {
@@ -153,7 +158,7 @@ async function checkSlugExistsForUser(
  * Generiert einen eindeutigen Slug für einen User
  */
 async function generateUniqueSlugForUser(
-  supabase: any,
+  supabase: SupabaseClient,
   userId: string,
   baseSlug: string
 ): Promise<string> {
@@ -262,6 +267,7 @@ export async function POST(request: NextRequest) {
       user_id: user.id,
       title: validatedData.title,
       slug: finalSlug,
+      visibility: validatedData.visibility, // ← NEW: Include visibility
       grid_config: validatedData.grid_config || { columns: 4, gap: 16 },
       blocks: validatedData.blocks || [],
       template_id: validatedData.template_id,

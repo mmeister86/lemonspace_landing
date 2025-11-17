@@ -56,7 +56,7 @@ const navSecondary: Array<{
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: recentBoards } = useRecentBoards();
 
-  const navMain: NavMainItem[] = [
+  const navMain = React.useMemo<NavMainItem[]>(() => [
     {
       id: "boards",
       title: "Boards",
@@ -131,7 +131,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         },
       ],
     },
-  ];
+  ], [recentBoards]);
 
   return (
     <Sidebar variant="inset" {...props}>

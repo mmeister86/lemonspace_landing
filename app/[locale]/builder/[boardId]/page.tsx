@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useBoardWithInitialization } from "@/app/lib/hooks/use-board";
@@ -15,23 +15,33 @@ export default function BoardBuilderPage() {
   const t = useTranslations("boardBuilder");
   const params = useParams();
   const router = useRouter();
-  const boardId = params.boardId as string;
+
+  // boardId parameter can be either UUID or Slug
+  // The API will automatically detect the format and perform the appropriate lookup
+  const boardIdentifier = params.boardId as string;
 
   const {
     data: boardData,
     isLoading,
     error,
     initializeCanvas,
-  } = useBoardWithInitialization(boardId);
+  } = useBoardWithInitialization(boardIdentifier);
 
   const canvasStore = useCanvasStore();
+  const hasInitialized = useRef(false);
 
-  // Initialize canvas when data loads
+  // Initialize canvas only once when data loads for a specific board
   useEffect(() => {
-    if (boardData) {
+    if (boardData && !hasInitialized.current) {
       initializeCanvas(canvasStore);
+      hasInitialized.current = true;
     }
-  }, [boardData, initializeCanvas]);
+  }, [boardData, initializeCanvas, canvasStore]);
+
+  // Reset initialization flag if the board identifier changes
+  useEffect(() => {
+    hasInitialized.current = false;
+  }, [boardIdentifier]);
 
   // Loading state
   if (isLoading) {

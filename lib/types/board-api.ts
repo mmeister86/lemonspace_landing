@@ -27,7 +27,6 @@ export interface DBElementConnection {
   source_element_id: string;
   target_element_id: string;
   connection_type: string;
-  metadata: Record<string, unknown>;
   created_at: string;
 }
 
@@ -52,7 +51,7 @@ export interface DBBoardWithMeta {
   title: string;
   description?: string | null; // Optional for backward compatibility
   slug: string;
-  visibility?: 'private' | 'public' | 'shared'; // Optional for backward compatibility
+  visibility: 'private' | 'public' | 'shared'; // Required field
   thumbnail_url?: string | null; // Optional for backward compatibility
   grid_config: {
     columns: number;
@@ -95,7 +94,6 @@ export interface ElementConnection {
   sourceElementId: string;
   targetElementId: string;
   connectionType: string;
-  metadata: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -104,7 +102,7 @@ export interface BoardMeta {
   title: string;
   description?: string | null;
   slug: string;
-  visibility?: 'private' | 'public' | 'shared';
+  visibility: 'private' | 'public' | 'shared';
   thumbnailUrl?: string | null;
   ownerId: string;
   gridConfig: {

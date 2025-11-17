@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,7 @@ interface CreateBoardDialogProps {
 
 export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps) {
   const t = useTranslations("createBoard");
+  const router = useRouter();
   const { user } = useUser();
   const setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
   const createBoardMutation = useCreateBoard();
@@ -132,9 +134,21 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
         blocks: [],
       });
 
+      // Update store für sofortige UI-Aktualisierung
       setCurrentBoard(newBoard);
+
+      // Dialog schließen
       onOpenChange(false);
+
+      // Success-Nachricht
       toast.success(t("success"));
+
+      // Navigation zum neuen Board (Slug-basierte URL)
+      // Fallback zu ID falls Slug unerwartet fehlen sollte
+      const boardIdentifier = newBoard.slug || newBoard.id;
+      setTimeout(() => {
+        router.push(`/builder/${boardIdentifier}`);
+      }, 1000);
     } catch (error) {
       console.error("Fehler beim Erstellen des Boards:", error);
       // Die Fehlermeldung wird bereits im Hook angezeigt

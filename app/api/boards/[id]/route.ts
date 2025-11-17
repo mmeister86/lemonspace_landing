@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import type {
   DBBoardWithMeta,
@@ -16,6 +17,157 @@ import type {
 // ===========================================
 // Helper Functions
 // ===========================================
+
+/**
+ * Prüft ob ein String ein gültiger UUID v4 ist
+ * @param str - Der zu prüfende String
+ * @returns true wenn UUID, false wenn Slug oder anderes Format
+ */
+function isUUID(str: string): boolean {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+/**
+ * Resolves a username to user_id by querying the users table
+ * Follows Next.js pattern: async helper with proper error handling
+ *
+ * @param supabase - Supabase Client instance
+ * @param username - Username to resolve
+ * @returns user_id (auth_user_id) or null if not found
+ */
+async function resolveUsername(
+  supabase: SupabaseClient,
+  username: string
+): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("auth_user_id")
+      .eq("username", username)
+      .single();
+
+    if (error) {
+      // Log error but don't throw - return null for not found
+      if (error.code !== "PGRST116") {
+        console.error(`[API] Error resolving username "${username}":`, error);
+      }
+      return null;
+    }
+
+    return data?.auth_user_id || null;
+  } catch (error) {
+    console.error(`[API] Unexpected error resolving username "${username}":`, error);
+    return null;
+  }
+}
+
+/**
+ * Holt ein Board entweder per UUID oder Slug
+ * @param supabase - Supabase Client
+ * @param identifier - UUID oder Slug
+ * @param userId - Optional: User ID zur Filterung (empfohlen für Slug-Lookups)
+ * @returns Board-Daten oder Fehler
+ */
+async function fetchBoardByIdOrSlug(
+  supabase: SupabaseClient,
+  identifier: string,
+  userId?: string,
+  username?: string
+) {
+  const selectQuery = `
+        id,
+        user_id,
+        owner_id,
+        title,
+        description,
+        slug,
+        visibility,
+        thumbnail_url,
+        grid_config,
+        blocks,
+        template_id,
+        is_template,
+        expires_at,
+        published_at,
+        created_at,
+        updated_at
+      `;
+
+  if (isUUID(identifier)) {
+    // UUID-Lookup: Direkt nach ID suchen
+    console.log(`[API] Board lookup: UUID=${identifier}`);
+    return await supabase
+      .from("boards")
+      .select(selectQuery)
+      .eq("id", identifier)
+      .single();
+  } else {
+    // Slug-Lookup: Multi-tenant resolution logic
+    console.log(
+      `[API] Board lookup: Slug=${identifier}` +
+      `${userId ? `, UserId=${userId}` : ""}` +
+      `${username ? `, Username=${username}` : ""}`
+    );
+
+    let query = supabase
+      .from("boards")
+      .select(selectQuery)
+      .eq("slug", identifier);
+
+    // CASE 1: Authenticated User (Builder Mode)
+    // Scope to user's own boards - slug is unique per user
+    if (userId) {
+      console.log(`[API] Authenticated lookup: user_id=${userId}`);
+      query = query.eq("user_id", userId);
+      return await query.single();
+    }
+
+    // CASE 2: Unauthenticated with Username (Public Mode - PRIMARY)
+    // Resolve specific user's public board - deterministic by design
+    if (username) {
+      console.log(`[API] Public lookup with username: ${username}`);
+
+      const targetUserId = await resolveUsername(supabase, username);
+
+      if (!targetUserId) {
+        // Return error similar to "not found" for consistency
+        return {
+          data: null,
+          error: {
+            code: "USER_NOT_FOUND",
+            message: `User "${username}" not found`,
+            details: "username",
+          },
+        };
+      }
+
+      query = query
+        .eq("user_id", targetUserId)
+        .eq("visibility", "public");
+
+      return await query.single();
+    }
+
+    // CASE 3: Unauthenticated without Username (FALLBACK for backward compatibility)
+    // Use stable tiebreaker to ensure deterministic resolution
+    // This handles old URLs that don't include username
+    console.warn(
+      `[API] DEPRECATED: Public board accessed without username. ` +
+      `Slug="${identifier}". Using fallback ordering. ` +
+      `Update frontend to use username-based URLs: GET /api/boards/${identifier}?username=<username>`
+    );
+
+    query = query
+      .eq("visibility", "public")
+      .order("user_id", { ascending: true })      // Primary tiebreaker: lowest user_id
+      .order("created_at", { ascending: false })  // Secondary: newest if same user
+      .limit(1);
+
+    return await query.maybeSingle();
+  }
+}
 
 async function createSupabaseUserContext(request: NextRequest) {
   const supabase = await createClient();
@@ -74,7 +226,6 @@ function transformDBConnectionToBuilder(
     sourceElementId: dbConnection.source_element_id,
     targetElementId: dbConnection.target_element_id,
     connectionType: dbConnection.connection_type,
-    metadata: dbConnection.metadata,
     createdAt: dbConnection.created_at,
   };
 }
@@ -182,7 +333,15 @@ export async function GET(
       );
     }
 
-    // 2. Check authentication
+    // 2. Extract query parameters (Next.js pattern: searchParams)
+    const searchParams = request.nextUrl.searchParams;
+    const username = searchParams.get("username") || undefined;
+
+    if (username) {
+      console.log(`[API] Public board request with username: ${username}`);
+    }
+
+    // 3. Check authentication
     const {
       supabase,
       user,
@@ -205,45 +364,72 @@ export async function GET(
     }
 
     // user can be null for public boards; check permissions later
-    // 3. Fetch board metadata with specific columns (performance optimization)
-    // Try to fetch with new schema first, fallback to old schema if needed
-    const { data: boardData, error: boardError } = await supabase
-      .from("boards")
-      .select(
-        `
-        id,
-        user_id,
-        owner_id,
-        title,
-        description,
-        slug,
-        visibility,
-        thumbnail_url,
-        grid_config,
-        blocks,
-        template_id,
-        is_template,
-        expires_at,
-        published_at,
-        created_at,
-        updated_at
-      `
-      )
-      .eq("id", boardId)
-      .single();
+    // 4. Fetch board with username-aware resolution
+    const { data: boardData, error: boardError } = await fetchBoardByIdOrSlug(
+      supabase,
+      boardId,
+      user?.id,    // Authenticated user context
+      username     // Public resolution context
+    );
 
     if (boardError) {
       if (boardError.code === "PGRST116") {
-        // No rows found
+        // No rows found - provide context-specific error message
+        const identifierType = isUUID(boardId) ? "UUID" : "Slug";
+        let message: string;
+        let details: string;
+
+        if (username) {
+          message = `Board not found for user "${username}" with slug "${boardId}"`;
+          details = "Board does not exist, is not public, or user not found";
+        } else if (user) {
+          message = `Board not found (${identifierType}: ${boardId})`;
+          details = "Board does not exist or you don't have access";
+        } else {
+          message = `Board not found (${identifierType}: ${boardId})`;
+          details = "Board does not exist or is not public";
+        }
+
         return NextResponse.json<APIResponse<never>>(
           {
             success: false,
             error: {
               code: "NOT_FOUND",
-              message: "Board not found",
+              message,
+              details,
             },
           },
           { status: 404 }
+        );
+      }
+
+      // Handle custom USER_NOT_FOUND error from resolveUsername
+      if (boardError.code === "USER_NOT_FOUND") {
+        return NextResponse.json<APIResponse<never>>(
+          {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: boardError.message,
+              details: "Username does not exist",
+            },
+          },
+          { status: 404 }
+        );
+      }
+
+      // Check for UUID syntax error (shouldn't happen anymore, but keep as safety net)
+      if (boardError.code === "22P02") {
+        return NextResponse.json<APIResponse<never>>(
+          {
+            success: false,
+            error: {
+              code: "INVALID_IDENTIFIER",
+              message: "Invalid board identifier format",
+              details: "The board identifier must be either a valid UUID or slug",
+            },
+          },
+          { status: 400 }
         );
       }
 
@@ -276,83 +462,61 @@ export async function GET(
 
     // 4. Check user permissions (owner or collaborator)
     let collaboratorData: DBBoardCollaborator | undefined;
-
-    // Check if user is owner
     const isOwner = user && ownerId === user.id;
+    const isPublic = (board.visibility || "private") === "public";
+    let hasAccess = false;
 
-    if (!isOwner) {
-      // Skip collaborator check for unauthenticated users
-      if (!user) {
-        // Check if board is public (fallback to old schema: treat as private if visibility doesn't exist)
-        const visibility = board.visibility || "private";
-        if (visibility !== "public") {
-          return NextResponse.json<APIResponse<never>>(
-            {
-              success: false,
-              error: {
-                code: "FORBIDDEN",
-                message: "You do not have permission to access this board",
-              },
-            },
-            { status: 403 }
-          );
+    if (isOwner || isPublic) {
+      hasAccess = true;
+    }
+
+    // Only check for collaborators if the user is authenticated, not the owner, and the board is not public
+    if (user && !isOwner && !isPublic) {
+      try {
+        const { data: collabData, error: collabError } = await supabase
+          .from("board_collaborators")
+          .select("*")
+          .eq("board_id", board.id) // Use the actual board UUID
+          .eq("user_id", user.id)
+          .single();
+
+        if (collabError && collabError.code !== "PGRST116") {
+          // Rethrow the error if it's not a "No rows found" error to be caught by the outer catch block
+          // This avoids returning a 403 Forbidden on a transient DB error
+          throw collabError;
         }
-      } else {
-        // Check if user is collaborator (only if board_collaborators table exists)
-        try {
-          const { data: collabData, error: collabError } = await supabase
-            .from("board_collaborators")
-            .select("*")
-            .eq("board_id", boardId)
-            .eq("user_id", user.id)
-            .single();
 
-          if (collabError && collabError.code !== "PGRST116") {
-            console.error("[API] Error checking collaborator:", collabError);
-          }
-
-          if (!collabData) {
-            // Check if board is public (fallback to old schema: treat as private if visibility doesn't exist)
-            const visibility = board.visibility || "private";
-            if (visibility !== "public") {
-              return NextResponse.json<APIResponse<never>>(
-                {
-                  success: false,
-                  error: {
-                    code: "FORBIDDEN",
-                    message: "You do not have permission to access this board",
-                  },
-                },
-                { status: 403 }
-              );
-            }
-          } else {
-            collaboratorData = collabData as DBBoardCollaborator;
-          }
-        } catch (error) {
-          // board_collaborators table might not exist yet, fallback to basic permission check
-          console.log("[API] board_collaborators table not available, using basic permission check");
-          const visibility = board.visibility || "private";
-          if (visibility !== "public") {
-            return NextResponse.json<APIResponse<never>>(
-              {
-                success: false,
-                error: {
-                  code: "FORBIDDEN",
-                  message: "You do not have permission to access this board",
-                },
-              },
-              { status: 403 }
-            );
-          }
+        if (collabData) {
+          collaboratorData = collabData as DBBoardCollaborator;
+          hasAccess = true;
         }
+      } catch (error) {
+         // This catch block handles cases where the board_collaborators table might not exist
+         // or a real database error occurred during the collaborator check.
+        console.error("[API] Error checking collaborator permissions:", error);
+        // Do not grant access if there was an error checking permissions for a private board
+        hasAccess = false;
       }
     }
 
+    // If after all checks, access is not granted, return a forbidden error
+    if (!hasAccess) {
+       return NextResponse.json<APIResponse<never>>(
+        {
+          success: false,
+          error: {
+            code: "FORBIDDEN",
+            message: "You do not have permission to access this board",
+          },
+        },
+        { status: 403 }
+      );
+    }
+
     // 5. Parse query parameters for pagination
-    const searchParams = request.nextUrl.searchParams;
-    const elementsLimit = parseInt(searchParams.get("elementsLimit") || "1000");
-    const elementsOffset = parseInt(searchParams.get("elementsOffset") || "0");
+    const paginationParams = request.nextUrl.searchParams;
+    const elementsLimit = parseInt(paginationParams.get("elementsLimit") || "1000");
+    const elementsOffset = parseInt(paginationParams.get("elementsOffset") || "0");
 
     // 6. Fetch board elements with pagination (fallback to blocks if board_elements doesn't exist)
     let elementsData: DBBoardElement[] = [];
@@ -377,7 +541,7 @@ export async function GET(
           updated_at
         `
         )
-        .eq("board_id", boardId)
+        .eq("board_id", board.id) // Use the actual board UUID
         .order("z_index", { ascending: true })
         .range(elementsOffset, elementsOffset + elementsLimit - 1);
 
@@ -494,11 +658,10 @@ export async function GET(
           source_element_id,
           target_element_id,
           connection_type,
-          metadata,
           created_at
         `
         )
-        .eq("board_id", boardId);
+        .eq("board_id", board.id); // Use the actual board UUID
 
       connectionsData = result.data || [];
       connectionsError = result.error;
@@ -551,8 +714,9 @@ export async function GET(
 
     // Performance logging
     const duration = Date.now() - startTime;
+    const identifierType = isUUID(boardId) ? "UUID" : "Slug";
     console.log(
-      `[API] GET /api/boards/${boardId} completed in ${duration}ms (${elements.length} elements, ${connections.length} connections)`
+      `[API] GET /api/boards/${boardId} (${identifierType}) completed in ${duration}ms (${elements.length} elements, ${connections.length} connections)`
     );
 
     return NextResponse.json<APIResponse<BoardResponse>>(
