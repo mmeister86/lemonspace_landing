@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { handleAuthError, isAuthError } from "@/app/lib/auth-utils";
+import { handleAuthError, isAuthError } from "@/lib/auth-utils";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";

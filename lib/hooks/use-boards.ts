@@ -1,7 +1,18 @@
+/**
+ * The above functions provide hooks for managing boards, including fetching, creating, updating, and
+ * deleting boards via API calls.
+ * @param {string | null} userId - The `userId` parameter is used to identify the current user for whom
+ * the boards are being fetched or updated. It is typically a string representing the unique identifier
+ * of the user in the system. This parameter helps in filtering and retrieving boards specific to the
+ * logged-in user.
+ * @returns The code snippet provided contains several custom hooks for managing boards in a React
+ * application. Here is a summary of what each hook is returning:
+ */
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { listBoards, updateBoard, deleteBoard } from "../services/board-service";
 import { createBoardViaAPI, type CreateBoardAPIRequest } from "../services/api-board-service";
-import { useUser } from "../user-context";
+import { useUser } from "../contexts/user-context";
 import type { Board } from "@/lib/types/board";
 import { toast } from "sonner";
 

@@ -42,7 +42,7 @@ import {
   MenubarRadioGroup,
   MenubarRadioItem,
 } from "@/components/ui/menubar";
-import { useUser } from "@/app/lib/user-context";
+import { useUser } from "@/lib/contexts/user-context";
 import { BoardTitleDialog } from "./BoardTitleDialog";
 import { BoardSlugDialog } from "./BoardSlugDialog";
 import { CreateBoardDialog } from "./CreateBoardDialog";

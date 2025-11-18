@@ -1,6 +1,6 @@
 "use client";
 
-import { UserProvider } from "@/app/lib/user-context";
+import { UserProvider } from "@/lib/contexts/user-context";
 
 export function UserProviderWrapper({
   children,

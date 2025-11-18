@@ -1,3 +1,13 @@
+/**
+ * The above function is a TypeScript server-side API endpoint that handles the creation of a new board
+ * with validation, slug generation, and database insertion.
+ * @param {NextRequest} request - The code snippet you provided is a Next.js API route that handles the
+ * creation of a new board. Let me explain the key parts of the code:
+ * @returns The code is returning a JSON response with the created board data if the board creation is
+ * successful. If there are any errors during the process, appropriate error messages are returned
+ * along with the corresponding HTTP status codes.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";

@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { useUser } from "@/app/lib/user-context";
-import { useBoards, useCreateBoard } from "@/app/lib/hooks/use-boards";
+import { useUser } from "@/lib/contexts/user-context";
+import { useBoards, useCreateBoard } from "@/lib/hooks/use-boards";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";

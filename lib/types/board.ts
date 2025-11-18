@@ -44,7 +44,7 @@ export interface BoardData {
   user_id: string;
   title: string;
   slug: string;
-  visibility?: 'private' | 'public' | 'shared'; // ← ADD THIS
+  visibility?: 'private' | 'public' | 'shared' | 'workspace'; // ← ADD THIS
   grid_config: GridConfig; // Als JSONB in Supabase
   blocks: Block[]; // Als JSONB in Supabase
   template_id?: string;
@@ -64,6 +64,7 @@ export interface Board {
   title: string;
   slug: string;
   grid_config: GridConfig;
+  visibility: 'private' | 'public' | 'shared' | 'workspace';
   blocks: Block[];
   template_id?: string;
   is_template?: boolean;

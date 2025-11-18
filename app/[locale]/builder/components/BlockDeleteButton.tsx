@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
-import { useUpdateBoard } from "@/app/lib/hooks/use-boards";
+import { useUpdateBoard } from "@/lib/hooks/use-boards";
 import { cn } from "@/lib/utils";
 
 interface BlockDeleteButtonProps {

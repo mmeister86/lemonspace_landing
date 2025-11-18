@@ -51,13 +51,14 @@ export interface DBBoardWithMeta {
   title: string;
   description?: string | null; // Optional for backward compatibility
   slug: string;
-  visibility: 'private' | 'public' | 'shared'; // Required field
+  visibility: 'private' | 'public' | 'shared' | 'workspace'; // Required field
   thumbnail_url?: string | null; // Optional for backward compatibility
   grid_config: {
     columns: number;
     gap: number;
   };
   blocks: unknown[]; // Legacy JSONB blocks (backward compatibility)
+  metadata?: Record<string, unknown>; // Additional metadata for the board
   template_id?: string | null;
   is_template?: boolean;
   password_hash?: string | null;
@@ -102,7 +103,7 @@ export interface BoardMeta {
   title: string;
   description?: string | null;
   slug: string;
-  visibility: 'private' | 'public' | 'shared';
+  visibility: 'private' | 'public' | 'shared' | 'workspace';
   thumbnailUrl?: string | null;
   ownerId: string;
   gridConfig: {
@@ -141,9 +142,12 @@ export interface APISuccessResponse<T> {
   success: true;
   data: T;
   metadata?: {
-    totalElements: number;
-    totalConnections: number;
-    fetchedAt: string;
+    totalElements?: number;
+    totalConnections?: number;
+    fetchedAt?: string;
+    changedFields?: number;
+    savedAt?: string;
+    updatedAt?: string;
   };
 }
 

@@ -23,7 +23,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useUser } from "@/app/lib/user-context";
+import { useUser } from "@/lib/contexts/user-context";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useUpdateBoardTitle } from "@/app/lib/hooks/use-boards";
+import { useUpdateBoardTitle } from "@/lib/hooks/use-boards";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { toast } from "sonner";
 

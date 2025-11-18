@@ -94,6 +94,7 @@ export function useBoardWithInitialization(boardId: string | null) {
           user_id: query.data.boardMeta.ownerId,
           title: query.data.boardMeta.title,
           slug: query.data.boardMeta.slug,
+          visibility: query.data.boardMeta.visibility,
           grid_config: query.data.boardMeta.gridConfig,
           blocks: query.data.elements.map((el) => ({
             id: el.id,

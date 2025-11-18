@@ -15,7 +15,7 @@ import { NavMain, type NavMainItem } from "@/components/sidebar/nav-main";
 import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavBlocks } from "@/components/sidebar/nav-blocks";
 import { NavUser } from "@/components/sidebar/nav-user";
-import { useRecentBoards } from "@/app/lib/hooks/use-boards";
+import { useRecentBoards } from "@/lib/hooks/use-boards";
 import {
   Sidebar,
   SidebarContent,

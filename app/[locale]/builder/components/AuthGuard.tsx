@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@/app/lib/user-context";
+import { useUser } from "@/lib/contexts/user-context";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";

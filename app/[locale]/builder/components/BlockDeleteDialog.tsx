@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
-import { useUpdateBoard } from "@/app/lib/hooks/use-boards";
+import { useUpdateBoard } from "@/lib/hooks/use-boards";
 import { Loader2Icon } from "lucide-react";
 
 interface BlockDeleteDialogProps {

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useBoardWithInitialization } from "@/app/lib/hooks/use-board";
+import { useBoardWithInitialization } from "@/lib/hooks/use-board";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { BuilderClient } from "../builder-client";
 import { Skeleton } from "@/components/ui/skeleton";

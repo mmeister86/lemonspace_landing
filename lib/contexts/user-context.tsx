@@ -1,10 +1,13 @@
+/* The above class is a UserProvider component in a TypeScript React application that manages user
+authentication and data fetching from a Supabase database. */
+
 "use client";
 
 import { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { User as SupabaseUser, type Session, type UserResponse } from "@supabase/supabase-js";
-import { getOrCreateUser } from "./services/user-service";
-import { handleAuthError } from "./auth-utils";
+import { getOrCreateUser } from "@/lib/services/user-service";
+import { handleAuthError } from "@/lib/auth-utils";
 import type { User } from "@/lib/types/user";
 
 // Custom error class for auth redirect control flow

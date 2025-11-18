@@ -14,14 +14,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useUpdateBoardSlug } from "@/app/lib/hooks/use-boards";
+import { useUpdateBoardSlug } from "@/lib/hooks/use-boards";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
-import { useUser } from "@/app/lib/user-context";
+import { useUser } from "@/lib/contexts/user-context";
 import {
   validateSlug,
   generateSlug,
   checkSlugExistsForUser,
-} from "@/app/lib/services/board-service";
+} from "@/lib/services/board-service";
 import { toast } from "sonner";
 
 const slugSchema = z.object({

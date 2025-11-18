@@ -17,10 +17,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useCreateBoard } from "@/app/lib/hooks/use-boards";
+import { useCreateBoard } from "@/lib/hooks/use-boards";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
-import { useUser } from "@/app/lib/user-context";
-import { generateSlug } from "@/app/lib/services/board-service";
+import { useUser } from "@/lib/contexts/user-context";
+import { generateSlug } from "@/lib/services/board-service";
 import { toast } from "sonner";
 
 // Zod Schema für Validierung (nur Titel ist Pflicht, Slug ist optional)

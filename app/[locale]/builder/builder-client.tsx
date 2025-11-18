@@ -22,8 +22,8 @@ import { BuilderMenubar } from "./components/BuilderMenubar";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import type { Block, BlockType } from "@/lib/types/board";
 import { BlockDeleteDialog } from "./components/BlockDeleteDialog";
-import { useUser } from "@/app/lib/user-context";
-import { useBoards, useCreateBoard, useUpdateBoard } from "@/app/lib/hooks/use-boards";
+import { useUser } from "@/lib/contexts/user-context";
+import { useBoards, useCreateBoard, useUpdateBoard } from "@/lib/hooks/use-boards";
 import { Spinner } from "@/components/ui/spinner";
 
 const VALID_BLOCK_TYPES: BlockType[] = [
