@@ -1,7 +1,6 @@
-import { supabase } from "@/lib/supabase";
 import type { Board, BoardData, GridConfig, Block } from "@/lib/types/board";
 import { getUserByUsername } from "./user-service";
-import { handleAuthError } from "../auth-utils";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 /**
@@ -138,6 +137,7 @@ export function generateSlug(title: string): string {
  * Prüft ob ein Slug für einen bestimmten User bereits existiert
  */
 export async function checkSlugExistsForUser(
+  supabase: SupabaseClient,
   userId: string,
   slug: string,
   excludeBoardId?: string
@@ -172,6 +172,7 @@ export async function checkSlugExistsForUser(
  * Falls der Slug bereits existiert, wird ein Suffix hinzugefügt
  */
 export async function generateUniqueSlugForUser(
+  supabase: SupabaseClient,
   userId: string,
   baseSlug: string
 ): Promise<string> {
@@ -194,7 +195,7 @@ export async function generateUniqueSlugForUser(
   const MAX_ATTEMPTS = 100;
 
   while (
-    (await checkSlugExistsForUser(userId, slug)) &&
+    (await checkSlugExistsForUser(supabase, userId, slug)) &&
     counter <= MAX_ATTEMPTS
   ) {
     const suffix = `-${counter}`;
@@ -215,6 +216,7 @@ export async function generateUniqueSlugForUser(
  * Generiert automatisch einen eindeutigen Slug, falls nicht angegeben
  */
 export async function createBoard(
+  supabase: SupabaseClient,
   userId: string,
   boardData: Partial<Board>
 ): Promise<Board> {
@@ -223,7 +225,7 @@ export async function createBoard(
     let slug = boardData.slug;
     if (!slug && boardData.title) {
       const baseSlug = generateSlug(boardData.title);
-      slug = await generateUniqueSlugForUser(userId, baseSlug);
+      slug = await generateUniqueSlugForUser(supabase, userId, baseSlug);
     } else if (slug) {
       // Validiere Slug-Format
       if (!validateSlug(slug)) {
@@ -231,8 +233,8 @@ export async function createBoard(
       }
 
       // Prüfe Eindeutigkeit
-      if (await checkSlugExistsForUser(userId, slug)) {
-        slug = await generateUniqueSlugForUser(userId, slug);
+      if (await checkSlugExistsForUser(supabase, userId, slug)) {
+        slug = await generateUniqueSlugForUser(supabase, userId, slug);
       }
     } else {
       throw new Error("Slug oder Titel muss angegeben werden");
@@ -263,13 +265,7 @@ export async function createBoard(
 
     return data;
   } catch (error) {
-    // handleAuthError gibt true zurück, wenn ein Auth-Fehler erkannt wurde
-    // und ein Redirect zur Landingpage durchgeführt wurde (nur in Production).
-    // In diesem Fall wird der throw nicht erreicht, da die Seite bereits
-    // weitergeleitet wurde. In Development wird false zurückgegeben.
-    if (handleAuthError(error, "BoardService.createBoard")) {
-      throw error;
-    }
+    console.error("Fehler beim Erstellen des Boards:", error);
     throw error;
   }
 }
@@ -277,7 +273,7 @@ export async function createBoard(
 /**
  * Lädt ein Board anhand der ID
  */
-export async function getBoard(boardId: string): Promise<Board> {
+export async function getBoard(supabase: SupabaseClient, boardId: string): Promise<Board> {
   try {
     const { data, error } = await supabase
       .from("boards")
@@ -296,13 +292,6 @@ export async function getBoard(boardId: string): Promise<Board> {
       blocks: validateBlocks(data.blocks),
     };
   } catch (error) {
-    // handleAuthError gibt true zurück, wenn ein Auth-Fehler erkannt wurde
-    // und ein Redirect zur Landingpage durchgeführt wurde (nur in Production).
-    // In diesem Fall wird der throw nicht erreicht, da die Seite bereits
-    // weitergeleitet wurde. In Development wird false zurückgegeben.
-    if (handleAuthError(error, "BoardService.getBoard")) {
-      throw error;
-    }
     console.error(`[board-service] Failed to get board ${boardId}`, error);
     throw error;
   }
@@ -312,6 +301,7 @@ export async function getBoard(boardId: string): Promise<Board> {
  * Aktualisiert ein Board
  */
 export async function updateBoard(
+  supabase: SupabaseClient,
   boardId: string,
   boardData: Partial<Board>
 ): Promise<Board> {
@@ -357,7 +347,7 @@ export async function updateBoard(
 /**
  * Löscht ein Board
  */
-export async function deleteBoard(boardId: string): Promise<void> {
+export async function deleteBoard(supabase: SupabaseClient, boardId: string): Promise<void> {
   try {
     const { error } = await supabase.from("boards").delete().eq("id", boardId);
 
@@ -365,13 +355,6 @@ export async function deleteBoard(boardId: string): Promise<void> {
       throw error;
     }
   } catch (error) {
-    // handleAuthError gibt true zurück, wenn ein Auth-Fehler erkannt wurde
-    // und ein Redirect zur Landingpage durchgeführt wurde (nur in Production).
-    // In diesem Fall wird der throw nicht erreicht, da die Seite bereits
-    // weitergeleitet wurde. In Development wird false zurückgegeben.
-    if (handleAuthError(error, "BoardService.deleteBoard")) {
-      throw error;
-    }
     console.error(`[board-service] Failed to delete board ${boardId}`, error);
     throw error;
   }
@@ -380,7 +363,7 @@ export async function deleteBoard(boardId: string): Promise<void> {
 /**
  * Lädt alle Boards eines Users
  */
-export async function listBoards(userId: string): Promise<Board[]> {
+export async function listBoards(supabase: SupabaseClient, userId: string): Promise<Board[]> {
   try {
     const { data, error } = await supabase
       .from("boards")
@@ -397,36 +380,24 @@ export async function listBoards(userId: string): Promise<Board[]> {
       blocks: validateBlocks(board.blocks),
     }));
   } catch (error) {
-    // handleAuthError gibt true zurück, wenn ein Auth-Fehler erkannt wurde
-    // und ein Redirect zur Landingpage durchgeführt wurde (nur in Production).
-    // In diesem Fall wird der throw nicht erreicht, da die Seite bereits
-    // weitergeleitet wurde. In Development wird false zurückgegeben.
-    if (handleAuthError(error, "BoardService.listBoards")) {
-      throw error;
-    }
+    console.error("Fehler beim Laden der Boards:", error);
     throw error;
   }
 }
 
 /**
- * Lädt ein Board anhand von Username und Slug
+ * Lädt ein Board anhand von User ID und Slug
  */
-export async function getBoardByUsernameAndSlug(
-  username: string,
+export async function getBoardByUserIdAndSlug(
+  supabase: SupabaseClient,
+  userId: string,
   slug: string
 ): Promise<Board | null> {
   try {
-    // Lade zuerst den User per Username
-    const user = await getUserByUsername(username);
-    if (!user) {
-      return null;
-    }
-
-    // Lade dann das Board per user_id und slug
     const { data, error } = await supabase
       .from("boards")
       .select("*")
-      .eq("user_id", user.auth_user_id)
+      .eq("user_id", userId)
       .eq("slug", slug)
       .single();
 
@@ -444,9 +415,29 @@ export async function getBoardByUsernameAndSlug(
       blocks: validateBlocks(data.blocks),
     };
   } catch (error) {
-    if (handleAuthError(error, "BoardService.getBoardByUsernameAndSlug")) {
-      return null; // Redirect erfolgt, aber wir geben null zurück
+    console.error("Fehler beim Laden des Boards:", error);
+    return null;
+  }
+}
+
+/**
+ * Lädt ein Board anhand von Username und Slug
+ */
+export async function getBoardByUsernameAndSlug(
+  supabase: SupabaseClient,
+  username: string,
+  slug: string
+): Promise<Board | null> {
+  try {
+    // Lade zuerst den User per Username
+    const user = await getUserByUsername(username);
+    if (!user) {
+      return null;
     }
+
+    // Lade dann das Board per user_id und slug
+    return getBoardByUserIdAndSlug(supabase, user.auth_user_id, slug);
+  } catch (error) {
     console.error("Fehler beim Laden des Boards:", error);
     return null;
   }

@@ -44,7 +44,7 @@
 
 - [x] Create PUT method in existing `/api/boards/[id]/route.ts` following Next.js App Router patterns.
 - [x] Implement comprehensive Zod validation for board updates following existing patterns.
-- [ ] Create save-api service with proper error handling and debouncing.
+- [x] Create save-api service with proper error handling and debouncing.
 - [ ] Extend Zustand store with save state management following async action patterns.
 - [ ] Replace existing autosave with unified save system using Zustand async actions.
 - [ ] Integrate manual save in `BuilderMenubar` with proper error handling.
@@ -104,3 +104,24 @@
 - Covers authentication, authorization, validation
 - Includes example request/response formats
 - Documents edge cases and error conditions
+
+## Step 2 Implementation Notes
+
+### ✅ Client Save Service
+- Created `BoardSaveService` class in `lib/services/save-service.ts`
+- Implemented debouncing (1s default) for auto-saving
+- Added `flush()` method for immediate saving (manual save)
+- Implemented queueing system for pending changes
+- Added robust error handling and state management
+- Added retry logic with exponential backoff for background saves
+
+### ✅ API Integration
+- Updated `lib/services/api-board-service.ts` with `updateBoardViaAPI`
+- Handles PUT requests to the new API endpoint
+- Includes timeout handling (25s)
+- Parses detailed validation errors
+
+### ✅ Testing
+- Created unit tests in `lib/services/save-service.test.ts`
+- Verified debouncing, flushing, and error handling scenarios
+- configured `jest.config.js` for the project

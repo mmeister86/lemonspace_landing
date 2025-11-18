@@ -139,7 +139,11 @@ export function createContextualNotFoundResponse(
  * Handles authentication errors with context
  */
 export function handleAuthError(error: unknown): Response | null {
-  if (error && typeof error === "object" && "message" in error) {
+  if (!error) {
+    return null; // No error, auth succeeded
+  }
+
+  if (typeof error === "object" && "message" in error) {
     const authError = error as { message: string };
 
     // Don't treat "Auth session missing" as a real error

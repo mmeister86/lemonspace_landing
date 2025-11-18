@@ -23,6 +23,7 @@ import {
   checkSlugExistsForUser,
 } from "@/lib/services/board-service";
 import { toast } from "sonner";
+import { createBrowserClient } from "@supabase/ssr";
 
 const slugSchema = z.object({
   slug: z
@@ -49,6 +50,16 @@ export function BoardSlugDialog({ open, onOpenChange }: BoardSlugDialogProps) {
   const { user, userData } = useUser();
   const [isCheckingSlug, setIsCheckingSlug] = React.useState(false);
   const [slugError, setSlugError] = React.useState<string | null>(null);
+
+  // Create browser Supabase client
+  const supabase = React.useMemo(
+    () =>
+      createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      ),
+    []
+  );
 
   const form = useForm<SlugFormData>({
     resolver: zodResolver(slugSchema),
@@ -125,6 +136,7 @@ export function BoardSlugDialog({ open, onOpenChange }: BoardSlugDialogProps) {
 
       try {
         const exists = await checkSlugExistsForUser(
+          supabase,
           user.id,
           debouncedSlug,
           currentBoard.id
@@ -188,6 +200,7 @@ export function BoardSlugDialog({ open, onOpenChange }: BoardSlugDialogProps) {
     // Prüfe nochmal auf Eindeutigkeit
     if (data.slug !== currentBoard.slug) {
       const exists = await checkSlugExistsForUser(
+        supabase,
         user.id,
         data.slug,
         currentBoard.id

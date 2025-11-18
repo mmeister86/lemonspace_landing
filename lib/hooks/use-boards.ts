@@ -10,7 +10,6 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listBoards, updateBoard, deleteBoard } from "../services/board-service";
 import { createBoardViaAPI, type CreateBoardAPIRequest } from "../services/api-board-service";
 import { useUser } from "../contexts/user-context";
 import type { Board } from "@/lib/types/board";
@@ -22,7 +21,14 @@ import { toast } from "sonner";
 export function useBoards(userId: string | null) {
   return useQuery<Board[], Error>({
     queryKey: ["boards", userId],
-    queryFn: () => listBoards(userId!),
+    queryFn: async () => {
+      const response = await fetch("/api/boards");
+      if (!response.ok) {
+        throw new Error("Failed to fetch boards");
+      }
+      const result = await response.json();
+      return result.data.boards;
+    },
     enabled: !!userId,
   });
 }
@@ -39,11 +45,12 @@ export function useRecentBoards() {
       if (!user?.id) {
         return [];
       }
-      const allBoards = await listBoards(user.id);
-      // Sort by updated_at in descending order and take the top 5
-      return allBoards
-        .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-        .slice(0, 5);
+      const response = await fetch("/api/boards?recent=true");
+      if (!response.ok) {
+        throw new Error("Failed to fetch recent boards");
+      }
+      const result = await response.json();
+      return result.data.boards;
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -78,7 +85,23 @@ export function useUpdateBoard() {
   const queryClient = useQueryClient();
 
   return useMutation<Board, Error, { boardId: string; boardData: Partial<Board> }>({
-    mutationFn: ({ boardId, boardData }) => updateBoard(boardId, boardData),
+    mutationFn: async ({ boardId, boardData }) => {
+      const response = await fetch(`/api/boards/${boardId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(boardData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || "Failed to update board");
+      }
+
+      const result = await response.json();
+      return result.data.boardMeta;
+    },
     onSuccess: (updatedBoard) => {
       // Update the board in the cache
       queryClient.setQueryData(["boards", updatedBoard.user_id], (oldBoards: Board[] | undefined) =>
@@ -133,7 +156,16 @@ export function useDeleteBoard() {
   const { user } = useUser();
 
   return useMutation<void, Error, string>({
-    mutationFn: (boardId) => deleteBoard(boardId),
+    mutationFn: async (boardId) => {
+      const response = await fetch(`/api/boards/${boardId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || "Failed to delete board");
+      }
+    },
     onSuccess: (_, boardId) => {
       // Remove the board from the cache
       queryClient.setQueryData(["boards", user?.id], (oldBoards: Board[] | undefined) =>

@@ -13,11 +13,11 @@
 
 import { NextRequest } from "next/server";
 import type { Board } from "@/lib/types/board";
-import type { BoardElement, ElementConnection } from "@/lib/types/board-api";
+import type { BoardResponse } from "@/lib/types/board-api";
 import {
   createSupabaseUserContext
 } from "@/lib/services/auth-service";
-import { getBoard, getBoardByUsernameAndSlug } from "@/lib/services/board-service";
+import { getBoard, getBoardByUsernameAndSlug, getBoardByUserIdAndSlug } from "@/lib/services/board-service";
 import { isUUID } from "@/lib/utils";
 import {
   createSuccessResponse,
@@ -40,6 +40,7 @@ import {
 import {
   transformDBBoardToMeta
 } from "@/lib/transformers/board-transformers";
+import { updateBoard, deleteBoard } from "@/lib/services/board-service";
 
 // ===========================================
 // Main PUT Handler
@@ -221,18 +222,26 @@ export async function GET(
     let boardError: { message: string; code: string } | Error | null = null;
 
     if (username) {
-      boardData = await getBoardByUsernameAndSlug(username, boardId);
+      boardData = await getBoardByUsernameAndSlug(supabase, username, boardId);
       if (!boardData) {
         boardError = { code: "PGRST116", message: "Board not found for this user and slug" };
       }
     } else if (isUUID(boardId)) {
       try {
-        boardData = await getBoard(boardId);
+        boardData = await getBoard(supabase, boardId);
       } catch (e) {
         boardError = e as Error | { message: string; code: string };
       }
     } else {
-      boardError = { message: "Invalid identifier", code: "22P02" };
+      // Slug without username - fetch for current user if authenticated
+      if (user) {
+        boardData = await getBoardByUserIdAndSlug(supabase, user.id, boardId);
+        if (!boardData) {
+          boardError = { code: "PGRST116", message: "Board not found" };
+        }
+      } else {
+        boardError = { message: "Invalid identifier", code: "22P02" };
+      }
     }
 
     if (boardError) {
@@ -288,24 +297,7 @@ export async function GET(
       collaboratorRole = collaborator?.role || null;
     }
 
-    // 6. Build complete board response with elements, connections, and permissions
-    const response = {
-      ...board,
-      permissions: {
-        canEdit: board.user_id === user?.id ||
-                 collaboratorRole === 'admin' ||
-                 collaboratorRole === 'editor',
-        canView: board.visibility === 'public' ||
-                 board.visibility === 'shared' ||
-                 board.visibility === 'workspace' ||
-                 board.user_id === user?.id ||
-                 collaboratorRole !== null,
-      },
-      elements: [] as BoardElement[], // Will be populated in next step
-      connections: [] as ElementConnection[], // Will be populated in next step
-    };
-
-    // 7. Fetch elements and connections for the board
+    // 6. Fetch elements and connections for the board
     const [elements, connections] = await Promise.all([
       supabase
         .from("board_elements")
@@ -319,11 +311,28 @@ export async function GET(
         .order("created_at", { ascending: true })
     ]);
 
-    // Update response with actual elements and connections
-    response.elements = elements.data || [];
-    response.connections = connections.data || [];
+    // 7. Transform board to BoardMeta format
+    const boardMeta = transformDBBoardToMeta(board);
 
-    // 8. Performance logging
+    // 8. Determine user's role and permissions
+    const isOwner = board.user_id === user?.id;
+    const role = isOwner ? 'owner' : (collaboratorRole as 'admin' | 'editor' | 'viewer' || 'viewer');
+
+    // 9. Build complete BoardResponse with proper structure
+    const response: BoardResponse = {
+      boardMeta,
+      elements: elements.data || [],
+      connections: connections.data || [],
+      permissions: {
+        canEdit: isOwner || collaboratorRole === 'admin' || collaboratorRole === 'editor',
+        canShare: isOwner || collaboratorRole === 'admin',
+        canDelete: isOwner,
+        isOwner,
+        role,
+      },
+    };
+
+    // 10. Performance logging
     const duration = Date.now() - startTime;
     const identifierType = boardId.includes('-') ? "UUID" : "Slug";
     console.log(
@@ -355,6 +364,206 @@ export async function GET(
 
   } catch (error) {
     console.error("[API] Unexpected error in GET /api/boards/[id]:", error);
+    return handleError(error);
+  }
+}
+
+// ===========================================
+// PATCH Handler (for consistency with REST conventions)
+// ===========================================
+
+/**
+ * Handles PATCH requests to update a board
+ * Wrapper around PUT handler for REST API consistency
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const startTime = Date.now();
+
+  try {
+    // 1. Extract and validate board ID
+    const { id: boardId } = await params;
+    const idValidation = validateBoardId(boardId);
+    if (!idValidation.isValid) {
+      return idValidation.error;
+    }
+
+    // 2. Check authentication
+    const {
+      supabase,
+      user,
+      error: authError,
+    } = await createSupabaseUserContext(request);
+
+    const authErrorResult = handleAuthError(authError);
+    if (authErrorResult) {
+      return authErrorResult;
+    }
+
+    if (!user) {
+      return createAuthErrorResponse("Authentication required for board updates");
+    }
+
+    // 3. Parse and validate request body
+    let requestBody: unknown;
+    try {
+      requestBody = await request.json();
+    } catch {
+      return createValidationErrorResponse([{
+        field: "body",
+        message: "Invalid JSON in request body",
+      }]);
+    }
+
+    // 4. Validate payload using Zod
+    const validationResult = updateBoardSchema.safeParse(requestBody);
+    if (!validationResult.success) {
+      const errorDetails = validationResult.error.issues.map(issue => ({
+        field: issue.path.join('.'),
+        message: issue.message,
+      }));
+
+      return createValidationErrorResponse(errorDetails);
+    }
+
+    const updateData = validationResult.data as UpdateBoardData;
+
+    // 5. Verify board exists and check ownership
+    const { data: existingBoard, error: fetchError } = await supabase
+      .from("boards")
+      .select("id, user_id, owner_id")
+      .eq("id", boardId)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === "PGRST116") {
+        return createNotFoundResponse("Board not found");
+      }
+
+      console.error("[API] Database error fetching board:", fetchError);
+      return createDatabaseErrorResponse(fetchError.message);
+    }
+
+    // Check permissions (only owners can update boards)
+    const ownerId = (existingBoard.user_id || existingBoard.owner_id) as string;
+    if (ownerId !== user.id) {
+      return createForbiddenResponse("You do not have permission to update this board");
+    }
+
+    // 6. Update board using service layer
+    const updatedBoard = await updateBoard(supabase, boardId, updateData);
+
+    // 6. Transform board data for response
+    const boardMeta = transformDBBoardToMeta(updatedBoard);
+
+    // 7. Construct response
+    const savedAt = new Date().toISOString();
+    const response = {
+      boardMeta,
+      changedFields: Object.keys(updateData),
+      savedAt,
+    };
+
+    // 8. Performance logging
+    const duration = Date.now() - startTime;
+    console.log(
+      `[API] PATCH /api/boards/${boardId} completed in ${duration}ms (${Object.keys(updateData).length} fields changed)`
+    );
+
+    return createSuccessResponse(
+      response,
+      {
+        changedFields: Object.keys(updateData).length,
+        savedAt,
+        updatedAt: updatedBoard.updated_at,
+      }
+    );
+
+  } catch (error) {
+    console.error("[API] Unexpected error in PATCH /api/boards/[id]:", error);
+    return handleError(error);
+  }
+}
+
+// ===========================================
+// DELETE Handler
+// ===========================================
+
+/**
+ * Handles DELETE requests to delete a board
+ * Verifies ownership before deletion
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const startTime = Date.now();
+
+  try {
+    // 1. Extract and validate board ID
+    const { id: boardId } = await params;
+    const idValidation = validateBoardId(boardId);
+    if (!idValidation.isValid) {
+      return idValidation.error;
+    }
+
+    // 2. Check authentication
+    const {
+      supabase,
+      user,
+      error: authError,
+    } = await createSupabaseUserContext(request);
+
+    const authErrorResult = handleAuthError(authError);
+    if (authErrorResult) {
+      return authErrorResult;
+    }
+
+    if (!user) {
+      return createAuthErrorResponse("Authentication required to delete boards");
+    }
+
+    // 3. Verify board exists and check ownership
+    const { data: existingBoard, error: fetchError } = await supabase
+      .from("boards")
+      .select("id, user_id, owner_id")
+      .eq("id", boardId)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === "PGRST116") {
+        return createNotFoundResponse("Board not found");
+      }
+
+      console.error("[API] Database error fetching board:", fetchError);
+      return createDatabaseErrorResponse(fetchError.message);
+    }
+
+    // 4. Check permissions (only owners can delete boards)
+    const ownerId = (existingBoard.user_id || existingBoard.owner_id) as string;
+    if (ownerId !== user.id) {
+      return createForbiddenResponse("You do not have permission to delete this board");
+    }
+
+    // 5. Delete the board using service layer
+    await deleteBoard(supabase, boardId);
+
+    // 6. Performance logging
+    const duration = Date.now() - startTime;
+    console.log(`[API] DELETE /api/boards/${boardId} completed in ${duration}ms`);
+
+    return createSuccessResponse(
+      {
+        message: "Board deleted successfully",
+        boardId,
+        deletedAt: new Date().toISOString(),
+      }
+    );
+
+  } catch (error) {
+    console.error("[API] Unexpected error in DELETE /api/boards/[id]:", error);
     return handleError(error);
   }
 }
