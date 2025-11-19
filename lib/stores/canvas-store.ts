@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Board, Block } from "@/lib/types/board";
+import type { SaveStatus } from "@/lib/services/save-service";
 
 type BoardLoadingState = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -14,6 +15,12 @@ interface CanvasState {
   lastBoardId: string | null;
   boardLoadingState: BoardLoadingState;
 
+  // Save state
+  saveStatus: SaveStatus;
+  lastSavedAt: Date | null;
+  hasUnsavedChanges: boolean;
+  saveError: Error | null;
+
   // Actions
   setCurrentBoard: (board: Board | null) => void;
   addBlock: (block: Block) => void;
@@ -26,6 +33,14 @@ interface CanvasState {
   setNavigating: (isNavigating: boolean) => void;
   setLastBoardId: (id: string | null) => void;
   setBoardLoadingState: (state: BoardLoadingState) => void;
+
+  // Save actions
+  setSaveStatus: (status: SaveStatus) => void;
+  setLastSavedAt: (date: Date | null) => void;
+  setHasUnsavedChanges: (hasChanges: boolean) => void;
+  setSaveError: (error: Error | null) => void;
+  resetSaveState: () => void;
+
   reset: () => void;
 }
 
@@ -37,6 +52,12 @@ const initialState = {
   isNavigating: false,
   lastBoardId: null,
   boardLoadingState: 'idle' as const,
+
+  // Save state defaults
+  saveStatus: 'idle' as SaveStatus,
+  lastSavedAt: null,
+  hasUnsavedChanges: false,
+  saveError: null,
 };
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -47,6 +68,11 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       currentBoard: board,
       blocks: board?.blocks || [],
       showDropArea: true, // Always available
+      // Reset save state when switching boards
+      saveStatus: 'idle',
+      lastSavedAt: null,
+      hasUnsavedChanges: false,
+      saveError: null,
     }),
 
   addBlock: (block) =>
@@ -110,6 +136,17 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   setLastBoardId: (id) => set({ lastBoardId: id }),
 
   setBoardLoadingState: (boardLoadingState: BoardLoadingState) => set({ boardLoadingState }),
+
+  setSaveStatus: (status) => set({ saveStatus: status }),
+  setLastSavedAt: (date) => set({ lastSavedAt: date }),
+  setHasUnsavedChanges: (hasChanges) => set({ hasUnsavedChanges: hasChanges }),
+  setSaveError: (error) => set({ saveError: error }),
+  resetSaveState: () => set({
+    saveStatus: 'idle',
+    lastSavedAt: null,
+    hasUnsavedChanges: false,
+    saveError: null,
+  }),
 
   reset: () => set(initialState),
 }));

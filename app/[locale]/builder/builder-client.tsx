@@ -25,6 +25,7 @@ import { BlockDeleteDialog } from "./components/BlockDeleteDialog";
 import { useUser } from "@/lib/contexts/user-context";
 import { useBoards, useCreateBoard, useUpdateBoard } from "@/lib/hooks/use-boards";
 import { Spinner } from "@/components/ui/spinner";
+import { useSaveService } from "@/lib/hooks/use-save-service";
 
 const VALID_BLOCK_TYPES: BlockType[] = [
   "text",
@@ -63,11 +64,12 @@ export function BuilderClient() {
   const createBoardMutation = useCreateBoard();
   const updateBoardMutation = useUpdateBoard();
 
+  // Initialize save service
+  const { flush: flushPendingSave } = useSaveService();
+
   // Refs to avoid stale closures and infinite loops
   const createBoardMutationRef = useRef(createBoardMutation);
   const updateBoardMutationRef = useRef(updateBoardMutation);
-  const lastSavedBlocksRef = useRef<string>("");
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Keep refs up to date
   useEffect(() => {
@@ -137,80 +139,7 @@ export function BuilderClient() {
     previousSlugRef.current = currentBoardSlug || null;
   }, [currentBoardSlug, pathname, router, isNavigating, boardLoadingState]);
 
-  // Auto-Save für Block-Änderungen
-  useEffect(() => {
-    if (!currentBoard || !user?.id) return;
-
-    const currentBlocksJson = JSON.stringify(blocks);
-
-    // Skip if blocks haven't actually changed
-    if (currentBlocksJson === lastSavedBlocksRef.current) {
-      return;
-    }
-
-    // Speichere Blöcke, wenn sie sich geändert haben
-    const saveBlocks = async () => {
-      try {
-        await updateBoardMutationRef.current.mutateAsync({
-          boardId: currentBoard.id,
-          boardData: {
-            ...currentBoard,
-            blocks: blocks,
-          },
-        });
-        lastSavedBlocksRef.current = currentBlocksJson;
-        saveTimeoutRef.current = null;
-      } catch (error) {
-        console.error("Fehler beim Speichern der Blöcke:", error);
-        // Kein Toast bei Auto-Save, da es störend wäre
-      }
-    };
-
-    // Debounce, um zu viele Speicherungen zu vermeiden
-    saveTimeoutRef.current = setTimeout(saveBlocks, 1000);
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-        saveTimeoutRef.current = null;
-      }
-    };
-  }, [blocks, currentBoard, user?.id]);
-
-  // Function to immediately save any pending changes
-  const flushPendingSave = async (): Promise<boolean> => {
-    if (!currentBoard || !user?.id) return true;
-
-    const currentBlocksJson = JSON.stringify(blocks);
-
-    // If there are no pending changes, return immediately
-    if (currentBlocksJson === lastSavedBlocksRef.current) {
-      return true;
-    }
-
-    try {
-      // Clear any pending timeout
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-        saveTimeoutRef.current = null;
-      }
-
-      // Save immediately
-      await updateBoardMutationRef.current.mutateAsync({
-        boardId: currentBoard.id,
-        boardData: {
-          ...currentBoard,
-          blocks: blocks,
-        },
-      });
-      lastSavedBlocksRef.current = currentBlocksJson;
-      console.log('[BuilderClient] Flushed pending save before refresh');
-      return true;
-    } catch (error) {
-      console.error("Fehler beim Speichern der Blöcke:", error);
-      return false;
-    }
-  };
+  // Auto-Save is now handled by useSaveService hook
 
   // Handle retry with save and soft refresh
   const handleRetry = async () => {
@@ -396,7 +325,11 @@ export function BuilderClient() {
                     orientation="vertical"
                     className="mr-2 data-[orientation=vertical]:h-4"
                   />
-                  <BuilderMenubar zoomLevel={zoomLevel} onZoomChange={setZoomLevel} />
+                  <BuilderMenubar
+                    zoomLevel={zoomLevel}
+                    onZoomChange={setZoomLevel}
+                    onSave={flushPendingSave}
+                  />
                 </div>
                 <ViewportSwitcher
                   currentViewport={currentViewport}

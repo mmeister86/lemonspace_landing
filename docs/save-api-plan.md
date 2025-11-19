@@ -45,28 +45,31 @@
 - [x] Create PUT method in existing `/api/boards/[id]/route.ts` following Next.js App Router patterns.
 - [x] Implement comprehensive Zod validation for board updates following existing patterns.
 - [x] Create save-api service with proper error handling and debouncing.
-- [ ] Extend Zustand store with save state management following async action patterns.
-- [ ] Replace existing autosave with unified save system using Zustand async actions.
-- [ ] Integrate manual save in `BuilderMenubar` with proper error handling.
-- [ ] Add save status indicators using toast notifications and UI feedback.
-- [ ] Implement optimistic updates with rollback on save failure.
-- [ ] Add retry mechanism with exponential backoff for failed saves.
-- [ ] Create comprehensive save queue system for handling rapid changes.
+- [x] Extend Zustand store with save state management following async action patterns.
+- [x] Replace existing autosave with unified save system using Zustand async actions.
+- [x] Integrate manual save in `BuilderMenubar` with proper error handling.
+- [x] Add save status indicators using toast notifications and UI feedback.
+- [x] Implement optimistic updates with rollback on save failure.
+- [x] Add retry mechanism with exponential backoff for failed saves.
+- [x] Create comprehensive save queue system for handling rapid changes.
 
 ## Step 1 Implementation Notes
 
 ### ✅ PUT Method Handler
+
 - Added comprehensive PUT endpoint to `/api/boards/[id]/route.ts`
 - Follows Next.js App Router patterns with proper async/await
 - Includes parameter validation and error handling
 
 ### ✅ Authentication & Authorization
+
 - Uses existing `createSupabaseUserContext` pattern
 - Verifies user is authenticated (401 if not)
 - Checks board ownership (403 if not owner)
 - Supports both `user_id` and `owner_id` for backward compatibility
 
 ### ✅ Zod Validation
+
 - Created comprehensive schemas extending existing patterns
 - Supports partial updates with all fields optional
 - Validates grid_config, blocks, title, slug, visibility, metadata
@@ -74,6 +77,7 @@
 - Returns detailed validation errors with field-level feedback
 
 ### ✅ Database Operations
+
 - Uses Supabase client with proper error handling
 - Implements partial updates (only updates provided fields)
 - Compares existing values to avoid unnecessary database operations
@@ -81,12 +85,14 @@
 - Updates `updated_at` timestamp automatically
 
 ### ✅ Response Structure
+
 - Consistent with existing API response patterns
 - Returns updated board data with metadata
 - Includes `changedFields` array and `savedAt` information
 - Proper HTTP status codes for all scenarios
 
 ### ✅ Error Handling
+
 - **400** for validation errors, invalid JSON, no changes
 - **401** for authentication errors
 - **403** for authorization errors
@@ -95,11 +101,13 @@
 - Detailed error messages and stack traces in development
 
 ### ✅ Type Safety
+
 - Updated APIResponse types to support new metadata fields
 - All TypeScript compilation successful
 - Proper typing for request/response payloads
 
 ### ✅ Testing Documentation
+
 - Added comprehensive test scenarios to `route.test.ts`
 - Covers authentication, authorization, validation
 - Includes example request/response formats
@@ -108,6 +116,7 @@
 ## Step 2 Implementation Notes
 
 ### ✅ Client Save Service
+
 - Created `BoardSaveService` class in `lib/services/save-service.ts`
 - Implemented debouncing (1s default) for auto-saving
 - Added `flush()` method for immediate saving (manual save)
@@ -116,12 +125,44 @@
 - Added retry logic with exponential backoff for background saves
 
 ### ✅ API Integration
+
 - Updated `lib/services/api-board-service.ts` with `updateBoardViaAPI`
 - Handles PUT requests to the new API endpoint
 - Includes timeout handling (25s)
 - Parses detailed validation errors
 
 ### ✅ Testing
+
 - Created unit tests in `lib/services/save-service.test.ts`
 - Verified debouncing, flushing, and error handling scenarios
 - configured `jest.config.js` for the project
+
+## Step 3 Implementation Notes
+
+### ✅ State Management (Zustand)
+
+- Extended `CanvasState` in `lib/stores/canvas-store.ts`
+- Added `saveStatus`, `lastSavedAt`, `hasUnsavedChanges`, `saveError` to state
+- Implemented actions: `setSaveStatus`, `setLastSavedAt`, `setHasUnsavedChanges`, `setSaveError`, `resetSaveState`
+- Updated `setCurrentBoard` to automatically reset save state when switching boards
+
+## Step 4 Implementation Notes
+
+### ✅ UI Integration
+
+- Created `useSaveService` hook in `lib/hooks/use-save-service.ts` to bridge `BoardSaveService` and `useCanvasStore`
+- Refactored `BuilderClient` to use `useSaveService` and removed old ad-hoc autosave logic
+- Updated `BuilderMenubar` to support manual save via `onSave` prop
+- Added visual save status indicators (Saving..., Saved, Error) to `BuilderMenubar`
+- Implemented toast notifications for save success/error via `useSaveService`
+
+## Step 5 Implementation Notes
+
+### ✅ Resilience & UX
+
+- Implemented rollback logic in `BoardSaveService` by tracking `lastSavedState`
+- Added `initializeState` method to `BoardSaveService` to set initial rollback point
+- Updated `useSaveService` to initialize service with current board state
+- Implemented rollback action in toast notification when save fails
+- Enhanced `api-board-service.ts` to throw typed `APIError` with status codes and details
+- Verified exponential backoff and request coalescing in `BoardSaveService`

@@ -288,7 +288,16 @@
     },
     "error": {
       "loadingBoard": "Error loading board",
-      "retry": "Try again"
+      "retry": "Try again",
+      "rollback": "Revert",
+      "saveFailed": "Save failed"
+    },
+    "success": {
+      "saved": "Board saved",
+      "rollbackComplete": "Changes have been reverted"
+    },
+    "info": {
+      "rollbackComplete": "Changes have been reverted"
     }
   }
 }

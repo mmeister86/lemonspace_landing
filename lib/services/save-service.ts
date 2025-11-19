@@ -8,6 +8,7 @@ export type SaveState = {
     lastSavedAt?: Date;
     error?: Error;
     hasUnsavedChanges: boolean;
+    lastSavedState?: Partial<Board>;
 };
 
 type SaveListener = (state: SaveState) => void;
@@ -15,6 +16,7 @@ type SaveListener = (state: SaveState) => void;
 export class BoardSaveService {
     private boardId: string;
     private pendingChanges: Partial<Board> = {};
+    private lastSavedState: Partial<Board> = {};
     private status: SaveStatus = "idle";
     private lastSavedAt?: Date;
     private error?: Error;
@@ -44,6 +46,14 @@ export class BoardSaveService {
     }
 
     /**
+     * Initialize the service with the initial state of the board.
+     * This is used for rollback purposes.
+     */
+    public initializeState(initialState: Partial<Board>) {
+        this.lastSavedState = { ...initialState };
+    }
+
+    /**
      * Force an immediate save of any pending changes.
      * Cancels any pending debounce timer.
      */
@@ -52,7 +62,22 @@ export class BoardSaveService {
             clearTimeout(this.saveTimeout);
             this.saveTimeout = null;
         }
-        return this.performSave();
+
+        // If nothing to save, simulate a save sequence for UI feedback
+        if (Object.keys(this.pendingChanges).length === 0) {
+            this.status = "saving";
+            this.notifyListeners();
+
+            // Small delay to let the user see the "Saving..." state
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            this.status = "saved";
+            this.lastSavedAt = new Date();
+            this.notifyListeners();
+            return;
+        }
+
+        return this.performSave(false); // false = not background save
     }
 
     /**
@@ -77,6 +102,7 @@ export class BoardSaveService {
             lastSavedAt: this.lastSavedAt,
             error: this.error,
             hasUnsavedChanges: Object.keys(this.pendingChanges).length > 0,
+            lastSavedState: this.lastSavedState,
         };
     }
 
@@ -111,6 +137,12 @@ export class BoardSaveService {
         this.status = "saving";
         this.notifyListeners();
 
+        console.log(`[BoardSaveService] Starting save for board ${this.boardId}`, {
+            retryCount,
+            isBackground,
+            pendingChangesKeys: Object.keys(this.pendingChanges)
+        });
+
         // Capture changes to save
         // Simplified approach:
         // Take all pending changes. Clear pending changes.
@@ -130,16 +162,22 @@ export class BoardSaveService {
         try {
             await updateBoardViaAPI(this.boardId, changesInFlight);
 
+            console.log(`[BoardSaveService] Save successful for board ${this.boardId}`);
+
             this.status = "saved";
             this.lastSavedAt = new Date();
             this.error = undefined;
 
+            // Update last saved state
+            this.lastSavedState = { ...this.lastSavedState, ...changesInFlight };
+
             // If there are new pending changes that happened while we were saving, schedule another save
             if (Object.keys(this.pendingChanges).length > 0) {
+                console.log(`[BoardSaveService] New changes detected during save, scheduling next save`);
                 this.scheduleSave();
             }
         } catch (err) {
-            console.error(`Save failed (attempt ${retryCount + 1}):`, err);
+            console.error(`[BoardSaveService] Save failed for board ${this.boardId} (attempt ${retryCount + 1}):`, err);
 
             // Restore changes that failed to save, but respect newer changes
             this.pendingChanges = {
@@ -153,6 +191,7 @@ export class BoardSaveService {
                 this.isRequestInFlight = false; // Reset flag so retry can run
 
                 // Schedule retry
+                console.log(`[BoardSaveService] Scheduling retry ${retryCount + 1} in ${delay}ms`);
                 this.saveTimeout = setTimeout(() => {
                     this.performSave(true, retryCount + 1);
                 }, delay);
@@ -161,6 +200,7 @@ export class BoardSaveService {
                 return;
             }
 
+            console.error(`[BoardSaveService] Max retries reached or fatal error. Status set to error.`);
             this.status = "error";
             this.error = err instanceof Error ? err : new Error("Unknown error during save");
 

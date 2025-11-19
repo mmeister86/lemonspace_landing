@@ -288,7 +288,16 @@
     },
     "error": {
       "loadingBoard": "Fehler beim Laden des Boards",
-      "retry": "Erneut versuchen"
+      "retry": "Erneut versuchen",
+      "rollback": "Zurücksetzen",
+      "saveFailed": "Speichern fehlgeschlagen"
+    },
+    "success": {
+      "saved": "Board gespeichert",
+      "rollbackComplete": "Änderungen wurden rückgängig gemacht"
+    },
+    "info": {
+      "rollbackComplete": "Änderungen wurden rückgängig gemacht"
     }
   }
 }

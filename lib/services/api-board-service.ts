@@ -1,5 +1,12 @@
 import type { Board, GridConfig, Block } from "@/lib/types/board";
 
+export class APIError extends Error {
+  constructor(message: string, public statusCode?: number, public details?: unknown) {
+    super(message);
+    this.name = 'APIError';
+  }
+}
+
 export interface CreateBoardAPIRequest {
   title: string;
   slug?: string;
@@ -32,8 +39,10 @@ export async function createBoardViaAPI(
     if (!response.ok) {
       let errorMessage = "createBoard.error.createFailed";
 
+      let errorDetails = undefined;
       try {
         const errorData = await response.json();
+        errorDetails = errorData?.details;
 
         if (errorData.error) {
           errorMessage = errorData.error;
@@ -56,7 +65,7 @@ export async function createBoardViaAPI(
         console.error("Error parsing API error response:", parseError);
       }
 
-      throw new Error(errorMessage);
+      throw new APIError(errorMessage, response.status, errorDetails);
     }
 
     try {
@@ -64,12 +73,12 @@ export async function createBoardViaAPI(
       return board;
     } catch (parseError) {
       console.error("Error parsing API response:", parseError);
-      throw new Error("Invalid response received from server");
+      throw new APIError("Invalid response received from server");
     }
   } catch (error) {
     // Handle AbortController timeout specifically
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error("Request timed out. Please try again.");
+      throw new APIError("Request timed out. Please try again.", 408);
     }
     throw error;
   } finally {
@@ -102,8 +111,10 @@ export async function updateBoardViaAPI(
     if (!response.ok) {
       let errorMessage = "updateBoard.error.updateFailed";
 
+      let errorDetails = undefined;
       try {
         const errorData = await response.json();
+        errorDetails = errorData?.details;
 
         if (errorData.error) {
           errorMessage = errorData.error;
@@ -126,7 +137,7 @@ export async function updateBoardViaAPI(
         console.error("Error parsing API error response:", parseError);
       }
 
-      throw new Error(errorMessage);
+      throw new APIError(errorMessage, response.status, errorDetails);
     }
 
     try {
@@ -134,12 +145,12 @@ export async function updateBoardViaAPI(
       return result.data;
     } catch (parseError) {
       console.error("Error parsing API response:", parseError);
-      throw new Error("Invalid response received from server");
+      throw new APIError("Invalid response received from server");
     }
   } catch (error) {
     // Handle AbortController timeout specifically
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error("Request timed out. Please try again.");
+      throw new APIError("Request timed out. Please try again.", 408);
     }
     throw error;
   } finally {
