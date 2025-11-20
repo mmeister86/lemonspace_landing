@@ -8,60 +8,60 @@ import HeroSvg from "@/components/hero-svg";
 import { LayoutTextFlip } from "@/components/ui/layout-text-flip";
 
 export default function HeroSection() {
-  const t = useTranslations("hero");
+    const t = useTranslations("hero");
 
-  const words = [
-    t("words.salespeople"),
-    t("words.marketingTeams"),
-    t("words.sellers"),
-    t("words.salesPros"),
-    t("words.accountManagers"),
-  ];
+    const words = [
+        t("words.salespeople"),
+        t("words.marketingTeams"),
+        t("words.sellers"),
+        t("words.salesPros"),
+        t("words.accountManagers"),
+    ];
 
-  return (
-    <main className="overflow-hidden">
-      <section className="bg-background">
-        <div className="relative pt-24 pb-16">
-          <div className="mx-auto max-w-7xl px-6">
-            <div className="max-w-5xl text-center sm:mx-auto lg:mr-auto lg:mt-0 lg:w-4/5">
-              <h1 className="mt-8 text-balance text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-foreground">
-                {t("title")}
-                <br />
-                {t("titleSuffix")}{" "}
-                <LayoutTextFlip
-                  showText={false}
-                  words={words}
-                  duration={6000}
-                  wordClassName="inline-block text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] bg-transparent shadow-none ring-0 border-0 px-0 py-0 rounded-none overflow-visible dark:bg-transparent dark:shadow-none dark:ring-0 text-lemonspace dark:text-lemonspace"
-                />
-              </h1>
-              <p className="mx-auto mt-6 hidden max-w-2xl text-wrap text-lg sm:block text-muted-foreground">
-                {t("description")}
-              </p>
-              <p className="mx-auto mt-6 max-w-2xl text-wrap sm:hidden text-muted-foreground">
-                {t("descriptionMobile")}
-              </p>
+    return (
+        <main className="overflow-hidden">
+            <section className="bg-background">
+                <div className="relative pt-24 pb-16">
+                    <div className="mx-auto max-w-7xl px-6">
+                        <div className="max-w-5xl text-center sm:mx-auto lg:mr-auto lg:mt-0 lg:w-4/5">
+                            <h1 className="mt-8 text-balance text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] text-foreground">
+                                {t("title")}
+                                <br />
+                                {t("titleSuffix")}{" "}
+                                <LayoutTextFlip
+                                    showText={false}
+                                    words={words}
+                                    duration={6000}
+                                    wordClassName="inline-block text-5xl font-bold md:text-[6rem] xl:text-[6rem] xl:leading-[0.95] bg-transparent shadow-none ring-0 border-0 px-0 py-0 rounded-none overflow-visible dark:bg-transparent dark:shadow-none dark:ring-0 text-lemonspace dark:text-lemonspace"
+                                />
+                            </h1>
+                            <p className="mx-auto mt-6 hidden max-w-2xl text-wrap text-lg sm:block text-muted-foreground">
+                                {t("description")}
+                            </p>
+                            <p className="mx-auto mt-6 max-w-2xl text-wrap sm:hidden text-muted-foreground">
+                                {t("descriptionMobile")}
+                            </p>
 
-              <div className="relative z-20 mt-8">
-                <Button
-                  size="lg"
-                  className="bg-lemonspace hover:bg-green-800/90 dark:bg-lemonspace dark:hover:bg-green-800 text-white dark:text-white cursor-pointer"
-                  asChild
-                >
-                  <Link href="/signup">
-                    <Rocket className="relative size-4" />
-                    <span className="text-nowrap">{t("cta")}</span>
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
+                            <div className="relative z-20 mt-8">
+                                <Button
+                                    size="lg"
+                                    className="bg-lemonspace hover:bg-green-800/90 dark:bg-lemonspace dark:hover:bg-green-800 text-white dark:text-white cursor-pointer"
+                                    asChild
+                                >
+                                    <Link href="/signup">
+                                        <Rocket className="relative size-4" />
+                                        <span className="text-nowrap">{t("cta")}</span>
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
 
-          <div className="hidden md:block relative mx-auto mt-[-100px] max-w-[90%] h-[40vw] overflow-hidden z-10 pointer-events-none">
-            <HeroSvg className="w-full h-full object-cover object-top" />
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+                    <div className="hidden md:block relative mx-auto mt-[-100px] max-w-[90%] h-[40vw] overflow-hidden z-10 pointer-events-none">
+                        <HeroSvg className="w-full h-full object-cover object-top" />
+                    </div>
+                </div>
+            </section>
+        </main>
+    );
 }

@@ -20,6 +20,7 @@ interface CanvasState {
     lastSavedAt: Date | null;
     hasUnsavedChanges: boolean;
     saveError: Error | null;
+    isAutosaveEnabled: boolean;
 
     // Actions
     setCurrentBoard: (board: Board | null) => void;
@@ -39,6 +40,7 @@ interface CanvasState {
     setLastSavedAt: (date: Date | null) => void;
     setHasUnsavedChanges: (hasChanges: boolean) => void;
     setSaveError: (error: Error | null) => void;
+    setAutosaveEnabled: (enabled: boolean) => void;
     resetSaveState: () => void;
 
     reset: () => void;
@@ -58,6 +60,7 @@ const initialState = {
     lastSavedAt: null,
     hasUnsavedChanges: false,
     saveError: null,
+    isAutosaveEnabled: true,
 };
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -141,6 +144,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
     setLastSavedAt: (date) => set({ lastSavedAt: date }),
     setHasUnsavedChanges: (hasChanges) => set({ hasUnsavedChanges: hasChanges }),
     setSaveError: (error) => set({ saveError: error }),
+    setAutosaveEnabled: (enabled) => set({ isAutosaveEnabled: enabled }),
     resetSaveState: () => set({
         saveStatus: 'idle',
         lastSavedAt: null,

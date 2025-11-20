@@ -1,303 +1,308 @@
 {
-  "metadata": {
-    "title": "LemonSpace.io",
-    "description": "LemonSpace.io ist eine Plattform zum Erstellen und Verwalten von Marketing-Boards für soziale Medien."
-  },
-  "navbar": {
-    "features": "Features",
-    "pricing": "Preise",
-    "about": "Über uns",
-    "builder": "Builder",
-    "logout": "Abmelden",
-    "login": "Login",
-    "signup": "Registrieren",
-    "user": "Benutzer",
-    "closeMenu": "Menü schließen",
-    "openMenu": "Menü öffnen"
-  },
-  "hero": {
-    "title": "Professionelle Marketing Boards",
-    "titleSuffix": "für",
-    "words": {
-      "salespeople": "Vertriebler",
-      "marketingTeams": "Marketing-Teams",
-      "sellers": "Verkäufer",
-      "salesPros": "Sales-Profis",
-      "accountManagers": "Account Manager"
+    "metadata": {
+        "title": "LemonSpace.io",
+        "description": "LemonSpace.io ist eine Plattform zum Erstellen und Verwalten von Marketing-Boards für soziale Medien."
     },
-    "description": "Erstelle interaktive, ansprechende Verkaufsunterlagen ohne technische Kenntnisse. So einfach wie PowerPoint, so leistungsfähig wie eine moderne Webanwendung.",
-    "descriptionMobile": "Erstelle interaktive Verkaufsunterlagen ohne technische Kenntnisse. Einfach, professionell, messbar.",
-    "cta": "Kostenlos starten"
-  },
-  "features": {
-    "dragDrop": {
-      "title": "Drag & Drop Builder",
-      "description": "Erstelle Boards mit intuitivem Drag & Drop. Keine technischen Kenntnisse erforderlich."
+    "navbar": {
+        "features": "Features",
+        "pricing": "Preise",
+        "about": "Über uns",
+        "builder": "Builder",
+        "logout": "Abmelden",
+        "login": "Login",
+        "signup": "Registrieren",
+        "user": "Benutzer",
+        "closeMenu": "Menü schließen",
+        "openMenu": "Menü öffnen"
     },
-    "mediaLibrary": {
-      "title": "Persönliche Mediathek",
-      "description": "Lade Bilder, Videos und Dokumente hoch. Alles sicher in deiner eigenen, isolierten Mediathek gespeichert."
+    "hero": {
+        "title": "Professionelle Marketing Boards",
+        "titleSuffix": "für",
+        "words": {
+            "salespeople": "Vertriebler",
+            "marketingTeams": "Marketing-Teams",
+            "sellers": "Verkäufer",
+            "salesPros": "Sales-Profis",
+            "accountManagers": "Account Manager"
+        },
+        "description": "Erstelle interaktive, ansprechende Verkaufsunterlagen ohne technische Kenntnisse. So einfach wie PowerPoint, so leistungsfähig wie eine moderne Webanwendung.",
+        "descriptionMobile": "Erstelle interaktive Verkaufsunterlagen ohne technische Kenntnisse. Einfach, professionell, messbar.",
+        "cta": "Kostenlos starten"
     },
-    "analytics": {
-      "title": "Analytics Dashboard",
-      "description": "Verfolge, wie deine Kunden mit deinen Boards interagieren. Messbare Ergebnisse für bessere Follow-ups."
+    "features": {
+        "dragDrop": {
+            "title": "Drag & Drop Builder",
+            "description": "Erstelle Boards mit intuitivem Drag & Drop. Keine technischen Kenntnisse erforderlich."
+        },
+        "mediaLibrary": {
+            "title": "Persönliche Mediathek",
+            "description": "Lade Bilder, Videos und Dokumente hoch. Alles sicher in deiner eigenen, isolierten Mediathek gespeichert."
+        },
+        "analytics": {
+            "title": "Analytics Dashboard",
+            "description": "Verfolge, wie deine Kunden mit deinen Boards interagieren. Messbare Ergebnisse für bessere Follow-ups."
+        },
+        "templates": {
+            "title": "Template-System",
+            "description": "Starte schnell mit vorgefertigten Templates oder erstelle deine eigenen für wiederholte Verwendung."
+        },
+        "sharing": {
+            "title": "Einfaches Teilen",
+            "description": "Teile deine Boards über personalisierte Links. Mit Passwortschutz und zeitlichen Limits für maximale Kontrolle."
+        }
     },
-    "templates": {
-      "title": "Template-System",
-      "description": "Starte schnell mit vorgefertigten Templates oder erstelle deine eigenen für wiederholte Verwendung."
+    "stats": {
+        "title": "Warum LemonSpace?",
+        "description": "Die perfekte Lösung für Vertriebler, die professionelle Verkaufsunterlagen ohne technische Hürden erstellen möchten.",
+        "noTechnicalSkills": "Technische Kenntnisse erforderlich",
+        "customizable": "Anpassbar an deine Marke",
+        "possibilities": "Möglichkeiten für deine Präsentationen"
     },
-    "sharing": {
-      "title": "Einfaches Teilen",
-      "description": "Teile deine Boards über personalisierte Links. Mit Passwortschutz und zeitlichen Limits für maximale Kontrolle."
+    "pricing": {
+        "title": "Preise, die zu dir passen",
+        "subtitle": "Starte kostenlos und upgrade, wenn du mehr Features brauchst. Alle Pläne können jederzeit gekündigt werden.",
+        "free": {
+            "name": "Free",
+            "price": "0€ / Monat",
+            "description": "Für den Einstieg",
+            "cta": "Jetzt starten",
+            "features": [
+                "Max. 3 Boards gleichzeitig",
+                "Basis-Blöcke (Text, Bilder, Buttons)",
+                "Standard-Farbschemata",
+                "Einfache Analytics",
+                "50MB Video-Upload-Limit"
+            ]
+        },
+        "pro": {
+            "name": "Pro",
+            "price": "19€ / Monat",
+            "yearly": "oder 199€ / Jahr",
+            "description": "Für Profis",
+            "cta": "Jetzt upgraden",
+            "badge": "Beliebt",
+            "features": [
+                "Alles aus dem Free Plan",
+                "Unbegrenzte Boards",
+                "Alle Premium-Blöcke",
+                "Custom Farbschemata",
+                "White-Label (kein Branding)",
+                "Detaillierte Analytics",
+                "Custom Link-IDs",
+                "Passwortschutz & zeitliche Limits",
+                "Eigene Templates speichern",
+                "500MB Video-Upload-Limit",
+                "Priority Support"
+            ]
+        },
+        "lifetime": {
+            "name": "Lifetime",
+            "price": "399€",
+            "description": "Einmalig zahlen",
+            "cta": "Jetzt kaufen",
+            "features": [
+                "Alles aus dem Pro Plan",
+                "Lebenslanger Zugang",
+                "Früher Zugang zu neuen Features",
+                "Keine monatlichen Kosten",
+                "Einmalige Zahlung"
+            ]
+        }
+    },
+    "cta": {
+        "title": "Bereit, deine ersten Boards zu erstellen?",
+        "subtitle": "Starte kostenlos und erstelle professionelle Marketing Boards in wenigen Minuten.",
+        "emailPlaceholder": "Deine E-Mail-Adresse",
+        "button": "Jetzt starten",
+        "buttonMobile": "Jetzt starten",
+        "trustedBy": "Vertraut von Vertrieblern weltweit"
+    },
+    "footer": {
+        "features": "Funktionen",
+        "pricing": "Preise",
+        "about": "Über uns",
+        "help": "Hilfe",
+        "privacy": "Datenschutz",
+        "imprint": "Impressum",
+        "copyright": "© {year} LemonSpace.io, Alle Rechte vorbehalten"
+    },
+    "signin": {
+        "title": "Anmeldung",
+        "description": "Melden Sie sich mit Ihrem Konto an",
+        "email": "E-Mail",
+        "emailPlaceholder": "ihre@email.com",
+        "password": "Passwort",
+        "passwordPlaceholder": "Ihr Passwort",
+        "submit": "Anmelden",
+        "submitting": "Anmeldung läuft...",
+        "noAccount": "Noch kein Konto?",
+        "signup": "Registrieren",
+        "error": {
+            "fillAll": "Bitte füllen Sie alle Felder aus",
+            "failed": "Anmeldung fehlgeschlagen"
+        }
+    },
+    "signup": {
+        "title": "Registrierung",
+        "description": "Erstellen Sie ein neues Konto, um fortzufahren",
+        "name": "Name",
+        "namePlaceholder": "Ihr Name",
+        "email": "E-Mail",
+        "emailPlaceholder": "ihre@email.com",
+        "password": "Passwort",
+        "passwordPlaceholder": "Mindestens 8 Zeichen",
+        "submit": "Registrieren",
+        "submitting": "Registrierung läuft...",
+        "hasAccount": "Bereits ein Konto?",
+        "signin": "Anmelden",
+        "error": {
+            "fillAll": "Bitte füllen Sie alle Felder aus",
+            "passwordLength": "Das Passwort muss mindestens 8 Zeichen lang sein",
+            "failed": "Registrierung fehlgeschlagen",
+            "tryAgain": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+        }
+    },
+    "authError": {
+        "title": "Sitzung abgelaufen",
+        "message": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+        "redirecting": "Weiterleitung zur Anmeldung...",
+        "retry": "Erneut versuchen",
+        "signIn": "Zur Anmeldung",
+        "dismiss": "Schließen",
+        "maxRetriesReached": "Maximale Wiederholungsversuche erreicht",
+        "retryAttempts": "Wiederholungsversuche"
+    },
+    "authGuard": {
+        "notLoggedIn": "Nicht eingeloggt",
+        "pleaseSignIn": "Bitte melde dich an, um fortzufahren.",
+        "backToHomepage": "Zurück zur Homepage",
+        "loading": "Lade...",
+        "loadingSubtext": "Dies sollte nur einen Moment dauern",
+        "loadingError": {
+            "title": "Ladeproblem",
+            "messageFallback": "Ein unerwarteter Fehler ist aufgetreten",
+            "reloadButton": "Seite neu laden",
+            "homeButton": "Zur Startseite"
+        },
+        "warning": "Warnung",
+        "errorOccurred": "Ein Fehler ist aufgetreten"
+    },
+    "dropArea": {
+        "dropHere": "Hier ablegen",
+        "addMore": "Weiteren Block hinzufügen",
+        "dropContent": "Inhalte hier ablegen",
+        "instructions": "Ziehe Blöcke aus der Sidebar hierher, um dein Board zu erstellen"
+    },
+    "project": {
+        "delete": {
+            "title": "Projekt löschen?",
+            "description": "Sind Sie sicher, dass Sie \"{name}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+        }
+    },
+    "createBoard": {
+        "title": "Neues Board erstellen",
+        "description": "Geben Sie einen Titel und einen Slug für Ihr neues Board ein.",
+        "titleLabel": "Titel",
+        "titlePlaceholder": "z.B. Projektplanung Q4",
+        "slugLabel": "Slug",
+        "slugPlaceholder": "z.B. projektplanung-q4",
+        "generateFromTitle": "Aus Titel generieren",
+        "cancel": "Abbrechen",
+        "create": "Board erstellen",
+        "creating": "Wird erstellt...",
+        "validation": {
+            "titleRequired": "Titel ist erforderlich",
+            "titleMinLength": "Titel muss mindestens 3 Zeichen lang sein",
+            "titleMaxLength": "Titel darf maximal 100 Zeichen lang sein",
+            "slugRequired": "Slug ist erforderlich",
+            "slugMinLength": "Slug muss mindestens 3 Zeichen lang sein",
+            "slugMaxLength": "Slug darf maximal 50 Zeichen lang sein",
+            "slugFormat": "Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten",
+            "slugExists": "Dieser Slug ist bereits vergeben",
+            "checkingSlug": "Prüfe Verfügbarkeit..."
+        },
+        "error": {
+            "notLoggedIn": "Bitte melde dich an, um ein Board zu erstellen",
+            "createFailed": "Fehler beim Erstellen des Boards"
+        },
+        "success": "Board erfolgreich erstellt"
+    },
+    "api": {
+        "newBoard": {
+            "error": {
+                "notAuthenticated": "Nicht authentifiziert",
+                "invalidData": "Ungültige Eingabedaten",
+                "invalidSlugFormat": "Ungültiger Slug-Format",
+                "slugOrTitleRequired": "Slug oder Titel muss angegeben werden",
+                "createFailed": "Fehler beim Erstellen des Boards",
+                "internalServerError": "Interner Serverfehler",
+                "noValidSession": "Keine gültige Session gefunden"
+            }
+        }
+    },
+    "common": {
+        "cancel": "Abbrechen",
+        "delete": "Löschen"
+    },
+    "board": {
+        "created": "Board \"{title}\" erstellt"
+    },
+    "builderPage": {
+        "creatingFirstBoard": "Erstelle dein erstes Board...",
+        "creatingBoardSubtext": "Dies dauert nur einen Moment",
+        "firstBoardTitle": "Mein erstes Board",
+        "firstBoardSlug": "mein-erstes-board",
+        "tryAgain": "Erneut versuchen"
+    },
+    "boardBuilder": {
+        "error": {
+            "unauthorized": {
+                "title": "Nicht authentifiziert",
+                "description": "Bitte melde dich an, um dieses Board zu bearbeiten.",
+                "button": "Zur Anmeldung"
+            },
+            "forbidden": {
+                "title": "Keine Berechtigung",
+                "description": "Du hast keine Berechtigung, dieses Board zu bearbeiten.",
+                "button": "Zurück zum Builder"
+            },
+            "notFound": {
+                "title": "Board nicht gefunden",
+                "description": "Das angeforderte Board existiert nicht oder wurde gelöscht.",
+                "button": "Neues Board erstellen"
+            },
+            "generic": {
+                "title": "Fehler beim Laden",
+                "descriptionFallback": "Ein unerwarteter Fehler ist aufgetreten.",
+                "button": "Erneut versuchen"
+            }
+        },
+        "readOnly": {
+            "title": "Nur Lesezugriff",
+            "description": "Du kannst dieses Board ansehen, aber nicht bearbeiten."
+        }
+    },
+    "builder": {
+        "loading": {
+            "board": "Lade Board..."
+        },
+        "error": {
+            "loadingBoard": "Fehler beim Laden des Boards",
+            "retry": "Erneut versuchen",
+            "rollback": "Zurücksetzen",
+            "saveFailed": "Speichern fehlgeschlagen"
+        },
+        "success": {
+            "saved": "Board gespeichert",
+            "rollbackComplete": "Änderungen wurden rückgängig gemacht"
+        },
+        "info": {
+            "rollbackComplete": "Änderungen wurden rückgängig gemacht"
+        }
+    },
+    "menubar": {
+        "board": {
+            "autosave": "Automatisches Speichern"
+        }
     }
-  },
-  "stats": {
-    "title": "Warum LemonSpace?",
-    "description": "Die perfekte Lösung für Vertriebler, die professionelle Verkaufsunterlagen ohne technische Hürden erstellen möchten.",
-    "noTechnicalSkills": "Technische Kenntnisse erforderlich",
-    "customizable": "Anpassbar an deine Marke",
-    "possibilities": "Möglichkeiten für deine Präsentationen"
-  },
-  "pricing": {
-    "title": "Preise, die zu dir passen",
-    "subtitle": "Starte kostenlos und upgrade, wenn du mehr Features brauchst. Alle Pläne können jederzeit gekündigt werden.",
-    "free": {
-      "name": "Free",
-      "price": "0€ / Monat",
-      "description": "Für den Einstieg",
-      "cta": "Jetzt starten",
-      "features": [
-        "Max. 3 Boards gleichzeitig",
-        "Basis-Blöcke (Text, Bilder, Buttons)",
-        "Standard-Farbschemata",
-        "Einfache Analytics",
-        "50MB Video-Upload-Limit"
-      ]
-    },
-    "pro": {
-      "name": "Pro",
-      "price": "19€ / Monat",
-      "yearly": "oder 199€ / Jahr",
-      "description": "Für Profis",
-      "cta": "Jetzt upgraden",
-      "badge": "Beliebt",
-      "features": [
-        "Alles aus dem Free Plan",
-        "Unbegrenzte Boards",
-        "Alle Premium-Blöcke",
-        "Custom Farbschemata",
-        "White-Label (kein Branding)",
-        "Detaillierte Analytics",
-        "Custom Link-IDs",
-        "Passwortschutz & zeitliche Limits",
-        "Eigene Templates speichern",
-        "500MB Video-Upload-Limit",
-        "Priority Support"
-      ]
-    },
-    "lifetime": {
-      "name": "Lifetime",
-      "price": "399€",
-      "description": "Einmalig zahlen",
-      "cta": "Jetzt kaufen",
-      "features": [
-        "Alles aus dem Pro Plan",
-        "Lebenslanger Zugang",
-        "Früher Zugang zu neuen Features",
-        "Keine monatlichen Kosten",
-        "Einmalige Zahlung"
-      ]
-    }
-  },
-  "cta": {
-    "title": "Bereit, deine ersten Boards zu erstellen?",
-    "subtitle": "Starte kostenlos und erstelle professionelle Marketing Boards in wenigen Minuten.",
-    "emailPlaceholder": "Deine E-Mail-Adresse",
-    "button": "Jetzt starten",
-    "buttonMobile": "Jetzt starten",
-    "trustedBy": "Vertraut von Vertrieblern weltweit"
-  },
-  "footer": {
-    "features": "Funktionen",
-    "pricing": "Preise",
-    "about": "Über uns",
-    "help": "Hilfe",
-    "privacy": "Datenschutz",
-    "imprint": "Impressum",
-    "copyright": "© {year} LemonSpace.io, Alle Rechte vorbehalten"
-  },
-  "signin": {
-    "title": "Anmeldung",
-    "description": "Melden Sie sich mit Ihrem Konto an",
-    "email": "E-Mail",
-    "emailPlaceholder": "ihre@email.com",
-    "password": "Passwort",
-    "passwordPlaceholder": "Ihr Passwort",
-    "submit": "Anmelden",
-    "submitting": "Anmeldung läuft...",
-    "noAccount": "Noch kein Konto?",
-    "signup": "Registrieren",
-    "error": {
-      "fillAll": "Bitte füllen Sie alle Felder aus",
-      "failed": "Anmeldung fehlgeschlagen"
-    }
-  },
-  "signup": {
-    "title": "Registrierung",
-    "description": "Erstellen Sie ein neues Konto, um fortzufahren",
-    "name": "Name",
-    "namePlaceholder": "Ihr Name",
-    "email": "E-Mail",
-    "emailPlaceholder": "ihre@email.com",
-    "password": "Passwort",
-    "passwordPlaceholder": "Mindestens 8 Zeichen",
-    "submit": "Registrieren",
-    "submitting": "Registrierung läuft...",
-    "hasAccount": "Bereits ein Konto?",
-    "signin": "Anmelden",
-    "error": {
-      "fillAll": "Bitte füllen Sie alle Felder aus",
-      "passwordLength": "Das Passwort muss mindestens 8 Zeichen lang sein",
-      "failed": "Registrierung fehlgeschlagen",
-      "tryAgain": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
-    }
-  },
-  "authError": {
-    "title": "Sitzung abgelaufen",
-    "message": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
-    "redirecting": "Weiterleitung zur Anmeldung...",
-    "retry": "Erneut versuchen",
-    "signIn": "Zur Anmeldung",
-    "dismiss": "Schließen",
-    "maxRetriesReached": "Maximale Wiederholungsversuche erreicht",
-    "retryAttempts": "Wiederholungsversuche"
-  },
-  "authGuard": {
-    "notLoggedIn": "Nicht eingeloggt",
-    "pleaseSignIn": "Bitte melde dich an, um fortzufahren.",
-    "backToHomepage": "Zurück zur Homepage",
-    "loading": "Lade...",
-    "loadingSubtext": "Dies sollte nur einen Moment dauern",
-    "loadingError": {
-      "title": "Ladeproblem",
-      "messageFallback": "Ein unerwarteter Fehler ist aufgetreten",
-      "reloadButton": "Seite neu laden",
-      "homeButton": "Zur Startseite"
-    },
-    "warning": "Warnung",
-    "errorOccurred": "Ein Fehler ist aufgetreten"
-  },
-  "dropArea": {
-    "dropHere": "Hier ablegen",
-    "addMore": "Weiteren Block hinzufügen",
-    "dropContent": "Inhalte hier ablegen",
-    "instructions": "Ziehe Blöcke aus der Sidebar hierher, um dein Board zu erstellen"
-  },
-  "project": {
-    "delete": {
-      "title": "Projekt löschen?",
-      "description": "Sind Sie sicher, dass Sie \"{name}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
-    }
-  },
-  "createBoard": {
-    "title": "Neues Board erstellen",
-    "description": "Geben Sie einen Titel und einen Slug für Ihr neues Board ein.",
-    "titleLabel": "Titel",
-    "titlePlaceholder": "z.B. Projektplanung Q4",
-    "slugLabel": "Slug",
-    "slugPlaceholder": "z.B. projektplanung-q4",
-    "generateFromTitle": "Aus Titel generieren",
-    "cancel": "Abbrechen",
-    "create": "Board erstellen",
-    "creating": "Wird erstellt...",
-    "validation": {
-      "titleRequired": "Titel ist erforderlich",
-      "titleMinLength": "Titel muss mindestens 3 Zeichen lang sein",
-      "titleMaxLength": "Titel darf maximal 100 Zeichen lang sein",
-      "slugRequired": "Slug ist erforderlich",
-      "slugMinLength": "Slug muss mindestens 3 Zeichen lang sein",
-      "slugMaxLength": "Slug darf maximal 50 Zeichen lang sein",
-      "slugFormat": "Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten",
-      "slugExists": "Dieser Slug ist bereits vergeben",
-      "checkingSlug": "Prüfe Verfügbarkeit..."
-    },
-    "error": {
-      "notLoggedIn": "Bitte melde dich an, um ein Board zu erstellen",
-      "createFailed": "Fehler beim Erstellen des Boards"
-    },
-    "success": "Board erfolgreich erstellt"
-  },
-  "api": {
-    "newBoard": {
-      "error": {
-        "notAuthenticated": "Nicht authentifiziert",
-        "invalidData": "Ungültige Eingabedaten",
-        "invalidSlugFormat": "Ungültiger Slug-Format",
-        "slugOrTitleRequired": "Slug oder Titel muss angegeben werden",
-        "createFailed": "Fehler beim Erstellen des Boards",
-        "internalServerError": "Interner Serverfehler",
-        "noValidSession": "Keine gültige Session gefunden"
-      }
-    }
-  },
-  "common": {
-    "cancel": "Abbrechen",
-    "delete": "Löschen"
-  },
-  "board": {
-    "created": "Board \"{title}\" erstellt"
-  },
-  "builderPage": {
-    "creatingFirstBoard": "Erstelle dein erstes Board...",
-    "creatingBoardSubtext": "Dies dauert nur einen Moment",
-    "firstBoardTitle": "Mein erstes Board",
-    "firstBoardSlug": "mein-erstes-board",
-    "tryAgain": "Erneut versuchen"
-  },
-  "boardBuilder": {
-    "error": {
-      "unauthorized": {
-        "title": "Nicht authentifiziert",
-        "description": "Bitte melde dich an, um dieses Board zu bearbeiten.",
-        "button": "Zur Anmeldung"
-      },
-      "forbidden": {
-        "title": "Keine Berechtigung",
-        "description": "Du hast keine Berechtigung, dieses Board zu bearbeiten.",
-        "button": "Zurück zum Builder"
-      },
-      "notFound": {
-        "title": "Board nicht gefunden",
-        "description": "Das angeforderte Board existiert nicht oder wurde gelöscht.",
-        "button": "Neues Board erstellen"
-      },
-      "generic": {
-        "title": "Fehler beim Laden",
-        "descriptionFallback": "Ein unerwarteter Fehler ist aufgetreten.",
-        "button": "Erneut versuchen"
-      }
-    },
-    "readOnly": {
-      "title": "Nur Lesezugriff",
-      "description": "Du kannst dieses Board ansehen, aber nicht bearbeiten."
-    }
-  },
-  "builder": {
-    "loading": {
-      "board": "Lade Board..."
-    },
-    "error": {
-      "loadingBoard": "Fehler beim Laden des Boards",
-      "retry": "Erneut versuchen",
-      "rollback": "Zurücksetzen",
-      "saveFailed": "Speichern fehlgeschlagen"
-    },
-    "success": {
-      "saved": "Board gespeichert",
-      "rollbackComplete": "Änderungen wurden rückgängig gemacht"
-    },
-    "info": {
-      "rollbackComplete": "Änderungen wurden rückgängig gemacht"
-    }
-  }
 }

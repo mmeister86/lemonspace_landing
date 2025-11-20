@@ -68,12 +68,15 @@ export function BuilderMenubar({
 }: BuilderMenubarProps) {
     const { user } = useUser();
     const t = useTranslations('createBoard');
+    const tMenubar = useTranslations('menubar');
     const currentBoard = useCanvasStore((state) => state.currentBoard);
 
     // Save state from store
     const saveStatus = useCanvasStore((state) => state.saveStatus);
     const lastSavedAt = useCanvasStore((state) => state.lastSavedAt);
     const hasUnsavedChanges = useCanvasStore((state) => state.hasUnsavedChanges);
+    const isAutosaveEnabled = useCanvasStore((state) => state.isAutosaveEnabled);
+    const setAutosaveEnabled = useCanvasStore((state) => state.setAutosaveEnabled);
 
     const [isPreviewMode, setIsPreviewMode] = React.useState(false);
     const [showGrid, setShowGrid] = React.useState(true);
@@ -209,6 +212,11 @@ export function BuilderMenubar({
     const handleAccessSettings = React.useCallback(() => {
         console.log("Zugriffseinstellungen (Pro)");
     }, []);
+
+    const handleToggleAutosave = React.useCallback((checked: boolean) => {
+        setAutosaveEnabled(checked);
+        console.log(`Autosave: ${checked}`);
+    }, [setAutosaveEnabled]);
 
     // Globale Keyboard-Shortcuts
     React.useEffect(() => {
@@ -597,6 +605,14 @@ export function BuilderMenubar({
                         <span>Passwortschutz</span>
                         <ProBadge />
                     </MenubarItem>
+                    <MenubarSeparator />
+                    <MenubarCheckboxItem
+                        checked={isAutosaveEnabled}
+                        onCheckedChange={handleToggleAutosave}
+                    >
+                        <Save className="mr-2 h-4 w-4" />
+                        <span>{tMenubar('board.autosave')}</span>
+                    </MenubarCheckboxItem>
                 </MenubarContent>
             </MenubarMenu>
 
@@ -640,6 +656,6 @@ export function BuilderMenubar({
                 onOpenChange={setTitleDialogOpen}
             />
             <BoardSlugDialog open={slugDialogOpen} onOpenChange={setSlugDialogOpen} />
-        </Menubar>
+        </Menubar >
     );
 }

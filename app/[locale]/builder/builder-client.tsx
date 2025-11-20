@@ -19,6 +19,7 @@ import {
 } from "@/components/viewport-switcher";
 import Canvas from "./components/Canvas";
 import { BuilderMenubar } from "./components/BuilderMenubar";
+import { PropertiesPanel } from "./components/PropertiesPanel";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import type { Block, BlockType } from "@/lib/types/board";
 import { BlockDeleteDialog } from "./components/BlockDeleteDialog";
@@ -303,8 +304,8 @@ export function BuilderClient() {
         }
 
         return (
-            <SidebarInset>
-                <div className="border-b bg-background">
+            <SidebarInset className="flex flex-col h-screen overflow-hidden">
+                <div className="border-b bg-background shrink-0">
                     <div className="flex items-center justify-between px-4 py-2">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger className="-ml-1" />
@@ -324,7 +325,12 @@ export function BuilderClient() {
                         />
                     </div>
                 </div>
-                <Canvas currentViewport={currentViewport} zoomLevel={zoomLevel} />
+                <div className="flex flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-auto bg-muted/10">
+                        <Canvas currentViewport={currentViewport} zoomLevel={zoomLevel} />
+                    </div>
+                    <PropertiesPanel />
+                </div>
             </SidebarInset>
         );
     };

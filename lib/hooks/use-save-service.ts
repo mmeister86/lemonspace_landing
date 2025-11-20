@@ -97,9 +97,11 @@ export function useSaveService() {
         };
     }, [currentBoard?.id, setSaveStatus, setLastSavedAt, setHasUnsavedChanges, setSaveError, t, queryClient]);
 
+    const isAutosaveEnabled = useCanvasStore((state) => state.isAutosaveEnabled);
+
     // Watch for changes in blocks and queue them
     useEffect(() => {
-        if (!saveServiceRef.current || !currentBoard) return;
+        if (!saveServiceRef.current || !currentBoard || !isAutosaveEnabled) return;
 
         const currentBlocksJson = JSON.stringify(blocks);
 
@@ -108,21 +110,20 @@ export function useSaveService() {
             saveServiceRef.current.queueChange({ blocks });
             prevBlocksRef.current = currentBlocksJson;
         }
-    }, [blocks, currentBoard]);
+    }, [blocks, currentBoard, isAutosaveEnabled]);
 
     // Expose flush method
     const flush = async () => {
         if (saveServiceRef.current) {
             try {
+                // Force queue current state to ensure it's saved even if autosave is disabled
+                // or if no changes were detected yet (e.g. "Always Save" requirement)
+                saveServiceRef.current.queueChange({ blocks });
+
+                // Update prevBlocksRef to avoid double-save if autosave is re-enabled
+                prevBlocksRef.current = JSON.stringify(blocks);
+
                 await saveServiceRef.current.flush();
-                // We don't need to show toast here anymore as the service state changes will handle the UI feedback
-                // But if we want to keep the toast for manual save, we can.
-                // The user request is about the "save-animation" in the menubar.
-                // Let's keep the toast for now or remove it if it's redundant?
-                // The original code had toast.success.
-                // If we have a visual indicator, maybe toast is too much?
-                // But let's stick to the plan: fix the animation trigger.
-                // The service.flush() will now trigger state changes even if empty.
                 return true;
             } catch (error) {
                 // Error is already handled by the subscription
