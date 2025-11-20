@@ -5,148 +5,148 @@ import type { SaveStatus } from "@/lib/services/save-service";
 type BoardLoadingState = 'idle' | 'loading' | 'ready' | 'error';
 
 interface CanvasState {
-  currentBoard: Board | null;
-  blocks: Block[];
-  selectedBlockId: string | null;
-  showDropArea: boolean;
+    currentBoard: Board | null;
+    blocks: Block[];
+    selectedBlockId: string | null;
+    showDropArea: boolean;
 
-  // Navigation state
-  isNavigating: boolean;
-  lastBoardId: string | null;
-  boardLoadingState: BoardLoadingState;
+    // Navigation state
+    isNavigating: boolean;
+    lastBoardId: string | null;
+    boardLoadingState: BoardLoadingState;
 
-  // Save state
-  saveStatus: SaveStatus;
-  lastSavedAt: Date | null;
-  hasUnsavedChanges: boolean;
-  saveError: Error | null;
+    // Save state
+    saveStatus: SaveStatus;
+    lastSavedAt: Date | null;
+    hasUnsavedChanges: boolean;
+    saveError: Error | null;
 
-  // Actions
-  setCurrentBoard: (board: Board | null) => void;
-  addBlock: (block: Block) => void;
-  removeBlock: (blockId: string) => void;
-  updateBlock: (blockId: string, updates: Partial<Block>) => void;
-  selectBlock: (blockId: string | null) => void;
-  setShowDropArea: (show: boolean) => void;
-  updateBoardTitle: (title: string) => void;
-  updateBoardSlug: (slug: string) => void;
-  setNavigating: (isNavigating: boolean) => void;
-  setLastBoardId: (id: string | null) => void;
-  setBoardLoadingState: (state: BoardLoadingState) => void;
+    // Actions
+    setCurrentBoard: (board: Board | null) => void;
+    addBlock: (block: Block) => void;
+    removeBlock: (blockId: string) => void;
+    updateBlock: (blockId: string, updates: Partial<Block>) => void;
+    selectBlock: (blockId: string | null) => void;
+    setShowDropArea: (show: boolean) => void;
+    updateBoardTitle: (title: string) => void;
+    updateBoardSlug: (slug: string) => void;
+    setNavigating: (isNavigating: boolean) => void;
+    setLastBoardId: (id: string | null) => void;
+    setBoardLoadingState: (state: BoardLoadingState) => void;
 
-  // Save actions
-  setSaveStatus: (status: SaveStatus) => void;
-  setLastSavedAt: (date: Date | null) => void;
-  setHasUnsavedChanges: (hasChanges: boolean) => void;
-  setSaveError: (error: Error | null) => void;
-  resetSaveState: () => void;
+    // Save actions
+    setSaveStatus: (status: SaveStatus) => void;
+    setLastSavedAt: (date: Date | null) => void;
+    setHasUnsavedChanges: (hasChanges: boolean) => void;
+    setSaveError: (error: Error | null) => void;
+    resetSaveState: () => void;
 
-  reset: () => void;
+    reset: () => void;
 }
 
 const initialState = {
-  currentBoard: null,
-  blocks: [],
-  selectedBlockId: null,
-  showDropArea: true,
-  isNavigating: false,
-  lastBoardId: null,
-  boardLoadingState: 'idle' as const,
+    currentBoard: null,
+    blocks: [],
+    selectedBlockId: null,
+    showDropArea: true,
+    isNavigating: false,
+    lastBoardId: null,
+    boardLoadingState: 'idle' as const,
 
-  // Save state defaults
-  saveStatus: 'idle' as SaveStatus,
-  lastSavedAt: null,
-  hasUnsavedChanges: false,
-  saveError: null,
-};
-
-export const useCanvasStore = create<CanvasState>((set) => ({
-  ...initialState,
-
-  setCurrentBoard: (board) =>
-    set({
-      currentBoard: board,
-      blocks: board?.blocks || [],
-      showDropArea: true, // Always available
-      // Reset save state when switching boards
-      saveStatus: 'idle',
-      lastSavedAt: null,
-      hasUnsavedChanges: false,
-      saveError: null,
-    }),
-
-  addBlock: (block) =>
-    set((state) => {
-      const newBlocks = [...state.blocks, block];
-      return {
-        blocks: newBlocks,
-        currentBoard: state.currentBoard
-          ? { ...state.currentBoard, blocks: newBlocks }
-          : null,
-        showDropArea: true, // Always available
-      };
-    }),
-
-  removeBlock: (blockId) =>
-    set((state) => {
-      const newBlocks = state.blocks.filter((b) => b.id !== blockId);
-      return {
-        blocks: newBlocks,
-        currentBoard: state.currentBoard
-          ? { ...state.currentBoard, blocks: newBlocks }
-          : null,
-        selectedBlockId:
-          state.selectedBlockId === blockId ? null : state.selectedBlockId,
-        showDropArea: true, // Always available
-      };
-    }),
-
-  updateBlock: (blockId, updates) =>
-    set((state) => {
-      const newBlocks = state.blocks.map((b) =>
-        b.id === blockId ? { ...b, ...updates } : b
-      );
-      return {
-        blocks: newBlocks,
-        currentBoard: state.currentBoard
-          ? { ...state.currentBoard, blocks: newBlocks }
-          : null,
-        showDropArea: true, // Always available
-      };
-    }),
-
-  selectBlock: (blockId) => set({ selectedBlockId: blockId }),
-
-  setShowDropArea: (show) => set({ showDropArea: show }),
-
-  updateBoardTitle: (title) =>
-    set((state) => ({
-      currentBoard: state.currentBoard
-        ? { ...state.currentBoard, title }
-        : null,
-    })),
-
-  updateBoardSlug: (slug) =>
-    set((state) => ({
-      currentBoard: state.currentBoard ? { ...state.currentBoard, slug } : null,
-    })),
-
-  setNavigating: (isNavigating) => set({ isNavigating }),
-
-  setLastBoardId: (id) => set({ lastBoardId: id }),
-
-  setBoardLoadingState: (boardLoadingState: BoardLoadingState) => set({ boardLoadingState }),
-
-  setSaveStatus: (status) => set({ saveStatus: status }),
-  setLastSavedAt: (date) => set({ lastSavedAt: date }),
-  setHasUnsavedChanges: (hasChanges) => set({ hasUnsavedChanges: hasChanges }),
-  setSaveError: (error) => set({ saveError: error }),
-  resetSaveState: () => set({
-    saveStatus: 'idle',
+    // Save state defaults
+    saveStatus: 'idle' as SaveStatus,
     lastSavedAt: null,
     hasUnsavedChanges: false,
     saveError: null,
-  }),
+};
 
-  reset: () => set(initialState),
+export const useCanvasStore = create<CanvasState>((set) => ({
+    ...initialState,
+
+    setCurrentBoard: (board) =>
+        set({
+            currentBoard: board,
+            blocks: board?.blocks || [],
+            showDropArea: true, // Always available
+            // Reset save state when switching boards
+            saveStatus: 'idle',
+            lastSavedAt: null,
+            hasUnsavedChanges: false,
+            saveError: null,
+        }),
+
+    addBlock: (block) =>
+        set((state) => {
+            const newBlocks = [...state.blocks, block];
+            return {
+                blocks: newBlocks,
+                currentBoard: state.currentBoard
+                    ? { ...state.currentBoard, blocks: newBlocks }
+                    : null,
+                showDropArea: true, // Always available
+            };
+        }),
+
+    removeBlock: (blockId) =>
+        set((state) => {
+            const newBlocks = state.blocks.filter((b) => b.id !== blockId);
+            return {
+                blocks: newBlocks,
+                currentBoard: state.currentBoard
+                    ? { ...state.currentBoard, blocks: newBlocks }
+                    : null,
+                selectedBlockId:
+                    state.selectedBlockId === blockId ? null : state.selectedBlockId,
+                showDropArea: true, // Always available
+            };
+        }),
+
+    updateBlock: (blockId, updates) =>
+        set((state) => {
+            const newBlocks = state.blocks.map((b) =>
+                b.id === blockId ? { ...b, ...updates } : b
+            );
+            return {
+                blocks: newBlocks,
+                currentBoard: state.currentBoard
+                    ? { ...state.currentBoard, blocks: newBlocks }
+                    : null,
+                showDropArea: true, // Always available
+            };
+        }),
+
+    selectBlock: (blockId) => set({ selectedBlockId: blockId }),
+
+    setShowDropArea: (show) => set({ showDropArea: show }),
+
+    updateBoardTitle: (title) =>
+        set((state) => ({
+            currentBoard: state.currentBoard
+                ? { ...state.currentBoard, title }
+                : null,
+        })),
+
+    updateBoardSlug: (slug) =>
+        set((state) => ({
+            currentBoard: state.currentBoard ? { ...state.currentBoard, slug } : null,
+        })),
+
+    setNavigating: (isNavigating) => set({ isNavigating }),
+
+    setLastBoardId: (id) => set({ lastBoardId: id }),
+
+    setBoardLoadingState: (boardLoadingState: BoardLoadingState) => set({ boardLoadingState }),
+
+    setSaveStatus: (status) => set({ saveStatus: status }),
+    setLastSavedAt: (date) => set({ lastSavedAt: date }),
+    setHasUnsavedChanges: (hasChanges) => set({ hasUnsavedChanges: hasChanges }),
+    setSaveError: (error) => set({ saveError: error }),
+    resetSaveState: () => set({
+        saveStatus: 'idle',
+        lastSavedAt: null,
+        hasUnsavedChanges: false,
+        saveError: null,
+    }),
+
+    reset: () => set(initialState),
 }));

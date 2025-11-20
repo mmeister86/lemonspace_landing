@@ -60,8 +60,8 @@ export function useSaveService() {
                     // }
 
                     // Also invalidate lists as metadata might have changed
-                    queryClient.invalidateQueries({ queryKey: ["boards"] });
-                    queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
+                    // queryClient.invalidateQueries({ queryKey: ["boards"] });
+                    // queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
                 }
             }
 
