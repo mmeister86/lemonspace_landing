@@ -1,14 +1,19 @@
-"use client";
-
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
-import { BlockType } from "@/lib/types/board";
+import { Block, BlockType } from "@/lib/types/board";
 import { Separator } from "@/components/ui/separator";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from "@/components/ui/sheet";
 
 const blockSchemas = {
     text: z.object({
@@ -64,14 +69,23 @@ export function PropertiesPanel() {
     const updateBlock = useCanvasStore((state) => state.updateBlock);
 
     const block = blocks.find((b) => b.id === selectedBlockId);
+    const [lastBlock, setLastBlock] = useState<Block | undefined>(undefined);
 
-    const currentSchema = block
-        ? blockSchemas[block.type] || blockSchemas.text
+    useEffect(() => {
+        if (block) {
+            setLastBlock(block);
+        }
+    }, [block]);
+
+    const displayBlock = block || lastBlock;
+
+    const currentSchema = displayBlock
+        ? blockSchemas[displayBlock.type] || blockSchemas.text
         : blockSchemas.text;
 
     const form = useForm<BlockFormData>({
         resolver: zodResolver(currentSchema),
-        defaultValues: (block?.data as BlockFormData) || {},
+        defaultValues: (displayBlock?.data as BlockFormData) || {},
         mode: "onChange", // Auto-save on change
     });
 
@@ -94,13 +108,13 @@ export function PropertiesPanel() {
         return () => subscription.unsubscribe();
     }, [form, block, updateBlock]);
 
-    if (!block) {
-        return (
-            <div className="w-80 border-l bg-background p-4 text-muted-foreground text-sm text-center flex items-center justify-center h-full">
-                Wählen Sie einen Block aus, um dessen Eigenschaften zu bearbeiten.
-            </div>
-        );
-    }
+    const selectBlock = useCanvasStore((state) => state.selectBlock);
+
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            selectBlock(null);
+        }
+    };
 
     const getFormFields = (type: BlockType) => {
         switch (type) {
@@ -337,30 +351,34 @@ export function PropertiesPanel() {
         return titles[type] || type;
     };
 
-    return (
-        <div className="w-80 border-l bg-background flex flex-col h-full">
-            <div className="p-4 border-b">
-                <h3 className="font-semibold leading-none tracking-tight">
-                    {getBlockTitle(block.type)}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Eigenschaften bearbeiten
-                </p>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                    {getFormFields(block.type)}
+    if (!displayBlock) return null;
 
-                    <Separator className="my-4" />
+    return (
+        <Sheet open={!!block} onOpenChange={handleOpenChange} modal={false}>
+            <SheetContent
+                className="w-[400px] sm:w-[540px] overflow-y-auto p-6 pt-12"
+                side="right"
+                onInteractOutside={(e) => e.preventDefault()}
+            >
+                <SheetHeader className="mb-6">
+                    <SheetTitle>{getBlockTitle(displayBlock.type)}</SheetTitle>
+                    <SheetDescription>
+                        Eigenschaften bearbeiten
+                    </SheetDescription>
+                </SheetHeader>
+                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                    {getFormFields(displayBlock.type)}
+
+                    <Separator className="my-6" />
 
                     <div className="space-y-2">
                         <h4 className="text-sm font-medium">Erweitert</h4>
-                        <div className="text-xs text-muted-foreground">
-                            Block ID: {block.id}
+                        <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
+                            ID: {displayBlock.id}
                         </div>
                     </div>
                 </form>
-            </div>
-        </div>
+            </SheetContent>
+        </Sheet>
     );
 }

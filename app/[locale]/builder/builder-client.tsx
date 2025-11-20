@@ -325,12 +325,10 @@ export function BuilderClient() {
                         />
                     </div>
                 </div>
-                <div className="flex flex-1 overflow-hidden">
-                    <div className="flex-1 overflow-auto bg-muted/10">
-                        <Canvas currentViewport={currentViewport} zoomLevel={zoomLevel} />
-                    </div>
-                    <PropertiesPanel />
+                <div className="flex-1 overflow-auto bg-muted/10">
+                    <Canvas currentViewport={currentViewport} zoomLevel={zoomLevel} />
                 </div>
+                <PropertiesPanel />
             </SidebarInset>
         );
     };
