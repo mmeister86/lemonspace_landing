@@ -105,16 +105,33 @@ export function PropertiesPanel() {
         }
     }, [block, form]);
 
-    // Auto-save changes
+    // Auto-save changes with debouncing to prevent flooding undo history
     useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+
         const subscription = form.watch((value) => {
             if (block && form.formState.isValid) {
-                updateBlock(block.id, {
-                    data: value as BlockFormData,
-                });
+                // Clear any existing timeout
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+
+                // Set a new timeout to debounce the update
+                timeoutId = setTimeout(() => {
+                    updateBlock(block.id, {
+                        data: value as BlockFormData,
+                    });
+                }, 300); // 300ms debounce delay
             }
         });
-        return () => subscription.unsubscribe();
+
+        return () => {
+            // Clean up subscription and timeout
+            subscription.unsubscribe();
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
     }, [form, block, updateBlock]);
 
     const handleOpenChange = (open: boolean) => {

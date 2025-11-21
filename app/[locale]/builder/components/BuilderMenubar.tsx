@@ -28,12 +28,8 @@ import {
     Mail,
     Shield,
     FileDown,
-    Sparkles,
-    CheckCircle2,
-    AlertCircle,
-    Loader2
+    Sparkles
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
 import {
     Menubar,
     MenubarContent,
@@ -54,6 +50,7 @@ import { CreateBoardDialog } from "./CreateBoardDialog";
 import { OpenBoardDialog } from "./OpenBoardDialog";
 import { DeleteBoardDialog } from "./DeleteBoardDialog";
 import { SaveAsBoardDialog } from "./SaveAsBoardDialog";
+import { SaveStatusIndicator } from "./SaveStatusIndicator";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { useCreateBoard } from "@/lib/hooks/use-boards";
 import { generateSlug } from "@/lib/services/board-service";
@@ -81,11 +78,6 @@ export function BuilderMenubar({
     const blocks = useCanvasStore((state) => state.blocks);
     const createBoardMutation = useCreateBoard();
 
-    // Save state from store
-    const saveStatus = useCanvasStore((state) => state.saveStatus);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const lastSavedAt = useCanvasStore((state) => state.lastSavedAt);
-    const hasUnsavedChanges = useCanvasStore((state) => state.hasUnsavedChanges);
     const isAutosaveEnabled = useCanvasStore((state) => state.isAutosaveEnabled);
     const setAutosaveEnabled = useCanvasStore((state) => state.setAutosaveEnabled);
 
@@ -173,11 +165,17 @@ export function BuilderMenubar({
     }, []);
 
     const handleUndo = React.useCallback(() => {
-        console.log("Rückgängig");
+        const { undo, pastStates } = useCanvasStore.temporal.getState();
+        if (pastStates.length > 0) {
+            undo();
+        }
     }, []);
 
     const handleRedo = React.useCallback(() => {
-        console.log("Wiederholen");
+        const { redo, futureStates } = useCanvasStore.temporal.getState();
+        if (futureStates.length > 0) {
+            redo();
+        }
     }, []);
 
     const handleCut = React.useCallback(() => {
@@ -406,104 +404,6 @@ export function BuilderMenubar({
             Pro
         </span>
     );
-
-    // Status Indicator Component
-    const SaveStatusIndicator = () => {
-        const [shouldShowSaved, setShouldShowSaved] = React.useState(false);
-        const [displayStatus, setDisplayStatus] = React.useState<'idle' | 'saving' | 'saved' | 'error' | 'unsaved'>('idle');
-
-        React.useEffect(() => {
-            if (saveStatus === 'saving') {
-                setDisplayStatus('saving');
-                setShouldShowSaved(false);
-            } else if (saveStatus === 'error') {
-                setDisplayStatus('error');
-            } else if (saveStatus === 'saved') {
-                setDisplayStatus('saved');
-                setShouldShowSaved(true);
-                const timer = setTimeout(() => {
-                    setShouldShowSaved(false);
-                }, 2000);
-                return () => clearTimeout(timer);
-            } else if (hasUnsavedChanges) {
-                setDisplayStatus('unsaved');
-            } else {
-                // Idle and no changes
-                setDisplayStatus('idle');
-            }
-        }, []); // Both saveStatus and hasUnsavedChanges are managed by store subscription, not as dependencies
-
-        return (
-            <div className="flex items-center h-full overflow-hidden">
-                <AnimatePresence mode="wait">
-                    {displayStatus === 'saving' && (
-                        <motion.div
-                            key="saving"
-                            initial={{ x: -20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: 20, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="flex items-center gap-1.5 text-xs text-muted-foreground px-2"
-                        >
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                            <span>Speichern...</span>
-                        </motion.div>
-                    )}
-
-                    {displayStatus === 'error' && (
-                        <motion.div
-                            key="error"
-                            initial={{ x: -20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: 20, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="flex items-center gap-1.5 text-xs text-destructive px-2"
-                        >
-                            <AlertCircle className="h-3 w-3" />
-                            <span>Fehler</span>
-                        </motion.div>
-                    )}
-
-                    {displayStatus === 'saved' && shouldShowSaved && (
-                        <motion.div
-                            key="saved"
-                            initial={{ x: -20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: 20, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="flex items-center gap-1.5 text-xs text-muted-foreground px-2"
-                        >
-                            <CheckCircle2 className="h-3 w-3" />
-                            <span>Gespeichert</span>
-                        </motion.div>
-                    )}
-
-                    {displayStatus === 'unsaved' && (
-                        // Only show if we are not showing "Saved" (which is handled by mode="wait" and state logic)
-                        // But wait, if I type, it goes to 'unsaved'.
-                        // If 'saved' is still showing (timeout not done), do we interrupt it?
-                        // The useEffect updates displayStatus immediately.
-                        // So yes, it will interrupt 'saved' and show 'unsaved'.
-                        // But 'unsaved' usually is just a dot.
-                        // Does the user want the dot to animate in/out too?
-                        // "make the save animation..."
-                        // Let's animate the dot too for consistency.
-                        <motion.div
-                            key="unsaved"
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="flex items-center gap-1.5 text-xs text-muted-foreground px-2"
-                        >
-                            <div className="h-2 w-2 rounded-full bg-yellow-500" />
-                            <span>Ungespeichert</span>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        );
-    };
 
     return (
         <Menubar className="border-none shadow-none bg-transparent h-9 gap-0">

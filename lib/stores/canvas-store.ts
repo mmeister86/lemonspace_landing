@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { temporal } from "zundo";
+import { shallow } from "zustand/shallow";
 import type { Board, Block } from "@/lib/types/board";
 import type { SaveStatus } from "@/lib/services/save-service";
 
@@ -46,6 +48,13 @@ interface CanvasState {
     reset: () => void;
 }
 
+// Define the state that should be tracked by zundo
+interface CanvasHistoryState {
+    blocks: Block[];
+    currentBoard: Board | null;
+    // selectedBlockId is excluded to prevent undo history from tracking sheet open/close
+}
+
 const initialState = {
     currentBoard: null,
     blocks: [],
@@ -63,7 +72,9 @@ const initialState = {
     isAutosaveEnabled: true,
 };
 
-export const useCanvasStore = create<CanvasState>((set) => ({
+export const useCanvasStore = create<CanvasState>()(
+    temporal(
+        (set) => ({
     ...initialState,
 
     setCurrentBoard: (board) =>
@@ -153,4 +164,56 @@ export const useCanvasStore = create<CanvasState>((set) => ({
     }),
 
     reset: () => set(initialState),
-}));
+        }),
+        {
+            // Track only the state parts we need for undo/redo
+            partialize: (state): CanvasHistoryState => ({
+                blocks: state.blocks,
+                currentBoard: state.currentBoard,
+                // selectedBlockId is excluded to prevent undo history from tracking sheet open/close
+            }),
+            // No need for onSave handler - the store actions already sync blocks with currentBoard
+            // Limit history size to prevent memory issues
+            limit: 50,
+            // Use shallow equality to prevent excessive history entries
+            equality: shallow,
+        }
+    )
+);
+
+// Export the temporal store for undo/redo functionality
+export const useCanvasHistory = () => useCanvasStore.temporal.getState();
+
+// Import React if not already imported
+import React from 'react';
+
+// Create a reactive hook for accessing temporal state
+export const useCanvasTemporal = <T>(
+    selector: (state: ReturnType<typeof useCanvasHistory>) => T,
+    equality?: (a: T, b: T) => boolean,
+): T => {
+    const [state, setState] = React.useState<T>(() => {
+        const historyState = useCanvasStore.temporal.getState();
+        return selector(historyState);
+    });
+
+    React.useEffect(() => {
+        // Check if React is available
+        if (typeof React === 'undefined') {
+            console.warn('React is not available. useCanvasTemporal hook requires React.');
+            return;
+        }
+
+        const unsubscribe = useCanvasStore.temporal.subscribe(() => {
+            const historyState = useCanvasStore.temporal.getState();
+            const newState = selector(historyState);
+            if (!equality || !equality(state, newState)) {
+                setState(newState);
+            }
+        });
+
+        return unsubscribe;
+    }, [selector, equality, state]);
+
+    return state;
+};
