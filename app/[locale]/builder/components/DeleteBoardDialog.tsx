@@ -16,7 +16,7 @@ import {
 import { useDeleteBoard } from "@/lib/hooks/use-boards";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { useUser } from "@/lib/contexts/user-context";
-import { toast } from "sonner";
+// import { toast } from "sonner"; // Not used but kept for reference
 
 interface DeleteBoardDialogProps {
     open: boolean;

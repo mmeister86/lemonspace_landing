@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
+// import type { SupabaseClient } from "@supabase/supabase-js"; // Not used but kept for reference
 import { z } from "zod";
 import type { BoardData, Block } from "@/lib/types/board";
 import { generateSlug, validateSlug, checkSlugExistsForUser, generateUniqueSlugForUser, syncBoardElements } from "@/lib/services/board-service";

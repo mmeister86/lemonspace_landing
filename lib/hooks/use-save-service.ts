@@ -95,7 +95,7 @@ export function useSaveService() {
             // Ideally yes, but we need to be careful about async operations during unmount.
             // For now, we rely on the service's internal state.
         };
-    }, [currentBoard?.id, setSaveStatus, setLastSavedAt, setHasUnsavedChanges, setSaveError, t, queryClient]);
+    }, [currentBoard?.id, setSaveStatus, setLastSavedAt, setHasUnsavedChanges, setSaveError, t, queryClient, blocks]);
 
     const isAutosaveEnabled = useCanvasStore((state) => state.isAutosaveEnabled);
 
@@ -125,7 +125,7 @@ export function useSaveService() {
 
                 await saveServiceRef.current.flush();
                 return true;
-            } catch (error) {
+            } catch {
                 // Error is already handled by the subscription
                 return false;
             }

@@ -11,7 +11,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button"; // Not used but kept for reference
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Calendar, ArrowRight, Loader2 } from "lucide-react";
 import { useBoards } from "@/lib/hooks/use-boards";

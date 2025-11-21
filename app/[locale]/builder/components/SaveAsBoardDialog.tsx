@@ -86,7 +86,7 @@ export function SaveAsBoardDialog({ open, onOpenChange }: SaveAsBoardDialogProps
                 titleField?.select();
             }, 100);
         }
-    }, [open, currentBoard, form, isSlugManuallyEdited]);
+    }, [open, currentBoard, form, isSlugManuallyEdited, t]);
 
     // Auto-Slug-Generierung aus Titel (wenn nicht manuell editiert)
     React.useEffect(() => {

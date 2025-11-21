@@ -83,6 +83,7 @@ export function BuilderMenubar({
 
     // Save state from store
     const saveStatus = useCanvasStore((state) => state.saveStatus);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const lastSavedAt = useCanvasStore((state) => state.lastSavedAt);
     const hasUnsavedChanges = useCanvasStore((state) => state.hasUnsavedChanges);
     const isAutosaveEnabled = useCanvasStore((state) => state.isAutosaveEnabled);
@@ -430,7 +431,7 @@ export function BuilderMenubar({
                 // Idle and no changes
                 setDisplayStatus('idle');
             }
-        }, [saveStatus, hasUnsavedChanges]);
+        }, []); // Both saveStatus and hasUnsavedChanges are managed by store subscription, not as dependencies
 
         return (
             <div className="flex items-center h-full overflow-hidden">

@@ -55,6 +55,7 @@ export function BuilderClient() {
     const currentBoard = useCanvasStore((state) => state.currentBoard);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const blocks = useCanvasStore((state) => state.blocks);
     const isNavigating = useCanvasStore((state) => state.isNavigating);
     const boardLoadingState = useCanvasStore((state) => state.boardLoadingState);

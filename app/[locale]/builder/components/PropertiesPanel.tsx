@@ -72,6 +72,7 @@ export function PropertiesPanel() {
     const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
     const blocks = useCanvasStore((state) => state.blocks);
     const updateBlock = useCanvasStore((state) => state.updateBlock);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const removeBlock = useCanvasStore((state) => state.removeBlock);
     const selectBlock = useCanvasStore((state) => state.selectBlock);
 

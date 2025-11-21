@@ -184,6 +184,7 @@ export function BoardSlugDialog({ open, onOpenChange }: BoardSlugDialogProps) {
     user?.id,
     user,
     currentBoard,
+    supabase,
   ]);
 
   const onSubmit = async (data: SlugFormData) => {
