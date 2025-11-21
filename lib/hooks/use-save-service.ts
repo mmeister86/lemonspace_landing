@@ -22,6 +22,12 @@ export function useSaveService() {
     // Track previous blocks to detect changes
     const prevBlocksRef = useRef<string>("");
 
+    // Keep blocksRef in sync with latest blocks for initialization effect
+    const blocksRef = useRef(blocks);
+    useEffect(() => {
+        blocksRef.current = blocks;
+    });
+
     const queryClient = useQueryClient();
 
     // Initialize service when board changes
@@ -35,12 +41,12 @@ export function useSaveService() {
         const service = new BoardSaveService(currentBoard.id);
 
         // Initialize with current state for rollback
-        service.initializeState({ blocks: blocks });
+        service.initializeState({ blocks: blocksRef.current });
 
         saveServiceRef.current = service;
 
         // Initialize prevBlocks with current blocks to avoid immediate save on load
-        prevBlocksRef.current = JSON.stringify(blocks);
+        prevBlocksRef.current = JSON.stringify(blocksRef.current);
 
         // Subscribe to service state changes
         const unsubscribe = service.subscribe((state) => {
@@ -95,7 +101,7 @@ export function useSaveService() {
             // Ideally yes, but we need to be careful about async operations during unmount.
             // For now, we rely on the service's internal state.
         };
-    }, [currentBoard?.id, setSaveStatus, setLastSavedAt, setHasUnsavedChanges, setSaveError, t, queryClient, blocks]);
+    }, [currentBoard?.id, blocks, setSaveStatus, setLastSavedAt, setHasUnsavedChanges, setSaveError, t, queryClient]);
 
     const isAutosaveEnabled = useCanvasStore((state) => state.isAutosaveEnabled);
 
@@ -118,10 +124,10 @@ export function useSaveService() {
             try {
                 // Force queue current state to ensure it's saved even if autosave is disabled
                 // or if no changes were detected yet (e.g. "Always Save" requirement)
-                saveServiceRef.current.queueChange({ blocks });
+                saveServiceRef.current.queueChange({ blocks: blocksRef.current });
 
                 // Update prevBlocksRef to avoid double-save if autosave is re-enabled
-                prevBlocksRef.current = JSON.stringify(blocks);
+                prevBlocksRef.current = JSON.stringify(blocksRef.current);
 
                 await saveServiceRef.current.flush();
                 return true;
