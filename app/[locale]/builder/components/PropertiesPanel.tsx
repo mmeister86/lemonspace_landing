@@ -4,9 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { Block, BlockType } from "@/lib/types/board";
 import { Separator } from "@/components/ui/separator";
+import { Trash2 } from "lucide-react";
 import {
     Sheet,
     SheetContent,
@@ -14,6 +16,9 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
+import { BlockDeleteDialog } from "./BlockDeleteDialog";
+
+// ... (keep blockSchemas and BlockFormData as is)
 
 const blockSchemas = {
     text: z.object({
@@ -67,9 +72,12 @@ export function PropertiesPanel() {
     const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
     const blocks = useCanvasStore((state) => state.blocks);
     const updateBlock = useCanvasStore((state) => state.updateBlock);
+    const removeBlock = useCanvasStore((state) => state.removeBlock);
+    const selectBlock = useCanvasStore((state) => state.selectBlock);
 
     const block = blocks.find((b) => b.id === selectedBlockId);
     const [lastBlock, setLastBlock] = useState<Block | undefined>(undefined);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     useEffect(() => {
         if (block) {
@@ -108,12 +116,14 @@ export function PropertiesPanel() {
         return () => subscription.unsubscribe();
     }, [form, block, updateBlock]);
 
-    const selectBlock = useCanvasStore((state) => state.selectBlock);
-
     const handleOpenChange = (open: boolean) => {
         if (!open) {
             selectBlock(null);
         }
+    };
+
+    const handleDelete = () => {
+        setDeleteDialogOpen(true);
     };
 
     const getFormFields = (type: BlockType) => {
@@ -354,31 +364,52 @@ export function PropertiesPanel() {
     if (!displayBlock) return null;
 
     return (
-        <Sheet open={!!block} onOpenChange={handleOpenChange} modal={false}>
-            <SheetContent
-                className="w-[400px] sm:w-[540px] overflow-y-auto p-6 pt-12"
-                side="right"
-                onInteractOutside={(e) => e.preventDefault()}
-            >
-                <SheetHeader className="mb-6">
-                    <SheetTitle>{getBlockTitle(displayBlock.type)}</SheetTitle>
-                    <SheetDescription>
-                        Eigenschaften bearbeiten
-                    </SheetDescription>
-                </SheetHeader>
-                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                    {getFormFields(displayBlock.type)}
+        <>
+            <Sheet open={!!block} onOpenChange={handleOpenChange} modal={false}>
+                <SheetContent
+                    className="w-[400px] sm:w-[540px] overflow-y-auto p-6 pt-12 flex flex-col h-full"
+                    side="right"
+                    onInteractOutside={(e) => e.preventDefault()}
+                >
+                    <SheetHeader className="mb-6 shrink-0">
+                        <SheetTitle>{getBlockTitle(displayBlock.type)}</SheetTitle>
+                        <SheetDescription>
+                            Eigenschaften bearbeiten
+                        </SheetDescription>
+                    </SheetHeader>
 
-                    <Separator className="my-6" />
-
-                    <div className="space-y-2">
-                        <h4 className="text-sm font-medium">Erweitert</h4>
-                        <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
-                            ID: {displayBlock.id}
+                    <form className="flex-1 flex flex-col" onSubmit={(e) => e.preventDefault()}>
+                        <div className="flex-1 space-y-6">
+                            {getFormFields(displayBlock.type)}
                         </div>
-                    </div>
-                </form>
-            </SheetContent>
-        </Sheet>
+
+                        <div className="mt-auto pt-6 space-y-6">
+                            <Button
+                                variant="destructive"
+                                className="w-full"
+                                onClick={handleDelete}
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Block löschen
+                            </Button>
+
+                            <Separator />
+
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-medium">Erweitert</h4>
+                                <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
+                                    ID: {displayBlock.id}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </SheetContent>
+            </Sheet>
+            <BlockDeleteDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                blockId={displayBlock.id}
+            />
+        </>
     );
 }

@@ -50,6 +50,9 @@ import { useUser } from "@/lib/contexts/user-context";
 import { BoardTitleDialog } from "./BoardTitleDialog";
 import { BoardSlugDialog } from "./BoardSlugDialog";
 import { CreateBoardDialog } from "./CreateBoardDialog";
+import { OpenBoardDialog } from "./OpenBoardDialog";
+import { DeleteBoardDialog } from "./DeleteBoardDialog";
+import { SaveAsBoardDialog } from "./SaveAsBoardDialog";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { toast } from "sonner";
 
@@ -83,6 +86,9 @@ export function BuilderMenubar({
     const [titleDialogOpen, setTitleDialogOpen] = React.useState(false);
     const [slugDialogOpen, setSlugDialogOpen] = React.useState(false);
     const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
+    const [openBoardDialogOpen, setOpenBoardDialogOpen] = React.useState(false);
+    const [deleteBoardDialogOpen, setDeleteBoardDialogOpen] = React.useState(false);
+    const [saveAsDialogOpen, setSaveAsDialogOpen] = React.useState(false);
 
     // Neues Board erstellen
     const handleNewBoard = React.useCallback(() => {
@@ -97,7 +103,7 @@ export function BuilderMenubar({
     }, [user?.id, t]);
 
     const handleOpenBoard = React.useCallback(() => {
-        console.log("Board öffnen");
+        setOpenBoardDialogOpen(true);
     }, []);
 
     const handleSave = React.useCallback(async () => {
@@ -105,8 +111,11 @@ export function BuilderMenubar({
     }, [onSave]);
 
     const handleSaveAs = React.useCallback(() => {
-        console.log("Board speichern unter...");
-    }, []);
+        if (!currentBoard) {
+            return;
+        }
+        setSaveAsDialogOpen(true);
+    }, [currentBoard]);
 
     const handleDuplicate = React.useCallback(() => {
         console.log("Board duplizieren");
@@ -143,6 +152,13 @@ export function BuilderMenubar({
     const handleDelete = React.useCallback(() => {
         console.log("Löschen");
     }, []);
+
+    const handleDeleteBoard = React.useCallback(() => {
+        if (!currentBoard) {
+            return;
+        }
+        setDeleteBoardDialogOpen(true);
+    }, [currentBoard]);
 
     const handleSelectAll = React.useCallback(() => {
         console.log("Alles auswählen");
@@ -489,6 +505,11 @@ export function BuilderMenubar({
                         <Download className="mr-2 h-4 w-4" />
                         <span>Exportieren</span>
                     </MenubarItem>
+                    <MenubarSeparator />
+                    <MenubarItem onClick={handleDeleteBoard} className="text-destructive focus:text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>{tMenubar('deleteBoard.title')}</span>
+                    </MenubarItem>
                 </MenubarContent>
             </MenubarMenu>
 
@@ -656,6 +677,18 @@ export function BuilderMenubar({
                 onOpenChange={setTitleDialogOpen}
             />
             <BoardSlugDialog open={slugDialogOpen} onOpenChange={setSlugDialogOpen} />
+            <OpenBoardDialog
+                open={openBoardDialogOpen}
+                onOpenChange={setOpenBoardDialogOpen}
+            />
+            <DeleteBoardDialog
+                open={deleteBoardDialogOpen}
+                onOpenChange={setDeleteBoardDialogOpen}
+            />
+            <SaveAsBoardDialog
+                open={saveAsDialogOpen}
+                onOpenChange={setSaveAsDialogOpen}
+            />
         </Menubar >
     );
 }

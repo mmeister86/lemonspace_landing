@@ -227,6 +227,29 @@
         },
         "success": "Board erfolgreich erstellt"
     },
+    "saveAsBoard": {
+        "title": "Board speichern unter",
+        "description": "Geben Sie einen Titel für die Kopie dieses Boards ein.",
+        "save": "Kopie speichern",
+        "saving": "Speichern...",
+        "success": "Board erfolgreich als Kopie gespeichert"
+    },
+    "openBoard": {
+        "title": "Board öffnen",
+        "description": "Wähle ein Board aus, um es im Builder zu öffnen.",
+        "searchPlaceholder": "Boards suchen...",
+        "noBoardsFound": "Keine Boards gefunden.",
+        "lastModified": "Zuletzt geändert",
+        "open": "Öffnen"
+    },
+    "deleteBoard": {
+        "title": "Board löschen",
+        "description": "Bist du sicher, dass du dieses Board löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "confirm": "Board löschen",
+        "cancel": "Abbrechen",
+        "success": "Board erfolgreich gelöscht",
+        "error": "Fehler beim Löschen des Boards"
+    },
     "api": {
         "newBoard": {
             "error": {
@@ -303,6 +326,9 @@
     "menubar": {
         "board": {
             "autosave": "Automatisches Speichern"
+        },
+        "deleteBoard": {
+            "title": "Board löschen"
         }
     }
 }

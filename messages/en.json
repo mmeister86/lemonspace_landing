@@ -227,6 +227,29 @@
         },
         "success": "Board created successfully"
     },
+    "saveAsBoard": {
+        "title": "Save Board As",
+        "description": "Enter a title for the new copy of this board.",
+        "save": "Save Copy",
+        "saving": "Saving...",
+        "success": "Board saved as copy successfully"
+    },
+    "openBoard": {
+        "title": "Open Board",
+        "description": "Select a board to open it in the builder.",
+        "searchPlaceholder": "Search boards...",
+        "noBoardsFound": "No boards found.",
+        "lastModified": "Last modified",
+        "open": "Open"
+    },
+    "deleteBoard": {
+        "title": "Delete Board",
+        "description": "Are you sure you want to delete this board? This action cannot be undone.",
+        "confirm": "Delete Board",
+        "cancel": "Cancel",
+        "success": "Board deleted successfully",
+        "error": "Failed to delete board"
+    },
     "api": {
         "newBoard": {
             "error": {
@@ -303,6 +326,9 @@
     "menubar": {
         "board": {
             "autosave": "Autosave"
+        },
+        "deleteBoard": {
+            "title": "Delete Board"
         }
     }
 }
