@@ -46,6 +46,7 @@ import {
     MenubarRadioGroup,
     MenubarRadioItem,
 } from "@/components/ui/menubar";
+import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/contexts/user-context";
 import { BoardTitleDialog } from "./BoardTitleDialog";
 import { BoardSlugDialog } from "./BoardSlugDialog";
@@ -54,6 +55,8 @@ import { OpenBoardDialog } from "./OpenBoardDialog";
 import { DeleteBoardDialog } from "./DeleteBoardDialog";
 import { SaveAsBoardDialog } from "./SaveAsBoardDialog";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
+import { useCreateBoard } from "@/lib/hooks/use-boards";
+import { generateSlug } from "@/lib/services/board-service";
 import { toast } from "sonner";
 
 
@@ -70,9 +73,13 @@ export function BuilderMenubar({
     onSave,
 }: BuilderMenubarProps) {
     const { user } = useUser();
+    const router = useRouter();
     const t = useTranslations('createBoard');
     const tMenubar = useTranslations('menubar');
+    const tSaveAs = useTranslations('saveAsBoard');
     const currentBoard = useCanvasStore((state) => state.currentBoard);
+    const blocks = useCanvasStore((state) => state.blocks);
+    const createBoardMutation = useCreateBoard();
 
     // Save state from store
     const saveStatus = useCanvasStore((state) => state.saveStatus);
@@ -117,9 +124,44 @@ export function BuilderMenubar({
         setSaveAsDialogOpen(true);
     }, [currentBoard]);
 
-    const handleDuplicate = React.useCallback(() => {
-        console.log("Board duplizieren");
-    }, []);
+    const handleDuplicate = React.useCallback(async () => {
+        if (!user?.id || !currentBoard) {
+            return;
+        }
+
+        const newTitle = tSaveAs("copyOf", { title: currentBoard.title });
+        const newSlug = generateSlug(newTitle);
+
+        console.log(`Duplicating board with ${blocks.length} blocks`);
+
+        // Regenerate block IDs to ensure uniqueness
+        const newBlocks = blocks.map(block => ({
+            ...block,
+            id: crypto.randomUUID()
+        }));
+
+        const toastId = toast.loading(tSaveAs("saving"));
+
+        try {
+            const newBoard = await createBoardMutation.mutateAsync({
+                title: newTitle,
+                slug: newSlug,
+                grid_config: currentBoard.grid_config || { columns: 4, gap: 16 },
+                blocks: newBlocks,
+            });
+
+            toast.dismiss(toastId);
+            toast.success(tSaveAs("success"));
+
+            // Redirect to new board
+            const boardIdentifier = newBoard.slug || newBoard.id;
+            router.push(`/builder/${boardIdentifier}`);
+        } catch (error) {
+            console.error("Failed to duplicate board:", error);
+            toast.dismiss(toastId);
+            toast.error("Failed to duplicate board");
+        }
+    }, [user?.id, currentBoard, tSaveAs, createBoardMutation, blocks, router]);
 
     const handleSaveAsTemplate = React.useCallback(() => {
         console.log("Als Template speichern (Pro)");

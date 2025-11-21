@@ -54,14 +54,14 @@ export function useSaveService() {
                 const latestBoard = useCanvasStore.getState().currentBoard;
                 if (latestBoard) {
                     // Invalidate both ID and Slug based queries since we don't know which one was used
-                    // queryClient.invalidateQueries({ queryKey: ["board", latestBoard.id] });
-                    // if (latestBoard.slug) {
-                    //    queryClient.invalidateQueries({ queryKey: ["board", latestBoard.slug] });
-                    // }
+                    queryClient.invalidateQueries({ queryKey: ["board", latestBoard.id] });
+                    if (latestBoard.slug) {
+                        queryClient.invalidateQueries({ queryKey: ["board", latestBoard.slug] });
+                    }
 
                     // Also invalidate lists as metadata might have changed
-                    // queryClient.invalidateQueries({ queryKey: ["boards"] });
-                    // queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
+                    queryClient.invalidateQueries({ queryKey: ["boards"] });
+                    queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
                 }
             }
 

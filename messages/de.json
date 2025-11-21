@@ -232,7 +232,8 @@
         "description": "Geben Sie einen Titel für die Kopie dieses Boards ein.",
         "save": "Kopie speichern",
         "saving": "Speichern...",
-        "success": "Board erfolgreich als Kopie gespeichert"
+        "success": "Board erfolgreich als Kopie gespeichert",
+        "copyOf": "Kopie von {title}"
     },
     "openBoard": {
         "title": "Board öffnen",

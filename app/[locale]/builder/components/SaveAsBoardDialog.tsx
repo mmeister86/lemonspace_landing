@@ -73,7 +73,7 @@ export function SaveAsBoardDialog({ open, onOpenChange }: SaveAsBoardDialogProps
     // Pre-fill title with "Copy of [Current Title]"
     React.useEffect(() => {
         if (open && currentBoard) {
-            const newTitle = `Copy of ${currentBoard.title}`;
+            const newTitle = t("copyOf", { title: currentBoard.title });
             form.setValue("title", newTitle, { shouldValidate: true });
             if (!isSlugManuallyEdited) {
                 const generatedSlug = generateSlug(newTitle);
@@ -138,11 +138,17 @@ export function SaveAsBoardDialog({ open, onOpenChange }: SaveAsBoardDialogProps
         }
 
         try {
+            // Regenerate block IDs to ensure uniqueness
+            const newBlocks = blocks.map(block => ({
+                ...block,
+                id: crypto.randomUUID()
+            }));
+
             const newBoard = await createBoardMutation.mutateAsync({
                 title: data.title,
                 slug: data.slug,
                 grid_config: currentBoard.grid_config || { columns: 4, gap: 16 },
-                blocks: blocks, // Use current blocks
+                blocks: newBlocks,
             });
 
             // Update store für sofortige UI-Aktualisierung

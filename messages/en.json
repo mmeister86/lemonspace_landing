@@ -232,7 +232,8 @@
         "description": "Enter a title for the new copy of this board.",
         "save": "Save Copy",
         "saving": "Saving...",
-        "success": "Board saved as copy successfully"
+        "success": "Board saved as copy successfully",
+        "copyOf": "Copy of {title}"
     },
     "openBoard": {
         "title": "Open Board",
