@@ -3,6 +3,7 @@
 import { ViewportSize } from "@/components/viewport-switcher";
 import { DropArea } from "./DropArea";
 import { BlockDeleteButton } from "./BlockDeleteButton";
+import { GridBlock } from "./blocks/GridBlock";
 
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
     const blocks = useCanvasStore((state) => state.blocks);
     const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
     const selectBlock = useCanvasStore((state) => state.selectBlock);
+    const currentBoard = useCanvasStore((state) => state.currentBoard);
 
     const getViewportClasses = (viewport: ViewportSize) => {
         switch (viewport) {
@@ -53,10 +55,7 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                 <>
                                     <div className="text-center mb-4">
                                         <h2 className="text-2xl font-semibold text-muted-foreground mb-2">
-                                            Canvas -{" "}
-                                            {currentViewport.charAt(0).toUpperCase() +
-                                                currentViewport.slice(1)}{" "}
-                                            View
+                                            {currentBoard?.title || "Untitled Board"}
                                         </h2>
                                         <p className="text-sm text-muted-foreground">
                                             {blocks.length} Block{blocks.length !== 1 ? "s" : ""}{" "}
@@ -97,12 +96,19 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                                     {isSelected && (
                                                         <BlockDeleteButton blockId={block.id} />
                                                     )}
-                                                    <div className="text-sm font-medium mb-2">
-                                                        Block: {block.type}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        ID: {block.id}
-                                                    </div>
+
+                                                    {block.type === "grid" ? (
+                                                        <GridBlock block={block} isSelected={isSelected} />
+                                                    ) : (
+                                                        <>
+                                                            <div className="text-sm font-medium mb-2">
+                                                                Block: {block.type}
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground">
+                                                                ID: {block.id}
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 </div>
                                             );
                                         })}

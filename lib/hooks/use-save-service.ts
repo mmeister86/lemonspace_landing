@@ -57,18 +57,9 @@ export function useSaveService() {
 
             // Invalidate query on successful save so that subsequent loads fetch fresh data
             if (state.status === "saved") {
-                const latestBoard = useCanvasStore.getState().currentBoard;
-                if (latestBoard) {
-                    // Invalidate both ID and Slug based queries since we don't know which one was used
-                    queryClient.invalidateQueries({ queryKey: ["board", latestBoard.id] });
-                    if (latestBoard.slug) {
-                        queryClient.invalidateQueries({ queryKey: ["board", latestBoard.slug] });
-                    }
-
-                    // Also invalidate lists as metadata might have changed
-                    queryClient.invalidateQueries({ queryKey: ["boards"] });
-                    queryClient.invalidateQueries({ queryKey: ["recent-boards"] });
-                }
+                // We do NOT invalidate queries here anymore to avoid infinite loops.
+                // The local state is the source of truth while editing.
+                // When the user leaves or reloads, they will get fresh data.
             }
 
             // Show toast on error
@@ -101,7 +92,7 @@ export function useSaveService() {
             // Ideally yes, but we need to be careful about async operations during unmount.
             // For now, we rely on the service's internal state.
         };
-    }, [currentBoard?.id, blocks, setSaveStatus, setLastSavedAt, setHasUnsavedChanges, setSaveError, t, queryClient]);
+    }, [currentBoard?.id, setSaveStatus, setLastSavedAt, setHasUnsavedChanges, setSaveError, t, queryClient]);
 
     const isAutosaveEnabled = useCanvasStore((state) => state.isAutosaveEnabled);
 

@@ -40,6 +40,7 @@ const VALID_BLOCK_TYPES: BlockType[] = [
     "testimonial",
     "accordion",
     "code",
+    "grid",
 ] as const;
 
 export function BuilderClient() {
