@@ -11,6 +11,9 @@ export interface Block {
     id: string;
     type: BlockType;
     data: Record<string, unknown>; // Block-spezifische Daten
+    // Nesting support
+    parentId?: string; // ID des Eltern-Blocks (z.B. Grid)
+    containerId?: string; // ID des Containers im Eltern-Block (z.B. Spalten-Index "0", "1")
     position?: {
         x: number;
         y: number;

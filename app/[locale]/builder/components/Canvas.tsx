@@ -15,6 +15,9 @@ interface CanvasProps {
 
 export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps) {
     const blocks = useCanvasStore((state) => state.blocks);
+    // Only render root blocks (no parent) in the main canvas
+    const rootBlocks = blocks.filter(b => !b.parentId);
+
     const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
     const selectBlock = useCanvasStore((state) => state.selectBlock);
     const currentBoard = useCanvasStore((state) => state.currentBoard);
@@ -64,7 +67,7 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                     </div>
                                     {/* Blöcke werden später mit Grid-Layout angezeigt */}
                                     <div className="space-y-4">
-                                        {blocks.map((block) => {
+                                        {rootBlocks.map((block) => {
                                             const isSelected = selectedBlockId === block.id;
                                             return (
                                                 <div

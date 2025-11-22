@@ -41,6 +41,8 @@ export const blockSchema = z.object({
             height: z.number(),
         })
         .optional(),
+    parentId: z.string().optional(),
+    containerId: z.string().optional(),
 });
 
 /**

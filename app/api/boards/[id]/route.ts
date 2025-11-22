@@ -353,6 +353,8 @@ export async function GET(
                 },
                 zIndex: el.z_index,
                 styles: el.styles,
+                parentId: el.parent_id || undefined,
+                containerId: el.container_id?.toString(),
                 createdAt: el.created_at,
                 updatedAt: el.updated_at,
             }));
@@ -679,6 +681,8 @@ async function syncBoardElements(
         height: block.size?.height || 100,
         z_index: 0,
         styles: {},
+        parent_id: block.parentId || null,
+        container_id: block.containerId || null,
         updated_at: new Date().toISOString(),
     }));
 

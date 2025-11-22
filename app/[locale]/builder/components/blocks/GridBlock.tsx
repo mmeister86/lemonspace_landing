@@ -1,6 +1,10 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Block } from "@/lib/types/board";
+import { useCanvasStore } from "@/lib/stores/canvas-store";
+import { BlockDeleteButton } from "../BlockDeleteButton";
+
+
 
 import { useDroppable } from "@dnd-kit/core";
 
@@ -25,18 +29,66 @@ function GridColumn({ blockId, columnIndex, isSelected }: GridColumnProps) {
         },
     });
 
+    const blocks = useCanvasStore((state) => state.blocks);
+    const selectBlock = useCanvasStore((state) => state.selectBlock);
+    const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
+
+    const children = blocks.filter(
+        (b) => b.parentId === blockId && b.containerId === columnIndex.toString()
+    );
+
     return (
         <div
             ref={setNodeRef}
             className={cn(
-                "border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/5 flex items-center justify-center min-h-[100px] transition-colors",
+                "border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/5 min-h-[100px] transition-colors p-2 flex flex-col gap-2",
                 isSelected && "border-primary/20 bg-primary/5",
                 isOver && "border-primary bg-primary/10"
             )}
         >
-            <span className="text-xs text-muted-foreground">
-                Spalte {columnIndex + 1}
-            </span>
+            {children.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground">
+                        Spalte {columnIndex + 1}
+                    </span>
+                </div>
+            ) : (
+                children.map((child) => {
+                    const isChildSelected = selectedBlockId === child.id;
+                    return (
+                        <div
+                            key={child.id}
+                            className={cn(
+                                "p-4 border rounded-lg bg-background relative cursor-pointer transition-all",
+                                isChildSelected &&
+                                "ring-2 ring-primary ring-offset-2 border-primary"
+                            )}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                selectBlock(child.id);
+                            }}
+                        >
+                            {isChildSelected && (
+                                <BlockDeleteButton blockId={child.id} />
+                            )}
+
+                            {/* TODO: Use a shared BlockRenderer component */}
+                            {child.type === "grid" ? (
+                                <GridBlock block={child} isSelected={isChildSelected} />
+                            ) : (
+                                <>
+                                    <div className="text-sm font-medium mb-2">
+                                        Block: {child.type}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        ID: {child.id}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    );
+                })
+            )}
         </div>
     );
 }

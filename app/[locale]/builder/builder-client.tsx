@@ -160,7 +160,12 @@ export function BuilderClient() {
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
-        if (over?.id === "canvas-drop-area") {
+        if (!over) return;
+
+        const isOverCanvas = over.id === "canvas-drop-area";
+        const isOverColumn = over.data?.current?.type === "column";
+
+        if (isOverCanvas || isOverColumn) {
             if (!active || !active.data) {
                 console.warn(
                     "[Canvas] Invalid drag event: active or active.data is missing",
@@ -179,40 +184,69 @@ export function BuilderClient() {
 
             const current = active.data.current;
 
-            let validatedType: BlockType = "text";
-            if (
-                typeof current.type === "string" &&
-                VALID_BLOCK_TYPES.includes(current.type as BlockType)
-            ) {
-                validatedType = current.type as BlockType;
-            } else if (current.type !== undefined) {
-                console.warn(
-                    `[Canvas] Invalid block type "${current.type}", defaulting to "text"`,
-                    { current }
-                );
+            // Determine parentId and containerId based on drop target
+            let parentId: string | undefined;
+            let containerId: string | undefined;
+
+            if (isOverColumn) {
+                parentId = over.data.current?.blockId;
+                containerId = over.data.current?.columnIndex?.toString();
             }
+            // If isOverCanvas, parentId and containerId remain undefined (root level)
 
-            let validatedData: Record<string, unknown> = {};
-            if (
-                current.data !== null &&
-                typeof current.data === "object" &&
-                !Array.isArray(current.data)
-            ) {
-                validatedData = current.data as Record<string, unknown>;
-            } else if (current.data !== undefined) {
-                console.warn(
-                    `[Canvas] Invalid block data, expected object but got ${typeof current.data}, defaulting to {}`,
-                    { current }
-                );
+            // Check if we are moving an existing block
+            // The active.id for existing blocks is just the block ID
+            // The active.id for new blocks from sidebar is "block-type" or similar
+            const existingBlock = blocks.find(b => b.id === active.id);
+
+            if (existingBlock) {
+                // Move existing block
+                // We need to update the block's parentId and containerId
+                // We use a custom action or updateBlock
+                // Since updateBlock takes Partial<Block>, we can use it
+                useCanvasStore.getState().updateBlock(existingBlock.id, {
+                    parentId,
+                    containerId
+                });
+            } else {
+                // Create new block
+                let validatedType: BlockType = "text";
+                if (
+                    typeof current.type === "string" &&
+                    VALID_BLOCK_TYPES.includes(current.type as BlockType)
+                ) {
+                    validatedType = current.type as BlockType;
+                } else if (current.type !== undefined) {
+                    console.warn(
+                        `[Canvas] Invalid block type "${current.type}", defaulting to "text"`,
+                        { current }
+                    );
+                }
+
+                let validatedData: Record<string, unknown> = {};
+                if (
+                    current.data !== null &&
+                    typeof current.data === "object" &&
+                    !Array.isArray(current.data)
+                ) {
+                    validatedData = current.data as Record<string, unknown>;
+                } else if (current.data !== undefined) {
+                    console.warn(
+                        `[Canvas] Invalid block data, expected object but got ${typeof current.data}, defaulting to {}`,
+                        { current }
+                    );
+                }
+
+                const newBlock: Block = {
+                    id: crypto.randomUUID(),
+                    type: validatedType,
+                    data: validatedData,
+                    parentId,
+                    containerId,
+                };
+
+                addBlock(newBlock);
             }
-
-            const newBlock: Block = {
-                id: crypto.randomUUID(),
-                type: validatedType,
-                data: validatedData,
-            };
-
-            addBlock(newBlock);
         }
     };
 
