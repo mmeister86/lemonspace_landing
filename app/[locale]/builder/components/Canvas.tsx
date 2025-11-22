@@ -4,6 +4,7 @@ import { ViewportSize } from "@/components/viewport-switcher";
 import { DropArea } from "./DropArea";
 import { BlockDeleteButton } from "./BlockDeleteButton";
 import { GridBlock } from "./blocks/GridBlock";
+import { TextBlock } from "./blocks/TextBlock";
 
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { cn } from "@/lib/utils";
@@ -104,12 +105,14 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                                     }}
                                                 >
 
-                                                    {isSelected && (
+                                                    {isSelected && block.type !== "text" && (
                                                         <BlockDeleteButton blockId={block.id} />
                                                     )}
 
                                                     {block.type === "grid" ? (
                                                         <GridBlock block={block} isSelected={isSelected} />
+                                                    ) : block.type === "text" ? (
+                                                        <TextBlock block={block} isSelected={isSelected} />
                                                     ) : (
                                                         <>
                                                             <div className="text-sm font-medium mb-2">

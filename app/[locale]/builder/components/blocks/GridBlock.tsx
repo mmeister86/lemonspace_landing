@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
+import { TextBlock } from "./TextBlock";
 import { cn } from "@/lib/utils";
 import { Block } from "@/lib/types/board";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
@@ -81,13 +82,15 @@ function GridColumn({ blockId, columnIndex }: GridColumnProps) {
                                 selectBlock(child.id, { additive: isModifierKey });
                             }}
                         >
-                            {isChildSelected && (
+                            {isChildSelected && child.type !== "text" && (
                                 <BlockDeleteButton blockId={child.id} />
                             )}
 
                             {/* TODO: Use a shared BlockRenderer component */}
                             {child.type === "grid" ? (
                                 <GridBlock block={child} isSelected={isChildSelected} />
+                            ) : child.type === "text" ? (
+                                <TextBlock block={child} isSelected={isChildSelected} />
                             ) : (
                                 <>
                                     <div className="text-sm font-medium mb-2">
