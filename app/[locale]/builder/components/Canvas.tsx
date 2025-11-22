@@ -18,7 +18,7 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
     // Only render root blocks (no parent) in the main canvas
     const rootBlocks = blocks.filter(b => !b.parentId);
 
-    const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
+    const selectedBlockIds = useCanvasStore((state) => state.selectedBlockIds);
     const selectBlock = useCanvasStore((state) => state.selectBlock);
     const currentBoard = useCanvasStore((state) => state.currentBoard);
 
@@ -74,7 +74,7 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                     {/* Blöcke werden später mit Grid-Layout angezeigt */}
                                     <div className="space-y-4">
                                         {rootBlocks.map((block) => {
-                                            const isSelected = selectedBlockId === block.id;
+                                            const isSelected = selectedBlockIds.includes(block.id);
                                             return (
                                                 <div
                                                     key={block.id}
@@ -89,7 +89,8 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                                     )}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        selectBlock(block.id);
+                                                        const isModifierKey = e.metaKey || e.ctrlKey;
+                                                        selectBlock(block.id, { additive: isModifierKey });
                                                     }}
                                                     onKeyDown={(e) => {
                                                         if (e.key === "Enter" || e.key === " ") {
@@ -97,7 +98,8 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                                             if (e.key === " ") {
                                                                 e.preventDefault();
                                                             }
-                                                            selectBlock(block.id);
+                                                            const isModifierKey = e.metaKey || e.ctrlKey;
+                                                            selectBlock(block.id, { additive: isModifierKey });
                                                         }
                                                     }}
                                                 >

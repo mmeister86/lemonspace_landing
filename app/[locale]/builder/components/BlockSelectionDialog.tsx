@@ -21,6 +21,7 @@ interface BlockSelectionDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSelect: (type: BlockType, data: Record<string, unknown>) => void;
+    target?: { parentId?: string; containerId?: string };
 }
 
 interface SelectionBlockCardProps {
@@ -47,13 +48,14 @@ export function BlockSelectionDialog({
     open,
     onOpenChange,
     onSelect,
+    target,
 }: BlockSelectionDialogProps) {
     const t = useTranslations();
     const clipboard = useCanvasStore((state) => state.clipboard);
     const pasteBlock = useCanvasStore((state) => state.pasteBlock);
 
     const handlePaste = () => {
-        const success = pasteBlock();
+        const success = pasteBlock(target);
         if (success) {
             toast.success(t("toast.pasteSuccess"));
             onOpenChange(false);

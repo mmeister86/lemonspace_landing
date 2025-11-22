@@ -227,6 +227,51 @@
         },
         "success": "Board erfolgreich erstellt"
     },
+    "boardTitleDialog": {
+        "title": "Titel ändern",
+        "description": "Gib einen neuen Titel für dein Board ein."
+    },
+    "boardSlugDialog": {
+        "title": "Slug ändern",
+        "description": "Gib einen neuen Slug für dein Board ein. Der Slug wird in der URL verwendet."
+    },
+    "blockDeleteDialog": {
+        "title": "Block löschen?",
+        "description": "Bist du sicher, dass du diesen Block löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "cancel": "Abbrechen",
+        "confirm": "Löschen"
+    },
+    "rightSidebar": {
+        "settings": "Einstellungen"
+    },
+    "propertiesPanel": {
+        "selectBlock": "Wähle einen Block aus, um seine Einstellungen zu bearbeiten.",
+        "gridSettingsNotAvailable": "Grid-Einstellungen sind noch nicht verfügbar.",
+        "advanced": "Erweitert",
+        "content": "Inhalt",
+        "level": "Ebene (1-6)",
+        "buttonText": "Button-Text",
+        "targetUrl": "Ziel-URL",
+        "imageUrl": "Bild-URL",
+        "altText": "Alt-Text",
+        "videoUrl": "Video-URL",
+        "posterImageUrl": "Poster-Bild-URL",
+        "height": "Höhe (px)",
+        "title": "Titel",
+        "fields": "Felder (JSON)",
+        "price": "Preis",
+        "description": "Beschreibung",
+        "quote": "Zitat",
+        "author": "Autor",
+        "language": "Sprache",
+        "code": "Code"
+    },
+    "saveStatus": {
+        "saving": "Speichern...",
+        "error": "Fehler",
+        "saved": "Gespeichert",
+        "unsaved": "Ungespeichert"
+    },
     "saveAsBoard": {
         "title": "Board speichern unter",
         "description": "Geben Sie einen Titel für die Kopie dieses Boards ein.",
@@ -241,7 +286,8 @@
         "searchPlaceholder": "Boards suchen...",
         "noBoardsFound": "Keine Boards gefunden.",
         "lastModified": "Zuletzt geändert",
-        "open": "Öffnen"
+        "open": "Öffnen",
+        "loading": "Laden..."
     },
     "deleteBoard": {
         "title": "Board löschen",
@@ -322,15 +368,68 @@
         },
         "info": {
             "rollbackComplete": "Änderungen wurden rückgängig gemacht"
+        },
+        "toast": {
+            "copySuccess": "Block erfolgreich kopiert",
+            "cutSuccess": "Block erfolgreich ausgeschnitten",
+            "pasteSuccess": "Block erfolgreich eingefügt",
+            "pasteError": "Fehler beim Einfügen des Blocks",
+            "duplicateFailed": "Fehler beim Duplizieren des Boards",
+            "noBoardToSave": "Kein Board zum Speichern vorhanden",
+            "noBoardSelected": "Kein Board ausgewählt",
+            "notLoggedIn": "Nicht angemeldet",
+            "titleChanged": "Titel erfolgreich geändert",
+            "slugChanged": "Slug erfolgreich geändert"
         }
     },
     "menubar": {
-        "board": {
-            "autosave": "Automatisches Speichern"
+        "file": {
+            "menu": "Datei",
+            "newBoard": "Neues Board",
+            "openBoard": "Board öffnen",
+            "save": "Speichern",
+            "saveAs": "Speichern unter...",
+            "duplicate": "Duplizieren",
+            "saveAsTemplate": "Als Template speichern",
+            "export": "Exportieren"
         },
         "deleteBoard": {
             "title": "Board löschen"
-        }
+        },
+        "edit": {
+            "menu": "Bearbeiten",
+            "undo": "Rückgängig",
+            "redo": "Wiederholen",
+            "cut": "Ausschneiden",
+            "copy": "Kopieren",
+            "paste": "Einfügen",
+            "delete": "Löschen",
+            "selectAll": "Alles auswählen"
+        },
+        "view": {
+            "menu": "Ansicht",
+            "builderMode": "Builder-Modus",
+            "previewMode": "Vorschau-Modus",
+            "zoomIn": "Vergrößern",
+            "zoomOut": "Verkleinern",
+            "showGrid": "Raster anzeigen"
+        },
+        "board": {
+            "menu": "Board",
+            "settings": "Einstellungen",
+            "changeTitle": "Titel ändern",
+            "changeSlug": "Slug ändern",
+            "passwordProtection": "Passwortschutz",
+            "autosave": "Automatisches Speichern"
+        },
+        "share": {
+            "menu": "Teilen",
+            "copyLink": "Link kopieren",
+            "generateQR": "QR-Code generieren",
+            "sendEmail": "E-Mail senden",
+            "accessSettings": "Zugriffseinstellungen"
+        },
+        "pro": "Pro"
     },
     "blockSelection": {
         "title": "Block hinzufügen",
@@ -357,6 +456,13 @@
             "rightSidebarQuarter": "Rechts 1/4",
             "spacer": "Abstand",
             "divider": "Trennlinie"
-        }
+        },
+        "paste": "Einfügen"
+    },
+    "toast": {
+        "copySuccess": "Block erfolgreich kopiert",
+        "cutSuccess": "Block erfolgreich ausgeschnitten",
+        "pasteSuccess": "Block erfolgreich eingefügt",
+        "pasteError": "Fehler beim Einfügen des Blocks"
     }
 }

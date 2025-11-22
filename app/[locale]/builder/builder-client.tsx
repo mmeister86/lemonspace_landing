@@ -59,7 +59,7 @@ export function BuilderClient() {
     const [zoomLevel, setZoomLevel] = useState(100);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const addBlock = useCanvasStore((state) => state.addBlock);
-    const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
+    const selectedBlockIds = useCanvasStore((state) => state.selectedBlockIds);
     const currentBoard = useCanvasStore((state) => state.currentBoard);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
@@ -171,8 +171,9 @@ export function BuilderClient() {
 
         const isOverCanvas = over.id === "canvas-drop-area";
         const isOverColumn = over.data?.current?.type === "column";
+        const isOverDropArea = over.data?.current?.type === "drop-area";
 
-        if (isOverCanvas || isOverColumn) {
+        if (isOverCanvas || isOverColumn || isOverDropArea) {
             if (!active || !active.data) {
                 console.warn(
                     "[Canvas] Invalid drag event: active or active.data is missing",
@@ -198,6 +199,9 @@ export function BuilderClient() {
             if (isOverColumn) {
                 parentId = over.data.current?.blockId;
                 containerId = over.data.current?.columnIndex?.toString();
+            } else if (isOverDropArea) {
+                parentId = over.data.current?.parentId;
+                containerId = over.data.current?.containerId;
             }
             // If isOverCanvas, parentId and containerId remain undefined (root level)
 
@@ -278,7 +282,7 @@ export function BuilderClient() {
             if (isInput) return;
 
             // Delete
-            if ((e.key === "Delete" || e.key === "Backspace") && selectedBlockId) {
+            if ((e.key === "Delete" || e.key === "Backspace") && selectedBlockIds.length > 0) {
                 e.preventDefault();
                 setDeleteDialogOpen(true);
                 return;
@@ -286,7 +290,7 @@ export function BuilderClient() {
 
             // Copy (Cmd/Ctrl + C)
             if ((e.metaKey || e.ctrlKey) && e.key === "c") {
-                if (selectedBlockId) {
+                if (selectedBlockIds.length > 0) {
                     e.preventDefault();
                     copyBlock();
                     toast.success(t("toast.copySuccess"));
@@ -296,7 +300,7 @@ export function BuilderClient() {
 
             // Cut (Cmd/Ctrl + X)
             if ((e.metaKey || e.ctrlKey) && e.key === "x") {
-                if (selectedBlockId) {
+                if (selectedBlockIds.length > 0) {
                     e.preventDefault();
                     cutBlock();
                     toast.success(t("toast.cutSuccess"));
@@ -307,7 +311,7 @@ export function BuilderClient() {
             // Paste (Cmd/Ctrl + V)
             if ((e.metaKey || e.ctrlKey) && e.key === "v") {
                 e.preventDefault();
-                if (clipboard) {
+                if (clipboard && clipboard.length > 0) {
                     const success = pasteBlock();
                     if (success) {
                         toast.success(t("toast.pasteSuccess"));
@@ -323,7 +327,7 @@ export function BuilderClient() {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [selectedBlockId, clipboard, copyBlock, cutBlock, pasteBlock, t]);
+    }, [selectedBlockIds, clipboard, copyBlock, cutBlock, pasteBlock, t]);
 
     const renderContent = () => {
         // Show loading state during board transitions
@@ -424,7 +428,7 @@ export function BuilderClient() {
                 <BlockDeleteDialog
                     open={deleteDialogOpen}
                     onOpenChange={setDeleteDialogOpen}
-                    blockId={selectedBlockId}
+                    blockIds={selectedBlockIds}
                 />
             </DndContext>
         </AuthGuard>

@@ -63,14 +63,17 @@ const blockSchemas = {
 type BlockFormData = Record<string, unknown>;
 
 export function PropertiesPanel() {
-    const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
+    const selectedBlockIds = useCanvasStore((state) => state.selectedBlockIds);
     const blocks = useCanvasStore((state) => state.blocks);
     const updateBlock = useCanvasStore((state) => state.updateBlock);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const removeBlock = useCanvasStore((state) => state.removeBlock);
     const selectBlock = useCanvasStore((state) => state.selectBlock);
 
-    const block = blocks.find((b) => b.id === selectedBlockId);
+    const block = selectedBlockIds.length === 1
+        ? blocks.find((b) => b.id === selectedBlockIds[0])
+        : undefined;
+
     const [lastBlock, setLastBlock] = useState<Block | undefined>(undefined);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -80,7 +83,9 @@ export function PropertiesPanel() {
         }
     }, [block]);
 
-    const displayBlock = block || lastBlock;
+
+
+    const displayBlock = block || (selectedBlockIds.length === 0 ? lastBlock : undefined);
 
     const currentSchema = displayBlock
         ? (displayBlock.type === 'grid' ? blockSchemas.text : blockSchemas[displayBlock.type] || blockSchemas.text)
@@ -128,6 +133,7 @@ export function PropertiesPanel() {
         };
     }, [form, block, updateBlock]);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleOpenChange = (open: boolean) => {
         if (!open) {
             selectBlock(null);
@@ -374,6 +380,29 @@ export function PropertiesPanel() {
         return titles[type] || type;
     };
 
+    if (selectedBlockIds.length > 1) {
+        return (
+            <div className="flex flex-col h-full">
+                <div className="flex flex-col items-center justify-center flex-1 text-center p-4 text-muted-foreground">
+                    <p className="text-sm font-medium mb-2">{selectedBlockIds.length} Blöcke ausgewählt</p>
+                    <p className="text-xs mb-4">Bearbeitung mehrerer Blöcke ist noch nicht verfügbar.</p>
+                    <Button
+                        variant="destructive"
+                        onClick={handleDelete}
+                    >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Alle löschen
+                    </Button>
+                </div>
+                <BlockDeleteDialog
+                    open={deleteDialogOpen}
+                    onOpenChange={setDeleteDialogOpen}
+                    blockIds={selectedBlockIds}
+                />
+            </div>
+        );
+    }
+
     if (!displayBlock) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-center p-4 text-muted-foreground">
@@ -428,7 +457,7 @@ export function PropertiesPanel() {
             <BlockDeleteDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}
-                blockId={displayBlock.id}
+                blockIds={[displayBlock.id]}
             />
         </div>
     );

@@ -202,9 +202,12 @@ export function BuilderMenubar({
         setDeleteBoardDialogOpen(true);
     }, [currentBoard]);
 
+    const selectAllBlocks = useCanvasStore((state) => state.selectAllBlocks);
+
     const handleSelectAll = React.useCallback(() => {
-        console.log("Alles auswählen");
-    }, []);
+        selectAllBlocks();
+        toast.success("Alle Blöcke ausgewählt");
+    }, [selectAllBlocks]);
 
     const handleTogglePreview = React.useCallback(() => {
         setIsPreviewMode((prev) => {

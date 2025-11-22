@@ -9,8 +9,8 @@ type BoardLoadingState = 'idle' | 'loading' | 'ready' | 'error';
 interface CanvasState {
     currentBoard: Board | null;
     blocks: Block[];
-    selectedBlockId: string | null;
-    clipboard: Block | null;
+    selectedBlockIds: string[];
+    clipboard: Block[] | null;
     selectedColumnIndex: number | null;
     showDropArea: boolean;
 
@@ -32,7 +32,8 @@ interface CanvasState {
     addBlock: (block: Block) => void;
     removeBlock: (blockId: string) => void;
     updateBlock: (blockId: string, updates: Partial<Block>) => void;
-    selectBlock: (blockId: string | null, columnIndex?: number | null) => void;
+    selectBlock: (blockId: string | null, options?: { columnIndex?: number | null, additive?: boolean }) => void;
+    selectAllBlocks: () => void;
     copyBlock: () => void;
     cutBlock: () => void;
     pasteBlock: (target?: { parentId?: string; containerId?: string }) => boolean;
@@ -59,13 +60,13 @@ interface CanvasState {
 interface CanvasHistoryState {
     blocks: Block[];
     currentBoard: Board | null;
-    // selectedBlockId is excluded to prevent undo history from tracking sheet open/close
+    // selectedBlockIds is excluded to prevent undo history from tracking sheet open/close
 }
 
 const initialState = {
     currentBoard: null,
     blocks: [],
-    selectedBlockId: null,
+    selectedBlockIds: [],
     selectedColumnIndex: null,
     clipboard: null,
     showDropArea: true,
@@ -100,7 +101,7 @@ export const useCanvasStore = create<CanvasState>()(
                     lastSavedAt: null,
                     hasUnsavedChanges: false,
                     saveError: null,
-                    selectedBlockId: null,
+                    selectedBlockIds: [],
                     selectedColumnIndex: null,
                     clipboard: null,
                 }),
@@ -125,10 +126,9 @@ export const useCanvasStore = create<CanvasState>()(
                         currentBoard: state.currentBoard
                             ? { ...state.currentBoard, blocks: newBlocks }
                             : null,
-                        selectedBlockId:
-                            state.selectedBlockId === blockId ? null : state.selectedBlockId,
+                        selectedBlockIds: state.selectedBlockIds.filter(id => id !== blockId),
                         selectedColumnIndex:
-                            state.selectedBlockId === blockId ? null : state.selectedColumnIndex,
+                            state.selectedBlockIds.includes(blockId) && state.selectedBlockIds.length === 1 ? null : state.selectedColumnIndex,
                         showDropArea: true, // Always available
                     };
                 }),
@@ -147,38 +147,69 @@ export const useCanvasStore = create<CanvasState>()(
                     };
                 }),
 
-            selectBlock: (blockId, columnIndex = null) => set({
-                selectedBlockId: blockId,
-                selectedColumnIndex: columnIndex
+            selectBlock: (blockId, options = {}) => set((state) => {
+                const { columnIndex = null, additive = false } = options;
+
+                if (blockId === null) {
+                    return {
+                        selectedBlockIds: [],
+                        selectedColumnIndex: null
+                    };
+                }
+
+                let newSelectedIds = state.selectedBlockIds;
+
+                if (additive) {
+                    if (newSelectedIds.includes(blockId)) {
+                        // Deselect if already selected
+                        newSelectedIds = newSelectedIds.filter(id => id !== blockId);
+                    } else {
+                        // Add to selection
+                        newSelectedIds = [...newSelectedIds, blockId];
+                    }
+                } else {
+                    // Replace selection
+                    newSelectedIds = [blockId];
+                }
+
+                return {
+                    selectedBlockIds: newSelectedIds,
+                    selectedColumnIndex: newSelectedIds.length === 1 ? columnIndex : null
+                };
             }),
 
+            selectAllBlocks: () => set((state) => ({
+                selectedBlockIds: state.blocks.map(b => b.id),
+                selectedColumnIndex: null
+            })),
+
             copyBlock: () => set((state) => {
-                if (!state.selectedBlockId) return {};
-                const blockToCopy = state.blocks.find(b => b.id === state.selectedBlockId);
-                if (!blockToCopy) return {};
-                return { clipboard: JSON.parse(JSON.stringify(blockToCopy)) };
+                if (state.selectedBlockIds.length === 0) return {};
+                const blocksToCopy = state.blocks.filter(b => state.selectedBlockIds.includes(b.id));
+                if (blocksToCopy.length === 0) return {};
+                return { clipboard: JSON.parse(JSON.stringify(blocksToCopy)) };
             }),
 
             cutBlock: () => set((state) => {
-                if (!state.selectedBlockId) return {};
-                const blockToCut = state.blocks.find(b => b.id === state.selectedBlockId);
-                if (!blockToCut) return {};
+                if (state.selectedBlockIds.length === 0) return {};
+                const blocksToCut = state.blocks.filter(b => state.selectedBlockIds.includes(b.id));
+                if (blocksToCut.length === 0) return {};
 
-                const newBlocks = state.blocks.filter(b => b.id !== state.selectedBlockId);
+                const newBlocks = state.blocks.filter(b => !state.selectedBlockIds.includes(b.id));
                 return {
-                    clipboard: JSON.parse(JSON.stringify(blockToCut)),
+                    clipboard: JSON.parse(JSON.stringify(blocksToCut)),
                     blocks: newBlocks,
                     currentBoard: state.currentBoard
                         ? { ...state.currentBoard, blocks: newBlocks }
                         : null,
-                    selectedBlockId: null,
+                    selectedBlockIds: [],
                     selectedColumnIndex: null,
                 };
             }),
 
             pasteBlock: (target) => {
                 const state = get();
-                if (!state.clipboard) return false;
+                if (!state.clipboard || state.clipboard.length === 0) return false;
 
                 let parentId: string | undefined;
                 let containerId: string | undefined;
@@ -188,25 +219,27 @@ export const useCanvasStore = create<CanvasState>()(
                     containerId = target.containerId;
                 } else {
                     // If no explicit target, check selection
-                    if (state.selectedBlockId && state.selectedColumnIndex !== null) {
+                    // Only allow pasting into a column if exactly one block (grid) is selected
+                    if (state.selectedBlockIds.length === 1 && state.selectedColumnIndex !== null) {
                         // Pasting into a selected column
-                        parentId = state.selectedBlockId;
+                        parentId = state.selectedBlockIds[0];
                         containerId = state.selectedColumnIndex.toString();
                     } else {
                         // Cannot paste if no column selected and no target provided
+                        // Or just paste at root? For now, follow existing logic: return false
                         return false;
                     }
                 }
 
-                // Create new block from clipboard
-                const newBlock: Block = {
-                    ...JSON.parse(JSON.stringify(state.clipboard)),
+                // Create new blocks from clipboard
+                const newBlocksToAdd = state.clipboard.map(block => ({
+                    ...block,
                     id: crypto.randomUUID(),
                     parentId,
                     containerId,
-                };
+                }));
 
-                const newBlocks = [...state.blocks, newBlock];
+                const newBlocks = [...state.blocks, ...newBlocksToAdd];
                 set({
                     blocks: newBlocks,
                     currentBoard: state.currentBoard

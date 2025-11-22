@@ -6,6 +6,7 @@ import { BlockDeleteButton } from "../BlockDeleteButton";
 import { useDroppable } from "@dnd-kit/core";
 import { ResizeHandle } from "./ResizeHandle";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import { DropArea } from "../DropArea";
 
 interface GridBlockProps {
     block: Block;
@@ -30,11 +31,11 @@ function GridColumn({ blockId, columnIndex }: GridColumnProps) {
 
     const blocks = useCanvasStore((state) => state.blocks);
     const selectBlock = useCanvasStore((state) => state.selectBlock);
-    const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
+    const selectedBlockIds = useCanvasStore((state) => state.selectedBlockIds);
     const selectedColumnIndex = useCanvasStore((state) => state.selectedColumnIndex);
 
-    const isBlockSelected = selectedBlockId === blockId;
-    const isColumnSelected = isBlockSelected && selectedColumnIndex === columnIndex;
+    const isBlockSelected = selectedBlockIds.includes(blockId);
+    const isColumnSelected = isBlockSelected && selectedColumnIndex === columnIndex && selectedBlockIds.length === 1;
     // Also show selection if the whole block is selected (no specific column)
     const isParentSelected = isBlockSelected && selectedColumnIndex === null;
 
@@ -53,18 +54,19 @@ function GridColumn({ blockId, columnIndex }: GridColumnProps) {
             )}
             onClick={(e) => {
                 e.stopPropagation();
-                selectBlock(blockId, columnIndex);
+                const isModifierKey = e.metaKey || e.ctrlKey;
+                selectBlock(blockId, { columnIndex, additive: isModifierKey });
             }}
         >
             {children.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex-1 flex items-center justify-center min-h-[40px]">
                     <span className="text-xs text-muted-foreground">
                         Spalte {columnIndex + 1}
                     </span>
                 </div>
             ) : (
                 children.map((child) => {
-                    const isChildSelected = selectedBlockId === child.id;
+                    const isChildSelected = selectedBlockIds.includes(child.id);
                     return (
                         <div
                             key={child.id}
@@ -75,7 +77,8 @@ function GridColumn({ blockId, columnIndex }: GridColumnProps) {
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                selectBlock(child.id);
+                                const isModifierKey = e.metaKey || e.ctrlKey;
+                                selectBlock(child.id, { additive: isModifierKey });
                             }}
                         >
                             {isChildSelected && (
@@ -99,6 +102,14 @@ function GridColumn({ blockId, columnIndex }: GridColumnProps) {
                     );
                 })
             )}
+
+            <DropArea
+                parentId={blockId}
+                containerId={columnIndex.toString()}
+                droppableId={`${blockId}-col-${columnIndex}-drop-area`}
+                variant="compact"
+                className="mt-auto"
+            />
         </div>
     );
 }

@@ -227,6 +227,51 @@
         },
         "success": "Board created successfully"
     },
+    "boardTitleDialog": {
+        "title": "Change Title",
+        "description": "Enter a new title for your board."
+    },
+    "boardSlugDialog": {
+        "title": "Change Slug",
+        "description": "Enter a new slug for your board. The slug will be used in the URL."
+    },
+    "blockDeleteDialog": {
+        "title": "Delete Block?",
+        "description": "Are you sure you want to delete this block? This action cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+    },
+    "rightSidebar": {
+        "settings": "Settings"
+    },
+    "propertiesPanel": {
+        "selectBlock": "Select a block to edit its settings.",
+        "gridSettingsNotAvailable": "Grid settings are not available yet.",
+        "advanced": "Advanced",
+        "content": "Content",
+        "level": "Level (1-6)",
+        "buttonText": "Button Text",
+        "targetUrl": "Target URL",
+        "imageUrl": "Image URL",
+        "altText": "Alt Text",
+        "videoUrl": "Video URL",
+        "posterImageUrl": "Poster Image URL",
+        "height": "Height (px)",
+        "title": "Title",
+        "fields": "Fields (JSON)",
+        "price": "Price",
+        "description": "Description",
+        "quote": "Quote",
+        "author": "Author",
+        "language": "Language",
+        "code": "Code"
+    },
+    "saveStatus": {
+        "saving": "Saving...",
+        "error": "Error",
+        "saved": "Saved",
+        "unsaved": "Unsaved"
+    },
     "saveAsBoard": {
         "title": "Save Board As",
         "description": "Enter a title for the new copy of this board.",
@@ -241,7 +286,8 @@
         "searchPlaceholder": "Search boards...",
         "noBoardsFound": "No boards found.",
         "lastModified": "Last modified",
-        "open": "Open"
+        "open": "Open",
+        "loading": "Loading..."
     },
     "deleteBoard": {
         "title": "Delete Board",
@@ -322,15 +368,68 @@
         },
         "info": {
             "rollbackComplete": "Changes have been reverted"
+        },
+        "toast": {
+            "copySuccess": "Block copied successfully",
+            "cutSuccess": "Block cut successfully",
+            "pasteSuccess": "Block pasted successfully",
+            "pasteError": "Failed to paste block",
+            "duplicateFailed": "Failed to duplicate board",
+            "noBoardToSave": "No board to save",
+            "noBoardSelected": "No board selected",
+            "notLoggedIn": "Not logged in",
+            "titleChanged": "Title changed successfully",
+            "slugChanged": "Slug changed successfully"
         }
     },
     "menubar": {
-        "board": {
-            "autosave": "Autosave"
+        "file": {
+            "menu": "File",
+            "newBoard": "New Board",
+            "openBoard": "Open Board",
+            "save": "Save",
+            "saveAs": "Save As...",
+            "duplicate": "Duplicate",
+            "saveAsTemplate": "Save as Template",
+            "export": "Export"
         },
         "deleteBoard": {
             "title": "Delete Board"
-        }
+        },
+        "edit": {
+            "menu": "Edit",
+            "undo": "Undo",
+            "redo": "Redo",
+            "cut": "Cut",
+            "copy": "Copy",
+            "paste": "Paste",
+            "delete": "Delete",
+            "selectAll": "Select All"
+        },
+        "view": {
+            "menu": "View",
+            "builderMode": "Builder Mode",
+            "previewMode": "Preview Mode",
+            "zoomIn": "Zoom In",
+            "zoomOut": "Zoom Out",
+            "showGrid": "Show Grid"
+        },
+        "board": {
+            "menu": "Board",
+            "settings": "Settings",
+            "changeTitle": "Change Title",
+            "changeSlug": "Change Slug",
+            "passwordProtection": "Password Protection",
+            "autosave": "Autosave"
+        },
+        "share": {
+            "menu": "Share",
+            "copyLink": "Copy Link",
+            "generateQR": "Generate QR Code",
+            "sendEmail": "Send Email",
+            "accessSettings": "Access Settings"
+        },
+        "pro": "Pro"
     },
     "blockSelection": {
         "title": "Add Block",
@@ -357,6 +456,13 @@
             "rightSidebarQuarter": "Right Sidebar (1/4)",
             "spacer": "Spacer",
             "divider": "Divider"
-        }
+        },
+        "paste": "Paste"
+    },
+    "toast": {
+        "copySuccess": "Block copied successfully",
+        "cutSuccess": "Block cut successfully",
+        "pasteSuccess": "Block pasted successfully",
+        "pasteError": "Failed to paste block"
     }
 }
