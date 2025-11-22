@@ -26,6 +26,7 @@ interface CanvasState {
     saveError: Error | null;
     isAutosaveEnabled: boolean;
     showGrid: boolean;
+    isPreviewMode: boolean;
 
     // Actions
     setCurrentBoard: (board: Board | null) => void;
@@ -39,6 +40,7 @@ interface CanvasState {
     pasteBlock: (target?: { parentId?: string; containerId?: string }) => boolean;
     setShowDropArea: (show: boolean) => void;
     setShowGrid: (show: boolean) => void;
+    setPreviewMode: (enabled: boolean) => void;
     updateBoardTitle: (title: string) => void;
     updateBoardSlug: (slug: string) => void;
     setNavigating: (isNavigating: boolean) => void;
@@ -71,6 +73,7 @@ const initialState = {
     clipboard: null,
     showDropArea: true,
     showGrid: false,
+    isPreviewMode: false,
     isNavigating: false,
     lastBoardId: null,
     boardLoadingState: 'idle' as const,
@@ -252,6 +255,8 @@ export const useCanvasStore = create<CanvasState>()(
             setShowDropArea: (show) => set({ showDropArea: show }),
 
             setShowGrid: (show) => set({ showGrid: show }),
+
+            setPreviewMode: (enabled) => set({ isPreviewMode: enabled }),
 
             updateBoardTitle: (title) =>
                 set((state) => ({

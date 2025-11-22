@@ -3,8 +3,7 @@
 import { ViewportSize } from "@/components/viewport-switcher";
 import { DropArea } from "./DropArea";
 import { BlockDeleteButton } from "./BlockDeleteButton";
-import { GridBlock } from "./blocks/GridBlock";
-import { TextBlock } from "./blocks/TextBlock";
+import { BlockRenderer } from "./blocks/BlockRenderer";
 
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { cn } from "@/lib/utils";
@@ -22,8 +21,8 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
     const selectedBlockIds = useCanvasStore((state) => state.selectedBlockIds);
     const selectBlock = useCanvasStore((state) => state.selectBlock);
     const currentBoard = useCanvasStore((state) => state.currentBoard);
-
     const showGrid = useCanvasStore((state) => state.showGrid);
+    const isPreviewMode = useCanvasStore((state) => state.isPreviewMode);
 
     const getViewportClasses = (viewport: ViewportSize) => {
         switch (viewport) {
@@ -50,7 +49,7 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                     style={{
                         transform: `scale(${zoomScale})`,
                         transformOrigin: "top center",
-                        backgroundImage: showGrid
+                        backgroundImage: (showGrid && !isPreviewMode)
                             ? "linear-gradient(to right, #f1f5f9 1px, transparent 1px), linear-gradient(to bottom, #f1f5f9 1px, transparent 1px)"
                             : "none",
                         backgroundSize: "20px 20px",
@@ -58,20 +57,32 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                 >
                     <div
                         className="p-6 h-full flex flex-col"
-                        onClick={() => selectBlock(null)}
+                        onClick={() => !isPreviewMode && selectBlock(null)}
                     >
                         <div className="flex flex-col gap-4 flex-1">
                             {blocks.length > 0 && (
                                 <>
-                                    <div className="text-center mb-4">
-                                        <h2 className="text-2xl font-semibold text-muted-foreground mb-2">
-                                            {currentBoard?.title || "Untitled Board"}
-                                        </h2>
-                                        <p className="text-sm text-muted-foreground">
-                                            {blocks.length} Block{blocks.length !== 1 ? "s" : ""}{" "}
-                                            hinzugefügt
-                                        </p>
-                                    </div>
+                                    {/* Board-Titel nur im Preview-Modus anzeigen */}
+                                    {isPreviewMode && (
+                                        <div className="text-center mb-4">
+                                            <h2 className="text-2xl font-semibold text-foreground mb-2">
+                                                {currentBoard?.title || "Untitled Board"}
+                                            </h2>
+                                        </div>
+                                    )}
+
+                                    {/* Blocks ohne Debug-Info im Preview */}
+                                    {!isPreviewMode && (
+                                        <div className="text-center mb-4">
+                                            <h2 className="text-2xl font-semibold text-muted-foreground mb-2">
+                                                {currentBoard?.title || "Untitled Board"}
+                                            </h2>
+                                            <p className="text-sm text-muted-foreground">
+                                                {blocks.length} Block{blocks.length !== 1 ? "s" : ""}{" "}
+                                                hinzugefügt
+                                            </p>
+                                        </div>
+                                    )}
                                     {/* Blöcke werden später mit Grid-Layout angezeigt */}
                                     <div className="space-y-4">
                                         {rootBlocks.map((block) => {
@@ -79,21 +90,23 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                             return (
                                                 <div
                                                     key={block.id}
-                                                    tabIndex={0}
-                                                    role="button"
+                                                    tabIndex={isPreviewMode ? -1 : 0}
+                                                    role={isPreviewMode ? undefined : "button"}
                                                     className={cn(
-                                                        "p-4 border rounded-lg bg-background relative",
-                                                        "cursor-pointer transition-all",
-                                                        "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                                                        isSelected &&
-                                                        "ring-2 ring-primary ring-offset-2 border-primary"
+                                                        isPreviewMode
+                                                            ? ""
+                                                            : "p-4 border rounded-lg bg-background relative cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                                                        !isPreviewMode && isSelected &&
+                                                            "ring-2 ring-primary ring-offset-2 border-primary"
                                                     )}
                                                     onClick={(e) => {
+                                                        if (isPreviewMode) return;
                                                         e.stopPropagation();
                                                         const isModifierKey = e.metaKey || e.ctrlKey;
                                                         selectBlock(block.id, { additive: isModifierKey });
                                                     }}
                                                     onKeyDown={(e) => {
+                                                        if (isPreviewMode) return;
                                                         if (e.key === "Enter" || e.key === " ") {
                                                             e.stopPropagation();
                                                             if (e.key === " ") {
@@ -104,33 +117,25 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                                         }
                                                     }}
                                                 >
-
-                                                    {isSelected && block.type !== "text" && (
+                                                    {/* Delete-Button nur im Builder */}
+                                                    {!isPreviewMode && isSelected && block.type !== "text" && (
                                                         <BlockDeleteButton blockId={block.id} />
                                                     )}
 
-                                                    {block.type === "grid" ? (
-                                                        <GridBlock block={block} isSelected={isSelected} />
-                                                    ) : block.type === "text" ? (
-                                                        <TextBlock block={block} isSelected={isSelected} />
-                                                    ) : (
-                                                        <>
-                                                            <div className="text-sm font-medium mb-2">
-                                                                Block: {block.type}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground">
-                                                                ID: {block.id}
-                                                            </div>
-                                                        </>
-                                                    )}
+                                                    {/* Block-Rendering mit Preview-Prop */}
+                                                    <BlockRenderer
+                                                        block={block}
+                                                        isSelected={isSelected}
+                                                        isPreviewMode={isPreviewMode}
+                                                    />
                                                 </div>
                                             );
                                         })}
                                     </div>
                                 </>
                             )}
-                            {/* DropArea immer verfügbar, um weitere Blöcke hinzuzufügen */}
-                            <DropArea />
+                            {/* DropArea nur im Builder-Modus */}
+                            {!isPreviewMode && <DropArea />}
                         </div>
                     </div>
                 </div>

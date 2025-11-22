@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { TextBlock } from "./TextBlock";
+import { BlockRenderer } from "./BlockRenderer";
 import { cn } from "@/lib/utils";
 import { Block } from "@/lib/types/board";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
@@ -12,15 +12,17 @@ import { DropArea } from "../DropArea";
 interface GridBlockProps {
     block: Block;
     isSelected?: boolean;
+    isPreviewMode?: boolean;
 }
 
 interface GridColumnProps {
     blockId: string;
     columnIndex: number;
     isSelected?: boolean;
+    isPreviewMode?: boolean;
 }
 
-function GridColumn({ blockId, columnIndex }: GridColumnProps) {
+function GridColumn({ blockId, columnIndex, isPreviewMode = false }: GridColumnProps) {
     const { setNodeRef, isOver } = useDroppable({
         id: `${blockId}-col-${columnIndex}`,
         data: {
@@ -28,6 +30,7 @@ function GridColumn({ blockId, columnIndex }: GridColumnProps) {
             blockId,
             columnIndex,
         },
+        disabled: isPreviewMode,
     });
 
     const blocks = useCanvasStore((state) => state.blocks);
@@ -48,18 +51,20 @@ function GridColumn({ blockId, columnIndex }: GridColumnProps) {
         <div
             ref={setNodeRef}
             className={cn(
-                "h-full border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/5 min-h-[100px] transition-colors p-2 flex flex-col gap-2 relative",
-                (isColumnSelected || isParentSelected) && "border-primary/20 bg-primary/5",
-                isColumnSelected && "ring-2 ring-primary/50 ring-inset",
-                isOver && "border-primary bg-primary/10"
+                "h-full rounded-lg min-h-[100px] transition-colors p-2 flex flex-col gap-2 relative",
+                !isPreviewMode && "border-2 border-dashed border-muted-foreground/20 bg-muted/5",
+                !isPreviewMode && (isColumnSelected || isParentSelected) && "border-primary/20 bg-primary/5",
+                !isPreviewMode && isColumnSelected && "ring-2 ring-primary/50 ring-inset",
+                !isPreviewMode && isOver && "border-primary bg-primary/10"
             )}
             onClick={(e) => {
+                if (isPreviewMode) return;
                 e.stopPropagation();
                 const isModifierKey = e.metaKey || e.ctrlKey;
                 selectBlock(blockId, { columnIndex, additive: isModifierKey });
             }}
         >
-            {children.length === 0 ? (
+            {children.length === 0 && !isPreviewMode ? (
                 <div className="flex-1 flex items-center justify-center min-h-[40px]">
                     <span className="text-xs text-muted-foreground">
                         Spalte {columnIndex + 1}
@@ -72,52 +77,46 @@ function GridColumn({ blockId, columnIndex }: GridColumnProps) {
                         <div
                             key={child.id}
                             className={cn(
-                                "p-4 border rounded-lg bg-background relative cursor-pointer transition-all",
-                                isChildSelected &&
-                                "ring-2 ring-primary ring-offset-2 border-primary"
+                                !isPreviewMode && "p-4 border rounded-lg bg-background relative cursor-pointer transition-all",
+                                !isPreviewMode && isChildSelected && "ring-2 ring-primary ring-offset-2 border-primary"
                             )}
                             onClick={(e) => {
+                                if (isPreviewMode) return;
                                 e.stopPropagation();
                                 const isModifierKey = e.metaKey || e.ctrlKey;
                                 selectBlock(child.id, { additive: isModifierKey });
                             }}
                         >
-                            {isChildSelected && child.type !== "text" && (
+                            {!isPreviewMode && isChildSelected && child.type !== "text" && (
                                 <BlockDeleteButton blockId={child.id} />
                             )}
 
-                            {/* TODO: Use a shared BlockRenderer component */}
-                            {child.type === "grid" ? (
-                                <GridBlock block={child} isSelected={isChildSelected} />
-                            ) : child.type === "text" ? (
-                                <TextBlock block={child} isSelected={isChildSelected} />
-                            ) : (
-                                <>
-                                    <div className="text-sm font-medium mb-2">
-                                        Block: {child.type}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                        ID: {child.id}
-                                    </div>
-                                </>
-                            )}
+                            {/* Rekursive Block-Rendering mit Preview */}
+                            <BlockRenderer
+                                block={child}
+                                isSelected={isChildSelected}
+                                isPreviewMode={isPreviewMode}
+                            />
                         </div>
                     );
                 })
             )}
 
-            <DropArea
-                parentId={blockId}
-                containerId={columnIndex.toString()}
-                droppableId={`${blockId}-col-${columnIndex}-drop-area`}
-                variant="compact"
-                className="mt-auto"
-            />
+            {/* DropArea nur im Builder */}
+            {!isPreviewMode && (
+                <DropArea
+                    parentId={blockId}
+                    containerId={columnIndex.toString()}
+                    droppableId={`${blockId}-col-${columnIndex}-drop-area`}
+                    variant="compact"
+                    className="mt-auto"
+                />
+            )}
         </div>
     );
 }
 
-export function GridBlock({ block, isSelected }: GridBlockProps) {
+export function GridBlock({ block, isPreviewMode = false }: GridBlockProps) {
     const updateBlock = useCanvasStore((state) => state.updateBlock);
 
     const columns = (block.data.columns as number) || 1;
@@ -172,16 +171,20 @@ export function GridBlock({ block, isSelected }: GridBlockProps) {
 
     return (
         <div className="w-full h-full min-h-[100px]">
-            <PanelGroup direction="horizontal" onLayout={onLayout}>
+            <PanelGroup
+                direction="horizontal"
+                onLayout={!isPreviewMode ? onLayout : undefined}
+            >
                 {Array.from({ length: columns }).map((_, index) => (
                     <React.Fragment key={index}>
                         <Panel defaultSize={currentRatios[index]}>
                             <GridColumn
                                 blockId={block.id}
                                 columnIndex={index}
+                                isPreviewMode={isPreviewMode}
                             />
                         </Panel>
-                        {index < columns - 1 && (
+                        {index < columns - 1 && !isPreviewMode && (
                             <PanelResizeHandle className="w-4 flex items-center justify-center z-10 outline-none group cursor-col-resize">
                                 <ResizeHandle />
                             </PanelResizeHandle>

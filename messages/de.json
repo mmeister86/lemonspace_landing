@@ -380,6 +380,11 @@
             "notLoggedIn": "Nicht angemeldet",
             "titleChanged": "Titel erfolgreich geändert",
             "slugChanged": "Slug erfolgreich geändert"
+        },
+        "preview": {
+            "title": "Vorschau",
+            "description": "So sieht dein Board für Besucher aus",
+            "backToBuilder": "Zurück zum Editor"
         }
     },
     "menubar": {
@@ -410,6 +415,7 @@
             "menu": "Ansicht",
             "builderMode": "Builder-Modus",
             "previewMode": "Vorschau-Modus",
+            "previewModeShortcut": "⌘P / Strg+P",
             "zoomIn": "Vergrößern",
             "zoomOut": "Verkleinern",
             "showGrid": "Raster anzeigen"
@@ -431,6 +437,7 @@
         },
         "pro": "Pro"
     },
+
     "blockSelection": {
         "title": "Block hinzufügen",
         "blocks": {

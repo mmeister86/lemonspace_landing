@@ -380,6 +380,11 @@
             "notLoggedIn": "Not logged in",
             "titleChanged": "Title changed successfully",
             "slugChanged": "Slug changed successfully"
+        },
+        "preview": {
+            "title": "Preview",
+            "description": "This is how visitors will see your board",
+            "backToBuilder": "Back to Editor"
         }
     },
     "menubar": {
@@ -410,6 +415,7 @@
             "menu": "View",
             "builderMode": "Builder Mode",
             "previewMode": "Preview Mode",
+            "previewModeShortcut": "⌘P / Ctrl+P",
             "zoomIn": "Zoom In",
             "zoomOut": "Zoom Out",
             "showGrid": "Show Grid"
@@ -458,11 +464,5 @@
             "divider": "Divider"
         },
         "paste": "Paste"
-    },
-    "toast": {
-        "copySuccess": "Block copied successfully",
-        "cutSuccess": "Block cut successfully",
-        "pasteSuccess": "Block pasted successfully",
-        "pasteError": "Failed to paste block"
     }
 }

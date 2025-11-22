@@ -19,7 +19,6 @@ import {
 } from "@/components/viewport-switcher";
 import Canvas from "./components/Canvas";
 import { BuilderMenubar } from "./components/BuilderMenubar";
-import { PropertiesPanel } from "./components/PropertiesPanel";
 import { RightSidebar } from "./components/RightSidebar";
 import {
     ResizableHandle,
@@ -61,12 +60,11 @@ export function BuilderClient() {
     const addBlock = useCanvasStore((state) => state.addBlock);
     const selectedBlockIds = useCanvasStore((state) => state.selectedBlockIds);
     const currentBoard = useCanvasStore((state) => state.currentBoard);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // const _setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
     const blocks = useCanvasStore((state) => state.blocks);
     const isNavigating = useCanvasStore((state) => state.isNavigating);
     const boardLoadingState = useCanvasStore((state) => state.boardLoadingState);
+    const isPreviewMode = useCanvasStore((state) => state.isPreviewMode);
 
     const { user } = useUser();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -333,15 +331,20 @@ export function BuilderClient() {
         // Show loading state during board transitions
         if (boardLoadingState === 'loading' || isNavigating) {
             return (
-                <SidebarInset>
-                    <div className="border-b bg-background">
+                <SidebarInset className="flex flex-col h-screen overflow-hidden">
+                    <div className="border-b bg-background shrink-0">
                         <div className="flex items-center justify-between px-4 py-2">
                             <div className="flex items-center gap-2">
-                                <SidebarTrigger className="-ml-1" />
-                                <Separator
-                                    orientation="vertical"
-                                    className="mr-2 data-[orientation=vertical]:h-4"
-                                />
+                                {/* Sidebar-Toggle nur im Builder */}
+                                {!isPreviewMode && (
+                                    <>
+                                        <SidebarTrigger className="-ml-1" />
+                                        <Separator
+                                            orientation="vertical"
+                                            className="mr-2 data-[orientation=vertical]:h-4"
+                                        />
+                                    </>
+                                )}
                                 <div className="h-6 w-32 bg-muted animate-pulse rounded" />
                             </div>
                             <div className="h-8 w-24 bg-muted animate-pulse rounded" />
@@ -360,7 +363,25 @@ export function BuilderClient() {
         // Show error state
         if (boardLoadingState === 'error') {
             return (
-                <SidebarInset>
+                <SidebarInset className="flex flex-col h-screen overflow-hidden">
+                    <div className="border-b bg-background shrink-0">
+                        <div className="flex items-center justify-between px-4 py-2">
+                            <div className="flex items-center gap-2">
+                                {/* Sidebar-Toggle nur im Builder */}
+                                {!isPreviewMode && (
+                                    <>
+                                        <SidebarTrigger className="-ml-1" />
+                                        <Separator
+                                            orientation="vertical"
+                                            className="mr-2 data-[orientation=vertical]:h-4"
+                                        />
+                                    </>
+                                )}
+                                <div className="h-6 w-32 bg-muted animate-pulse rounded" />
+                            </div>
+                            <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+                        </div>
+                    </div>
                     <div className="flex h-[calc(100vh-73px)] items-center justify-center">
                         <div className="text-center space-y-4">
                             <div className="h-12 w-12 bg-destructive/10 rounded-full flex items-center justify-center">
@@ -381,38 +402,57 @@ export function BuilderClient() {
 
         return (
             <SidebarInset className="flex flex-col h-screen overflow-hidden">
+                {/* Header bleibt sichtbar */}
                 <div className="border-b bg-background shrink-0">
                     <div className="flex items-center justify-between px-4 py-2">
                         <div className="flex items-center gap-2">
-                            <SidebarTrigger className="-ml-1" />
-                            <Separator
-                                orientation="vertical"
-                                className="mr-2 data-[orientation=vertical]:h-4"
-                            />
+                            {/* Sidebar-Toggle nur im Builder */}
+                            {!isPreviewMode && (
+                                <>
+                                    <SidebarTrigger className="-ml-1" />
+                                    <Separator
+                                        orientation="vertical"
+                                        className="mr-2 data-[orientation=vertical]:h-4"
+                                    />
+                                </>
+                            )}
                             <BuilderMenubar
                                 zoomLevel={zoomLevel}
                                 onZoomChange={setZoomLevel}
                                 onSave={flushPendingSave}
                             />
                         </div>
+                        {/* Viewport-Switcher bleibt sichtbar */}
                         <ViewportSwitcher
                             currentViewport={currentViewport}
                             onViewportChange={setCurrentViewport}
                         />
                     </div>
                 </div>
+
                 <div className="flex-1 overflow-hidden">
-                    <ResizablePanelGroup direction="horizontal">
-                        <ResizablePanel defaultSize={80} minSize={30}>
-                            <div className="h-full w-full overflow-auto bg-muted/10">
-                                <Canvas currentViewport={currentViewport} zoomLevel={zoomLevel} />
-                            </div>
-                        </ResizablePanel>
-                        <ResizableHandle withHandle />
-                        <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
-                            <RightSidebar />
-                        </ResizablePanel>
-                    </ResizablePanelGroup>
+                    {isPreviewMode ? (
+                        // Preview: Nur Canvas ohne Properties Panel
+                        <div className="h-full w-full overflow-auto bg-muted/10">
+                            <Canvas currentViewport={currentViewport} zoomLevel={zoomLevel} />
+                        </div>
+                    ) : (
+                        // Builder: Canvas + Properties Panel
+                        <ResizablePanelGroup direction="horizontal">
+                            <ResizablePanel defaultSize={80} minSize={30}>
+                                <div className="h-full w-full overflow-auto bg-muted/10">
+                                    <Canvas
+                                        currentViewport={currentViewport}
+                                        zoomLevel={zoomLevel}
+                                    />
+                                </div>
+                            </ResizablePanel>
+                            <ResizableHandle withHandle />
+                            <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+                                <RightSidebar />
+                            </ResizablePanel>
+                        </ResizablePanelGroup>
+                    )}
                 </div>
             </SidebarInset>
         );
@@ -422,9 +462,11 @@ export function BuilderClient() {
         <AuthGuard>
             <DndContext onDragEnd={handleDragEnd}>
                 <SidebarProvider>
-                    <AppSidebar />
+                    {/* AppSidebar nur im Builder-Modus rendern */}
+                    {!isPreviewMode && <AppSidebar />}
                     {renderContent()}
                 </SidebarProvider>
+                {/* Delete-Dialog bleibt verfügbar */}
                 <BlockDeleteDialog
                     open={deleteDialogOpen}
                     onOpenChange={setDeleteDialogOpen}

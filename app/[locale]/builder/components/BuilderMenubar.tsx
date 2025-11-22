@@ -82,8 +82,8 @@ export function BuilderMenubar({
     const setAutosaveEnabled = useCanvasStore((state) => state.setAutosaveEnabled);
     const showGrid = useCanvasStore((state) => state.showGrid);
     const setShowGrid = useCanvasStore((state) => state.setShowGrid);
-
-    const [isPreviewMode, setIsPreviewMode] = React.useState(false);
+    const isPreviewMode = useCanvasStore((state) => state.isPreviewMode);
+    const setPreviewMode = useCanvasStore((state) => state.setPreviewMode);
     const [titleDialogOpen, setTitleDialogOpen] = React.useState(false);
     const [slugDialogOpen, setSlugDialogOpen] = React.useState(false);
     const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
@@ -210,12 +210,9 @@ export function BuilderMenubar({
     }, [selectAllBlocks]);
 
     const handleTogglePreview = React.useCallback(() => {
-        setIsPreviewMode((prev) => {
-            const newValue = !prev;
-            console.log(`Preview-Modus: ${newValue}`);
-            return newValue;
-        });
-    }, []);
+        setPreviewMode(!isPreviewMode);
+        console.log(`Preview-Modus: ${!isPreviewMode}`);
+    }, [isPreviewMode, setPreviewMode]);
 
     const handleZoomIn = React.useCallback(() => {
         const newLevel = Math.min(zoomLevel + 10, 200);
@@ -345,6 +342,9 @@ export function BuilderMenubar({
             } else if (modifier && e.key === "-") {
                 e.preventDefault();
                 handleZoomOut();
+            } else if (modifier && e.key === "p") {
+                e.preventDefault();
+                handleTogglePreview();
             }
             // Board-Menü Shortcuts
             else if (modifier && e.key === ",") {
@@ -377,6 +377,7 @@ export function BuilderMenubar({
         handleDelete,
         handleZoomIn,
         handleZoomOut,
+        handleTogglePreview,
         handleBoardSettings,
         handleCopyLink,
     ]);
@@ -525,6 +526,7 @@ export function BuilderMenubar({
                         >
                             <Eye className="mr-2 h-4 w-4" />
                             <span>Vorschau-Modus</span>
+                            <MenubarShortcut>{getShortcut("P")}</MenubarShortcut>
                         </MenubarRadioItem>
                     </MenubarRadioGroup>
                     <MenubarSeparator />
