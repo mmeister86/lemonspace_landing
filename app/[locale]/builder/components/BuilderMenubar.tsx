@@ -80,9 +80,10 @@ export function BuilderMenubar({
 
     const isAutosaveEnabled = useCanvasStore((state) => state.isAutosaveEnabled);
     const setAutosaveEnabled = useCanvasStore((state) => state.setAutosaveEnabled);
+    const showGrid = useCanvasStore((state) => state.showGrid);
+    const setShowGrid = useCanvasStore((state) => state.setShowGrid);
 
     const [isPreviewMode, setIsPreviewMode] = React.useState(false);
-    const [showGrid, setShowGrid] = React.useState(true);
     const [titleDialogOpen, setTitleDialogOpen] = React.useState(false);
     const [slugDialogOpen, setSlugDialogOpen] = React.useState(false);
     const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
@@ -228,7 +229,7 @@ export function BuilderMenubar({
     const handleToggleGrid = React.useCallback((checked: boolean) => {
         setShowGrid(checked);
         console.log(`Raster anzeigen: ${checked}`);
-    }, []);
+    }, [setShowGrid]);
 
     const handleBoardSettings = React.useCallback(() => {
         console.log("Board-Einstellungen");

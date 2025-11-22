@@ -22,6 +22,8 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
     const selectBlock = useCanvasStore((state) => state.selectBlock);
     const currentBoard = useCanvasStore((state) => state.currentBoard);
 
+    const showGrid = useCanvasStore((state) => state.showGrid);
+
     const getViewportClasses = (viewport: ViewportSize) => {
         switch (viewport) {
             case "desktop":
@@ -47,6 +49,10 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                     style={{
                         transform: `scale(${zoomScale})`,
                         transformOrigin: "top center",
+                        backgroundImage: showGrid
+                            ? "linear-gradient(to right, #f1f5f9 1px, transparent 1px), linear-gradient(to bottom, #f1f5f9 1px, transparent 1px)"
+                            : "none",
+                        backgroundSize: "20px 20px",
                     }}
                 >
                     <div
