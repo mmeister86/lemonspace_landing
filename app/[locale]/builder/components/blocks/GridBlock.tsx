@@ -1,13 +1,11 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Block } from "@/lib/types/board";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { BlockDeleteButton } from "../BlockDeleteButton";
-import { ResizeHandle } from "./ResizeHandle";
-
-
-
 import { useDroppable } from "@dnd-kit/core";
+import { ResizeHandle } from "./ResizeHandle";
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 
 interface GridBlockProps {
     block: Block;
@@ -18,11 +16,9 @@ interface GridColumnProps {
     blockId: string;
     columnIndex: number;
     isSelected?: boolean;
-    onResizeStart: (index: number, e: React.MouseEvent) => void;
-    showHandle: boolean;
 }
 
-function GridColumn({ blockId, columnIndex, isSelected, onResizeStart, showHandle }: GridColumnProps) {
+function GridColumn({ blockId, columnIndex, isSelected }: GridColumnProps) {
     const { setNodeRef, isOver } = useDroppable({
         id: `${blockId}-col-${columnIndex}`,
         data: {
@@ -44,12 +40,11 @@ function GridColumn({ blockId, columnIndex, isSelected, onResizeStart, showHandl
         <div
             ref={setNodeRef}
             className={cn(
-                "border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/5 min-h-[100px] transition-colors p-2 flex flex-col gap-2 relative",
+                "h-full border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/5 min-h-[100px] transition-colors p-2 flex flex-col gap-2 relative",
                 isSelected && "border-primary/20 bg-primary/5",
                 isOver && "border-primary bg-primary/10"
             )}
         >
-            {showHandle && <ResizeHandle onMouseDown={(e) => onResizeStart(columnIndex, e)} />}
             {children.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center">
                     <span className="text-xs text-muted-foreground">
@@ -99,132 +94,77 @@ function GridColumn({ blockId, columnIndex, isSelected, onResizeStart, showHandl
 
 export function GridBlock({ block, isSelected }: GridBlockProps) {
     const updateBlock = useCanvasStore((state) => state.updateBlock);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const resizingStateRef = useRef<{
-        handleIndex: number;
-        startX: number;
-        startRatios: number[];
-    } | null>(null);
 
     const columns = (block.data.columns as number) || 1;
     // Initialize ratios if they don't exist
     const initialRatios = (block.data.ratios as number[]) || Array(columns).fill(1);
     const [currentRatios, setCurrentRatios] = useState(initialRatios);
 
-    const getGridTemplateColumns = useCallback(() => {
-        return currentRatios.map((r) => `${r}fr`).join(" ");
-    }, [currentRatios]);
-
-    const handleResizeStart = useCallback((handleIndex: number, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        resizingStateRef.current = {
-            handleIndex,
-            startX: e.clientX,
-            startRatios: [...currentRatios],
-        };
-
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!containerRef.current || !resizingStateRef.current) return;
-
-            const deltaX = e.clientX - resizingStateRef.current.startX;
-            const { handleIndex, startRatios } = resizingStateRef.current;
-
-            const newRatios = [...startRatios];
-            const deltaRatio = deltaX / containerRef.current.offsetWidth * (startRatios[handleIndex] + startRatios[handleIndex + 1]);
-
-            newRatios[handleIndex] = Math.max(0.1, startRatios[handleIndex] + deltaRatio);
-            newRatios[handleIndex + 1] = Math.max(0.1, startRatios[handleIndex + 1] - deltaRatio);
-
-            setCurrentRatios(newRatios);
-        };
-
-        const handleMouseUp = () => {
-            if (!resizingStateRef.current) return;
-
-            updateBlock(block.id, {
-                data: {
-                    ...block.data,
-                    ratios: currentRatios,
-                },
-            });
-
-            resizingStateRef.current = null;
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-    }, [currentRatios, block.id, block.data, updateBlock]);
+    const onLayout = useCallback((sizes: number[]) => {
+        setCurrentRatios(sizes);
+        updateBlock(block.id, {
+            data: {
+                ...block.data,
+                ratios: sizes,
+            },
+        });
+    }, [block.id, block.data, updateBlock]);
 
     useEffect(() => {
         // This effect ensures that if the block data changes from outside, we sync it
-        const newRatios = (block.data.ratios as number[]) || Array(columns).fill(1);
-        if (JSON.stringify(newRatios) !== JSON.stringify(currentRatios)) {
-            setCurrentRatios(newRatios);
-        }
-    }, [block.data.ratios, columns, currentRatios]);
+        const savedRatios = (block.data.ratios as number[]) || [];
 
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            document.removeEventListener('mousemove', () => {});
-            document.removeEventListener('mouseup', () => {});
-        };
-    }, []);
-
-
-    // Build grid template that includes gutters for resize handles
-    const getGridTemplateColumnsWithGutters = useCallback(() => {
-        const columnTemplates = currentRatios.map((r) => `${r}fr`);
-        const result: string[] = [];
-
-        columnTemplates.forEach((template, index) => {
-            result.push(template);
-            // Add gutter between columns (but not after the last one)
-            if (index < columnTemplates.length - 1) {
-                result.push('16px'); // gap-4 = 1rem = 16px
+        // If we have saved ratios and they match the column count, use them
+        if (savedRatios.length === columns) {
+            if (JSON.stringify(savedRatios) !== JSON.stringify(currentRatios)) {
+                setCurrentRatios(savedRatios);
             }
-        });
+        } else {
+            // Column count changed or no ratios yet
+            // If we have fewer ratios than columns, pad with 1s
+            // If we have more, slice (or just reset to equal if that's better UX)
+            // For now, let's try to preserve existing and add 1s for new columns
+            const newRatios = Array(columns).fill(1);
 
-        return result.join(' ');
-    }, [currentRatios]);
+            // If we have existing ratios, try to map them to percentages if they aren't already
+            // But since we are switching to percentages, we might want to normalize first time
+            // For now, just filling with equal shares if count changes is safest
+            const equalShare = 100 / columns;
+            const normalizedRatios = Array(columns).fill(equalShare);
+
+            if (JSON.stringify(normalizedRatios) !== JSON.stringify(currentRatios)) {
+                setCurrentRatios(normalizedRatios);
+                // Update block data immediately to persist the fix
+                updateBlock(block.id, {
+                    data: {
+                        ...block.data,
+                        ratios: normalizedRatios,
+                    },
+                });
+            }
+        }
+    }, [block.data.ratios, columns, currentRatios, block.id, block.data, updateBlock]);
 
     return (
-        <div ref={containerRef} className="w-full h-full min-h-[100px]">
-            <div
-                className="grid w-full h-full"
-                style={{ gridTemplateColumns: getGridTemplateColumnsWithGutters() }}
-            >
+        <div className="w-full h-full min-h-[100px]">
+            <PanelGroup direction="horizontal" onLayout={onLayout}>
                 {Array.from({ length: columns }).map((_, index) => (
                     <React.Fragment key={index}>
-                        <GridColumn
-                            blockId={block.id}
-                            columnIndex={index}
-                            isSelected={isSelected}
-                            onResizeStart={handleResizeStart}
-                            showHandle={false}
-                        />
+                        <Panel defaultSize={currentRatios[index]}>
+                            <GridColumn
+                                blockId={block.id}
+                                columnIndex={index}
+                                isSelected={isSelected}
+                            />
+                        </Panel>
                         {index < columns - 1 && (
-                            <div
-                                className="flex items-center justify-center cursor-col-resize group relative"
-                                onMouseDown={(e) => handleResizeStart(index, e)}
-                            >
-                                <div
-                                    className={cn(
-                                        "w-1.5 h-12 rounded-full",
-                                        "bg-muted-foreground/30",
-                                        "group-hover:bg-primary group-hover:scale-110",
-                                        "transition-all duration-200"
-                                    )}
-                                />
-                            </div>
+                            <PanelResizeHandle className="w-4 flex items-center justify-center z-10 outline-none group cursor-col-resize">
+                                <ResizeHandle />
+                            </PanelResizeHandle>
                         )}
                     </React.Fragment>
                 ))}
-            </div>
+            </PanelGroup>
         </div>
     );
 }
