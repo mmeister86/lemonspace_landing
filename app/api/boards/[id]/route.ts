@@ -670,7 +670,7 @@ async function syncBoardElements(
 
     // 3. Upsert elements
     // We need to map Block to DBBoardElement structure
-    const elementsToUpsert = blocks.map(block => ({
+    const elementsToUpsert = blocks.map((block, index) => ({
         id: block.id,
         board_id: boardId,
         type: block.type,
@@ -679,7 +679,7 @@ async function syncBoardElements(
         position_y: block.position?.y || 0,
         width: block.size?.width || 100,
         height: block.size?.height || 100,
-        z_index: 0,
+        z_index: index,
         styles: {},
         parent_id: block.parentId || null,
         container_id: block.containerId || null,

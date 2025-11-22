@@ -23,7 +23,7 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({ onMouseDown, classNa
                 "opacity-50 group-hover:opacity-100"
             )}>
                 <ChevronLeft className={cn(
-                    "w-3 h-3 text-muted-foreground",
+                    "w-3 h-3 text-green-400",
                     "opacity-0 -mr-1 transition-all duration-200",
                     "group-hover:opacity-100 group-hover:-translate-x-0.5"
                 )} />
@@ -33,13 +33,13 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({ onMouseDown, classNa
                     className={cn(
                         "w-1.5 h-8 rounded-full mx-0.5",
                         "bg-muted-foreground/30",
-                        "group-hover:bg-primary group-hover:scale-y-110",
+                        "group-hover:bg-green-400 group-hover:scale-y-110",
                         "transition-all duration-200"
                     )}
                 />
 
                 <ChevronRight className={cn(
-                    "w-3 h-3 text-muted-foreground",
+                    "w-3 h-3 text-green-400",
                     "opacity-0 -ml-1 transition-all duration-200",
                     "group-hover:opacity-100 group-hover:translate-x-0.5"
                 )} />

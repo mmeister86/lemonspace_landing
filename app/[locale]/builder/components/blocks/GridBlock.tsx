@@ -124,7 +124,7 @@ export function GridBlock({ block, isSelected }: GridBlockProps) {
             // If we have fewer ratios than columns, pad with 1s
             // If we have more, slice (or just reset to equal if that's better UX)
             // For now, let's try to preserve existing and add 1s for new columns
-            const newRatios = Array(columns).fill(1);
+            //const newRatios = Array(columns).fill(1);
 
             // If we have existing ratios, try to map them to percentages if they aren't already
             // But since we are switching to percentages, we might want to normalize first time

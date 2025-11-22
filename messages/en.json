@@ -331,5 +331,32 @@
         "deleteBoard": {
             "title": "Delete Board"
         }
+    },
+    "blockSelection": {
+        "title": "Add Block",
+        "blocks": {
+            "text": "Text",
+            "heading": "Heading",
+            "image": "Image",
+            "video": "Video",
+            "button": "Button",
+            "form": "Form",
+            "pricing": "Pricing",
+            "testimonial": "Testimonial",
+            "accordion": "Accordion",
+            "code": "Code"
+        },
+        "layout": {
+            "full": "Full Width",
+            "half": "Two Columns",
+            "third": "Three Columns",
+            "quarter": "Four Columns",
+            "leftSidebar": "Left Sidebar",
+            "rightSidebar": "Right Sidebar",
+            "leftSidebarQuarter": "Left Sidebar (1/4)",
+            "rightSidebarQuarter": "Right Sidebar (1/4)",
+            "spacer": "Spacer",
+            "divider": "Divider"
+        }
     }
 }
