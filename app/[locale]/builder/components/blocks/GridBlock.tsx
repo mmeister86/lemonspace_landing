@@ -18,7 +18,7 @@ interface GridColumnProps {
     isSelected?: boolean;
 }
 
-function GridColumn({ blockId, columnIndex, isSelected }: GridColumnProps) {
+function GridColumn({ blockId, columnIndex }: GridColumnProps) {
     const { setNodeRef, isOver } = useDroppable({
         id: `${blockId}-col-${columnIndex}`,
         data: {
@@ -31,6 +31,12 @@ function GridColumn({ blockId, columnIndex, isSelected }: GridColumnProps) {
     const blocks = useCanvasStore((state) => state.blocks);
     const selectBlock = useCanvasStore((state) => state.selectBlock);
     const selectedBlockId = useCanvasStore((state) => state.selectedBlockId);
+    const selectedColumnIndex = useCanvasStore((state) => state.selectedColumnIndex);
+
+    const isBlockSelected = selectedBlockId === blockId;
+    const isColumnSelected = isBlockSelected && selectedColumnIndex === columnIndex;
+    // Also show selection if the whole block is selected (no specific column)
+    const isParentSelected = isBlockSelected && selectedColumnIndex === null;
 
     const children = blocks.filter(
         (b) => b.parentId === blockId && b.containerId === columnIndex.toString()
@@ -41,9 +47,14 @@ function GridColumn({ blockId, columnIndex, isSelected }: GridColumnProps) {
             ref={setNodeRef}
             className={cn(
                 "h-full border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/5 min-h-[100px] transition-colors p-2 flex flex-col gap-2 relative",
-                isSelected && "border-primary/20 bg-primary/5",
+                (isColumnSelected || isParentSelected) && "border-primary/20 bg-primary/5",
+                isColumnSelected && "ring-2 ring-primary/50 ring-inset",
                 isOver && "border-primary bg-primary/10"
             )}
+            onClick={(e) => {
+                e.stopPropagation();
+                selectBlock(blockId, columnIndex);
+            }}
         >
             {children.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center">
@@ -154,7 +165,6 @@ export function GridBlock({ block, isSelected }: GridBlockProps) {
                             <GridColumn
                                 blockId={block.id}
                                 columnIndex={index}
-                                isSelected={isSelected}
                             />
                         </Panel>
                         {index < columns - 1 && (

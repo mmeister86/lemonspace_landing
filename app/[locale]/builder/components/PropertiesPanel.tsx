@@ -9,13 +9,7 @@ import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { Block, BlockType } from "@/lib/types/board";
 import { Separator } from "@/components/ui/separator";
 import { Trash2 } from "lucide-react";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
+
 import { BlockDeleteDialog } from "./BlockDeleteDialog";
 
 // ... (keep blockSchemas and BlockFormData as is)
@@ -380,60 +374,62 @@ export function PropertiesPanel() {
         return titles[type] || type;
     };
 
-    if (!displayBlock) return null;
+    if (!displayBlock) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-center p-4 text-muted-foreground">
+                <p className="text-sm">Wähle einen Block aus, um seine Einstellungen zu bearbeiten.</p>
+            </div>
+        );
+    }
 
     // Do not show the properties sheet for grid blocks
     if (block?.type === 'grid') {
-        return null;
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-center p-4 text-muted-foreground">
+                <p className="text-sm">Grid-Einstellungen sind noch nicht verfügbar.</p>
+            </div>
+        );
     }
 
     return (
-        <>
-            <Sheet open={!!block} onOpenChange={handleOpenChange} modal={false}>
-                <SheetContent
-                    className="w-[400px] sm:w-[540px] overflow-y-auto p-6 pt-12 flex flex-col h-full"
-                    side="right"
-                    onInteractOutside={(e) => e.preventDefault()}
-                >
-                    <SheetHeader className="mb-6 shrink-0">
-                        <SheetTitle>{getBlockTitle(displayBlock.type)}</SheetTitle>
-                        <SheetDescription>
-                            Eigenschaften bearbeiten
-                        </SheetDescription>
-                    </SheetHeader>
+        <div className="flex flex-col h-full">
+            <div className="mb-6">
+                <h3 className="font-medium leading-none mb-2">{getBlockTitle(displayBlock.type)}</h3>
+                <p className="text-sm text-muted-foreground">
+                    Eigenschaften bearbeiten
+                </p>
+            </div>
 
-                    <form className="flex-1 flex flex-col" onSubmit={(e) => e.preventDefault()}>
-                        <div className="flex-1 space-y-6">
-                            {getFormFields(displayBlock.type)}
+            <form className="flex-1 flex flex-col" onSubmit={(e) => e.preventDefault()}>
+                <div className="flex-1 space-y-6">
+                    {getFormFields(displayBlock.type)}
+                </div>
+
+                <div className="mt-auto pt-6 space-y-6">
+                    <Button
+                        variant="destructive"
+                        className="w-full"
+                        onClick={handleDelete}
+                    >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Block löschen
+                    </Button>
+
+                    <Separator />
+
+                    <div className="space-y-2">
+                        <h4 className="text-sm font-medium">Erweitert</h4>
+                        <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
+                            ID: {displayBlock.id}
                         </div>
-
-                        <div className="mt-auto pt-6 space-y-6">
-                            <Button
-                                variant="destructive"
-                                className="w-full"
-                                onClick={handleDelete}
-                            >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Block löschen
-                            </Button>
-
-                            <Separator />
-
-                            <div className="space-y-2">
-                                <h4 className="text-sm font-medium">Erweitert</h4>
-                                <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
-                                    ID: {displayBlock.id}
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </SheetContent>
-            </Sheet>
+                    </div>
+                </div>
+            </form>
             <BlockDeleteDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}
                 blockId={displayBlock.id}
             />
-        </>
+        </div>
     );
 }

@@ -20,6 +20,12 @@ import {
 import Canvas from "./components/Canvas";
 import { BuilderMenubar } from "./components/BuilderMenubar";
 import { PropertiesPanel } from "./components/PropertiesPanel";
+import { RightSidebar } from "./components/RightSidebar";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import type { Block, BlockType } from "@/lib/types/board";
 import { BlockDeleteDialog } from "./components/BlockDeleteDialog";
@@ -27,6 +33,7 @@ import { useUser } from "@/lib/contexts/user-context";
 import { useBoards, useCreateBoard, useUpdateBoard } from "@/lib/hooks/use-boards";
 import { Spinner } from "@/components/ui/spinner";
 import { useSaveService } from "@/lib/hooks/use-save-service";
+import { toast } from "sonner";
 
 const VALID_BLOCK_TYPES: BlockType[] = [
     "text",
@@ -250,36 +257,65 @@ export function BuilderClient() {
         }
     };
 
+    const copyBlock = useCanvasStore((state) => state.copyBlock);
+    const cutBlock = useCanvasStore((state) => state.cutBlock);
+    const pasteBlock = useCanvasStore((state) => state.pasteBlock);
+    const clipboard = useCanvasStore((state) => state.clipboard);
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement | null;
+            if (!target) return;
+
+            const tagName = target.tagName.toLowerCase();
+            const isInput =
+                tagName === "input" ||
+                tagName === "textarea" ||
+                tagName === "select" ||
+                target.contentEditable === "true" ||
+                target.contentEditable === "plaintext-only";
+
+            if (isInput) return;
+
+            // Delete
             if ((e.key === "Delete" || e.key === "Backspace") && selectedBlockId) {
-                const target = e.target as HTMLElement | null;
-                if (!target) {
-                    return;
-                }
-
-                const tagName = target.tagName.toLowerCase();
-                if (
-                    tagName === "input" ||
-                    tagName === "textarea" ||
-                    tagName === "select"
-                ) {
-                    return;
-                }
-
-                let element: HTMLElement | null = target;
-                while (element) {
-                    if (
-                        element.contentEditable === "true" ||
-                        element.contentEditable === "plaintext-only"
-                    ) {
-                        return;
-                    }
-                    element = element.parentElement;
-                }
-
                 e.preventDefault();
                 setDeleteDialogOpen(true);
+                return;
+            }
+
+            // Copy (Cmd/Ctrl + C)
+            if ((e.metaKey || e.ctrlKey) && e.key === "c") {
+                if (selectedBlockId) {
+                    e.preventDefault();
+                    copyBlock();
+                    toast.success(t("toast.copySuccess"));
+                }
+                return;
+            }
+
+            // Cut (Cmd/Ctrl + X)
+            if ((e.metaKey || e.ctrlKey) && e.key === "x") {
+                if (selectedBlockId) {
+                    e.preventDefault();
+                    cutBlock();
+                    toast.success(t("toast.cutSuccess"));
+                }
+                return;
+            }
+
+            // Paste (Cmd/Ctrl + V)
+            if ((e.metaKey || e.ctrlKey) && e.key === "v") {
+                e.preventDefault();
+                if (clipboard) {
+                    const success = pasteBlock();
+                    if (success) {
+                        toast.success(t("toast.pasteSuccess"));
+                    } else {
+                        toast.error(t("toast.pasteError"));
+                    }
+                }
+                return;
             }
         };
 
@@ -287,7 +323,7 @@ export function BuilderClient() {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [selectedBlockId]);
+    }, [selectedBlockId, clipboard, copyBlock, cutBlock, pasteBlock, t]);
 
     const renderContent = () => {
         // Show loading state during board transitions
@@ -361,10 +397,19 @@ export function BuilderClient() {
                         />
                     </div>
                 </div>
-                <div className="flex-1 overflow-auto bg-muted/10">
-                    <Canvas currentViewport={currentViewport} zoomLevel={zoomLevel} />
+                <div className="flex-1 overflow-hidden">
+                    <ResizablePanelGroup direction="horizontal">
+                        <ResizablePanel defaultSize={80} minSize={30}>
+                            <div className="h-full w-full overflow-auto bg-muted/10">
+                                <Canvas currentViewport={currentViewport} zoomLevel={zoomLevel} />
+                            </div>
+                        </ResizablePanel>
+                        <ResizableHandle withHandle />
+                        <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+                            <RightSidebar />
+                        </ResizablePanel>
+                    </ResizablePanelGroup>
                 </div>
-                <PropertiesPanel />
             </SidebarInset>
         );
     };

@@ -12,6 +12,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { BLOCKS, LAYOUT_BLOCKS } from "@/app/[locale]/builder/config/blocks";
 import type { BlockType } from "@/lib/types/board";
+import { useCanvasStore } from "@/lib/stores/canvas-store";
+import { toast } from "sonner";
+import { ClipboardPaste } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface BlockSelectionDialogProps {
     open: boolean;
@@ -45,12 +49,35 @@ export function BlockSelectionDialog({
     onSelect,
 }: BlockSelectionDialogProps) {
     const t = useTranslations();
+    const clipboard = useCanvasStore((state) => state.clipboard);
+    const pasteBlock = useCanvasStore((state) => state.pasteBlock);
+
+    const handlePaste = () => {
+        const success = pasteBlock();
+        if (success) {
+            toast.success(t("toast.pasteSuccess"));
+            onOpenChange(false);
+        } else {
+            toast.error(t("toast.pasteError"));
+        }
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col p-0 gap-0">
-                <DialogHeader className="px-6 py-4 border-b">
+                <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between space-y-0">
                     <DialogTitle>{t("blockSelection.title")}</DialogTitle>
+                    {clipboard && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={handlePaste}
+                        >
+                            <ClipboardPaste className="h-4 w-4" />
+                            {t("blockSelection.paste")}
+                        </Button>
+                    )}
                 </DialogHeader>
 
                 <Tabs defaultValue="blocks" className="flex-1 flex flex-col overflow-hidden">
