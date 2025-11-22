@@ -89,7 +89,7 @@ export function PropertiesPanel() {
     const displayBlock = block || lastBlock;
 
     const currentSchema = displayBlock
-        ? blockSchemas[displayBlock.type] || blockSchemas.text
+        ? (displayBlock.type === 'grid' ? blockSchemas.text : blockSchemas[displayBlock.type] || blockSchemas.text)
         : blockSchemas.text;
 
     const form = useForm<BlockFormData>({
@@ -375,11 +375,17 @@ export function PropertiesPanel() {
             testimonial: "Testimonial",
             accordion: "Akkordeon",
             code: "Code",
+            grid: "Layout-Grid",
         };
         return titles[type] || type;
     };
 
     if (!displayBlock) return null;
+
+    // Do not show the properties sheet for grid blocks
+    if (block?.type === 'grid') {
+        return null;
+    }
 
     return (
         <>
