@@ -1,8 +1,9 @@
 import { defineBasicExtension } from "prosekit/basic";
-import { Union } from "prosekit/core";
+import { defineTextColor } from "./text-color-extension";
+import { union } from "prosekit/core";
 
 export function defineExtension() {
-  return defineBasicExtension();
+    return union([defineBasicExtension(), defineTextColor()]);
 }
 
 export type EditorExtension = ReturnType<typeof defineExtension>;
