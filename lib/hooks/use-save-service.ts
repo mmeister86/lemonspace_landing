@@ -109,6 +109,9 @@ export function useSaveService() {
         }
     }, [blocks, currentBoard, isAutosaveEnabled]);
 
+    // Store action to update board
+    const setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
+
     // Expose flush method
     const flush = async () => {
         if (saveServiceRef.current) {
@@ -120,7 +123,16 @@ export function useSaveService() {
                 // Update prevBlocksRef to avoid double-save if autosave is re-enabled
                 prevBlocksRef.current = JSON.stringify(blocksRef.current);
 
-                await saveServiceRef.current.flush();
+                const savedBoard = await saveServiceRef.current.flush();
+
+                // If save was successful and we got a board back, update the store
+                if (savedBoard) {
+                    console.log('[useSaveService] Updating store with saved board data');
+                    setCurrentBoard(savedBoard);
+                    // Also update prevBlocksRef to match the saved state
+                    prevBlocksRef.current = JSON.stringify(savedBoard.blocks || []);
+                }
+
                 return true;
             } catch {
                 // Error is already handled by the subscription
