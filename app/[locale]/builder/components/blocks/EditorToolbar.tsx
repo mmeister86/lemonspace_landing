@@ -148,7 +148,38 @@ export function EditorToolbar({ blockId, className }: EditorToolbarProps) {
 
             <ColorPicker />
 
-            <DropdownMenu open={isLinkOpen} onOpenChange={setIsLinkOpen}>
+            <DropdownMenu
+                open={isLinkOpen}
+                onOpenChange={(open) => {
+                    if (open) {
+                        const state = editor.view.state;
+                        const { selection } = state;
+                        const { $from, $to, empty } = selection;
+
+                        // 1. Check stored marks (pending marks)
+                        let linkMark = state.storedMarks?.find((m) => m.type.name === "link");
+
+                        // 2. Check marks at cursor position
+                        if (!linkMark) {
+                            linkMark = $from.marks().find((m) => m.type.name === "link");
+                        }
+
+                        // 3. If selection is not empty, check nodes in range
+                        if (!linkMark && !empty) {
+                            state.doc.nodesBetween($from.pos, $to.pos, (node) => {
+                                const mark = node.marks.find((m) => m.type.name === "link");
+                                if (mark) {
+                                    linkMark = mark;
+                                    return false; // Stop iteration
+                                }
+                            });
+                        }
+
+                        setLinkUrl(linkMark ? (linkMark.attrs.href as string) : "");
+                    }
+                    setIsLinkOpen(open);
+                }}
+            >
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <LinkIcon className="h-4 w-4" />
