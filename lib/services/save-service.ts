@@ -56,9 +56,8 @@ export class BoardSaveService {
     /**
      * Force an immediate save of any pending changes.
      * Cancels any pending debounce timer.
-     * Returns the saved Board if successful, undefined otherwise.
      */
-    public async flush(): Promise<Board | undefined> {
+    public async flush(): Promise<void> {
         if (this.saveTimeout) {
             clearTimeout(this.saveTimeout);
             this.saveTimeout = null;
@@ -75,7 +74,7 @@ export class BoardSaveService {
             this.status = "saved";
             this.lastSavedAt = new Date();
             this.notifyListeners();
-            return undefined;
+            return;
         }
 
         return this.performSave(false); // false = not background save
@@ -118,10 +117,10 @@ export class BoardSaveService {
         }, this.DEBOUNCE_MS);
     }
 
-    private async performSave(isBackground: boolean = true, retryCount: number = 0): Promise<Board | undefined> {
+    private async performSave(isBackground: boolean = true, retryCount: number = 0): Promise<void> {
         // If nothing to save, return
         if (Object.keys(this.pendingChanges).length === 0) {
-            return undefined;
+            return;
         }
 
         if (this.isRequestInFlight) {
@@ -131,7 +130,7 @@ export class BoardSaveService {
             // Or rely on the previous request finishing to trigger a check?
             // Let's reschedule to be safe.
             this.scheduleSave();
-            return undefined;
+            return;
         }
 
         this.isRequestInFlight = true;
@@ -161,7 +160,7 @@ export class BoardSaveService {
         this.pendingChanges = {};
 
         try {
-            const savedBoard = await updateBoardViaAPI(this.boardId, changesInFlight);
+            await updateBoardViaAPI(this.boardId, changesInFlight);
 
             console.log(`[BoardSaveService] Save successful for board ${this.boardId}`);
 
@@ -169,7 +168,7 @@ export class BoardSaveService {
             this.lastSavedAt = new Date();
             this.error = undefined;
 
-            // Update last saved state with the server response
+            // Update last saved state
             this.lastSavedState = { ...this.lastSavedState, ...changesInFlight };
 
             // If there are new pending changes that happened while we were saving, schedule another save
@@ -177,9 +176,6 @@ export class BoardSaveService {
                 console.log(`[BoardSaveService] New changes detected during save, scheduling next save`);
                 this.scheduleSave();
             }
-
-            // Return the saved board so the caller can update the store
-            return savedBoard;
         } catch (err) {
             console.error(`[BoardSaveService] Save failed for board ${this.boardId} (attempt ${retryCount + 1}):`, err);
 
@@ -201,7 +197,7 @@ export class BoardSaveService {
                 }, delay);
 
                 // Status remains 'saving' if retrying.
-                return undefined;
+                return;
             }
 
             console.error(`[BoardSaveService] Max retries reached or fatal error. Status set to error.`);
@@ -212,8 +208,6 @@ export class BoardSaveService {
             if (!isBackground) {
                 throw this.error;
             }
-
-            return undefined;
         } finally {
             // Only reset flag if we are not retrying (retrying handles it above by returning early)
             // This block runs for success or final failure (max retries reached or not background save).

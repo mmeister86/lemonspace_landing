@@ -142,33 +142,7 @@ export async function updateBoardViaAPI(
 
     try {
       const result = await response.json();
-      // The API returns { boardMeta, changedFields, savedAt }
-      // We need to construct a full Board object
-      // If blocks were sent, use them; otherwise we'll need to fetch the board
-      const boardMeta = result.data?.boardMeta;
-      if (!boardMeta) {
-        throw new APIError("Invalid response: missing boardMeta");
-      }
-
-      // Construct a Board object from boardMeta and the blocks we sent
-      // Note: The blocks might have been transformed by syncBoardElements,
-      // but for now we'll use the blocks we sent since they're already in the store
-      const board: Board = {
-        id: boardMeta.id,
-        user_id: boardMeta.ownerId,
-        title: boardMeta.title,
-        slug: boardMeta.slug,
-        grid_config: boardMeta.gridConfig,
-        visibility: boardMeta.visibility,
-        blocks: data.blocks || [], // Use the blocks we sent
-        template_id: boardMeta.isTemplate ? boardMeta.id : undefined,
-        is_template: boardMeta.isTemplate || false,
-        created_at: boardMeta.createdAt,
-        updated_at: boardMeta.updatedAt,
-        published_at: boardMeta.publishedAt || undefined,
-      };
-
-      return board;
+      return result.data;
     } catch (parseError) {
       console.error("Error parsing API response:", parseError);
       throw new APIError("Invalid response received from server");
