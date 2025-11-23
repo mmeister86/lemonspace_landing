@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 @plugin "@tailwindcss/typography";
+
+@plugin "tailwind-scrollbar-hide";
 @import "tw-animate-css";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -23,7 +25,7 @@
   --lemonspace: oklch(0.5849 0.1797 138.97);
 
   /* Brand colors */
-  --brand: 210 100% 50%;
+  --brand: oklch(0.623 0.214 259.815);
   --brand-foreground: 213 100% 60%;
   --destructive: oklch(0.5523 0.1927 32.7272);
   --destructive-foreground: oklch(0.9934 0.0032 17.2118);
@@ -69,6 +71,7 @@
   --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
   --tracking-normal: 0.025em;
   --spacing: 0.25rem;
+  --highlight: oklch(0.852 0.199 91.936);
 }
 .dark {
   --background: oklch(23.075% 0.00003 271.152);
@@ -87,7 +90,7 @@
   --accent-foreground: oklch(0.9851 0 0);
 
   /* Brand colors */
-  --brand: 213 100% 60%;
+  --brand: oklch(0.707 0.165 254.624);
   --brand-foreground: 210 100% 50%;
   --destructive: oklch(0.3123 0.0852 29.7877);
   --destructive-foreground: oklch(0.9368 0.0045 34.3092);
@@ -130,6 +133,7 @@
   --shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17),
     0px 8px 10px -1px hsl(0 0% 0% / 0.17);
   --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
+  --highlight: oklch(0.852 0.199 91.936);
 }
 
 @theme inline {
@@ -238,6 +242,7 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-highlight: var(--highlight);
 
   @keyframes accordion-down {
     from {
