@@ -264,7 +264,9 @@
         "quote": "Quote",
         "author": "Author",
         "language": "Language",
-        "code": "Code"
+        "code": "Code",
+        "save": "Save",
+        "saving": "Saving..."
     },
     "saveStatus": {
         "saving": "Saving...",

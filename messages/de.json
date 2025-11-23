@@ -264,7 +264,9 @@
         "quote": "Zitat",
         "author": "Autor",
         "language": "Sprache",
-        "code": "Code"
+        "code": "Code",
+        "save": "Speichern",
+        "saving": "Speichern..."
     },
     "saveStatus": {
         "saving": "Speichern...",
