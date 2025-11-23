@@ -748,6 +748,11 @@
   [class*="border"] {
     @apply border-border;
   }
+  .prose a {
+    color: var(--primary) !important;
+    text-decoration: underline !important;
+    cursor: pointer;
+  }
 }
 
 @layer base {

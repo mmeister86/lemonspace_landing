@@ -1,5 +1,3 @@
-"use client";
-
 import { useEditor } from "prosekit/react";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -17,11 +15,20 @@ import {
     Quote,
     Undo,
     Redo,
+    Link as LinkIcon,
+    Unlink,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { EditorExtension } from "./editor-extension";
 import { ColorPicker } from "./ColorPicker";
 import { cn } from "@/lib/utils";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface EditorToolbarProps {
     blockId: string;
@@ -30,15 +37,21 @@ interface EditorToolbarProps {
 
 export function EditorToolbar({ blockId, className }: EditorToolbarProps) {
     const editor = useEditor<EditorExtension>();
+    const [linkUrl, setLinkUrl] = useState("");
+    const [isLinkOpen, setIsLinkOpen] = useState(false);
 
-    // Helper to check if a mark is active
-    const isMarkActive = (type: string) => {
-        // ProseKit doesn't expose isActive directly on editor, we might need to use useKeymap or similar
-        // But for now let's try to use the editor state if available or just rely on toggle behavior
-        // Actually, ProseKit's useEditor returns the editor instance which has methods.
-        // Let's assume for now we just trigger commands.
-        // To get active state, we usually need a selector or useEditorState.
-        return false;
+    const handleLinkSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (linkUrl) {
+            editor.commands.toggleLink({ href: linkUrl });
+            setIsLinkOpen(false);
+            setLinkUrl("");
+        }
+    };
+
+    const handleUnlink = () => {
+        editor.commands.removeLink();
+        setIsLinkOpen(false);
     };
 
     return (
@@ -134,6 +147,40 @@ export function EditorToolbar({ blockId, className }: EditorToolbarProps) {
             <div className="w-px h-6 bg-border mx-1" />
 
             <ColorPicker />
+
+            <DropdownMenu open={isLinkOpen} onOpenChange={setIsLinkOpen}>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <LinkIcon className="h-4 w-4" />
+                        <span className="sr-only">Link</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="p-3 w-60">
+                    <form onSubmit={handleLinkSubmit} className="flex flex-col gap-2">
+                        <Input
+                            placeholder="https://example.com"
+                            value={linkUrl}
+                            onChange={(e) => setLinkUrl(e.target.value)}
+                            className="h-8"
+                        />
+                        <div className="flex gap-2">
+                            <Button type="submit" size="sm" className="flex-1 h-8">
+                                Save
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 px-2"
+                                onClick={handleUnlink}
+                                title="Remove Link"
+                            >
+                                <Unlink className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </form>
+                </DropdownMenuContent>
+            </DropdownMenu>
 
             <div className="w-px h-6 bg-border mx-1" />
 

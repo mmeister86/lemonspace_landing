@@ -111,6 +111,17 @@ export function TextBlock({
                         "prose dark:prose-invert max-w-none flex-1 overflow-y-auto",
                         !isPreviewMode && "p-4"
                     )}
+                    onClick={(e) => {
+                        const target = e.target as HTMLElement;
+                        const link = target.closest("a");
+                        if (link && link.href) {
+                            // In preview mode: always open
+                            // In edit mode: open only with Ctrl/Cmd key to avoid interfering with editing
+                            if (isPreviewMode || e.metaKey || e.ctrlKey) {
+                                window.open(link.href, "_blank");
+                            }
+                        }
+                    }}
                 >
                     <div
                         ref={editor.mount}
