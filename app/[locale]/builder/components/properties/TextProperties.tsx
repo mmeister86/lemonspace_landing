@@ -13,10 +13,10 @@ interface TextPropertiesProps {
     block: Block;
 }
 
-const DEFAULT_CONTENT = [
+const createDefaultContent = () => [
     {
         type: 'p',
-        children: [{ text: 'Start typing...' }],
+        children: [{ text: '' }],
     },
 ];
 
@@ -30,10 +30,10 @@ export function TextProperties({ block: blockProp }: TextPropertiesProps) {
     const t = useTranslations("propertiesPanel");
 
     const content = useMemo(() => {
-        if (Array.isArray(block.data.content)) {
+        if (Array.isArray(block.data.content) && block.data.content.length > 0) {
             return block.data.content;
         }
-        return DEFAULT_CONTENT;
+        return createDefaultContent();
     }, [block.data.content]);
 
     const [localContent, setLocalContent] = useState(content);
@@ -62,9 +62,11 @@ export function TextProperties({ block: blockProp }: TextPropertiesProps) {
             <div className="border rounded-md bg-background flex flex-col overflow-hidden min-h-[200px]">
                 <div className="flex-1 overflow-y-auto px-3 py-2">
                     <PlateEditor
-                        initialValue={localContent}
+                        key={block.id}
+                        initialValue={content}
                         onChange={handleChange}
                         className="px-0 py-0 pb-0 min-h-0 sm:px-0"
+                        placeholder={t("startTyping")}
                     />
                 </div>
             </div>

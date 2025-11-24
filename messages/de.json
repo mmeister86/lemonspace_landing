@@ -266,7 +266,8 @@
         "language": "Sprache",
         "code": "Code",
         "save": "Speichern",
-        "saving": "Speichern..."
+        "saving": "Speichern...",
+        "startTyping": "Beginne zu tippen..."
     },
     "saveStatus": {
         "saving": "Speichern...",
@@ -439,7 +440,6 @@
         },
         "pro": "Pro"
     },
-
     "blockSelection": {
         "title": "Block hinzufügen",
         "blocks": {

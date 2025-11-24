@@ -7,16 +7,18 @@ import { PlateEditor } from "@/components/plate-editor";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
 import { useMemo } from "react";
 
+import { useTranslations } from "next-intl";
+
 interface TextBlockProps {
     block: Block;
     isSelected?: boolean;
     isPreviewMode?: boolean;
 }
 
-const DEFAULT_CONTENT = [
+const createDefaultContent = () => [
     {
         type: 'p',
-        children: [{ text: 'Start typing...' }],
+        children: [{ text: '' }],
     },
 ];
 
@@ -26,14 +28,15 @@ export function TextBlock({
     isPreviewMode = false,
 }: TextBlockProps) {
     const updateBlock = useCanvasStore((state) => state.updateBlock);
+    const t = useTranslations("propertiesPanel");
 
     const content = useMemo(() => {
         // Basic migration check: if content is an object (ProseMirror) or string, reset to default
         // Plate expects an array.
-        if (Array.isArray(block.data.content)) {
+        if (Array.isArray(block.data.content) && block.data.content.length > 0) {
             return block.data.content;
         }
-        return DEFAULT_CONTENT;
+        return createDefaultContent();
     }, [block.data.content]);
 
     const handleChange = (value: any[]) => { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -47,6 +50,12 @@ export function TextBlock({
         }
     };
 
+    const isEmpty = useMemo(() => {
+        if (!content || content.length === 0) return true;
+        if (content.length === 1 && content[0].children?.length === 1 && content[0].children[0].text === '') return true;
+        return false;
+    }, [content]);
+
     return (
         <div
             className={cn(
@@ -59,10 +68,15 @@ export function TextBlock({
             )}
             <div
                 className={cn(
-                    "",
+                    "relative",
                     !isPreviewMode && "p-4"
                 )}
             >
+                {isEmpty && (
+                    <div className="absolute inset-0 p-4 pointer-events-none text-muted-foreground/50">
+                        {t("startTyping")}
+                    </div>
+                )}
                 <PlateEditor
                     key={JSON.stringify(content)}
                     initialValue={content}

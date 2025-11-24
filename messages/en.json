@@ -266,7 +266,8 @@
         "language": "Language",
         "code": "Code",
         "save": "Save",
-        "saving": "Saving..."
+        "saving": "Saving...",
+        "startTyping": "Start typing..."
     },
     "saveStatus": {
         "saving": "Saving...",
