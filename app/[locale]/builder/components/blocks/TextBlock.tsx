@@ -50,7 +50,7 @@ export function TextBlock({
     return (
         <div
             className={cn(
-                "w-full h-full min-h-[50px] flex flex-col overflow-hidden relative",
+                "w-full min-h-[50px] flex flex-col relative",
                 !isPreviewMode && isSelected && "ring-2 ring-primary ring-offset-2 border-primary"
             )}
         >
@@ -59,7 +59,7 @@ export function TextBlock({
             )}
             <div
                 className={cn(
-                    "flex-1 overflow-y-auto",
+                    "",
                     !isPreviewMode && "p-4"
                 )}
             >
@@ -67,6 +67,7 @@ export function TextBlock({
                     initialValue={content}
                     onChange={handleChange}
                     readOnly={true}
+                    className="px-0 py-0 pb-0 min-h-0 sm:px-0"
                 />
             </div>
         </div>

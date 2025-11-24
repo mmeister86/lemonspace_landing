@@ -18,9 +18,10 @@ interface PlateEditorProps {
     initialValue?: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
     onChange?: (value: any[]) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
     readOnly?: boolean;
+    className?: string;
 }
 
-export function PlateEditor({ initialValue, onChange, readOnly }: PlateEditorProps) {
+export function PlateEditor({ initialValue, onChange, readOnly, className }: PlateEditorProps) {
     const editor = usePlateEditor({
         plugins: [
             ...BasicNodesKit,
@@ -93,7 +94,7 @@ export function PlateEditor({ initialValue, onChange, readOnly }: PlateEditorPro
             )}
 
             <EditorContainer>
-                <Editor placeholder="Type something..." />
+                <Editor placeholder="Type something..." className={className} />
             </EditorContainer>
         </Plate>
     );

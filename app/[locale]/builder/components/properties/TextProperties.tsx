@@ -46,10 +46,11 @@ export function TextProperties({ block: blockProp }: TextPropertiesProps) {
         <div className="space-y-2">
             <label className="text-sm font-medium">{t("content")}</label>
             <div className="border rounded-md bg-background flex flex-col overflow-hidden min-h-[200px]">
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-y-auto px-3 py-2">
                     <PlateEditor
                         initialValue={content}
                         onChange={handleChange}
+                        className="px-0 py-0 pb-0 min-h-0 sm:px-0"
                     />
                 </div>
             </div>
