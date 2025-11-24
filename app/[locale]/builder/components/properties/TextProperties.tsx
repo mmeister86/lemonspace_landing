@@ -6,6 +6,9 @@ import { useTranslations } from "next-intl";
 import { PlateEditor } from "@/components/plate-editor";
 import { useMemo } from "react";
 
+import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+
 interface TextPropertiesProps {
     block: Block;
 }
@@ -33,11 +36,22 @@ export function TextProperties({ block: blockProp }: TextPropertiesProps) {
         return DEFAULT_CONTENT;
     }, [block.data.content]);
 
+    const [localContent, setLocalContent] = useState(content);
+
+    // Sync local content when block content changes (e.g. undo/redo or initial load)
+    useEffect(() => {
+        setLocalContent(content);
+    }, [content]);
+
     const handleChange = (value: any[]) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+        setLocalContent(value);
+    };
+
+    const handleSave = () => {
         updateBlock(block.id, {
             data: {
                 ...block.data,
-                content: value,
+                content: localContent,
             },
         });
     };
@@ -48,12 +62,18 @@ export function TextProperties({ block: blockProp }: TextPropertiesProps) {
             <div className="border rounded-md bg-background flex flex-col overflow-hidden min-h-[200px]">
                 <div className="flex-1 overflow-y-auto px-3 py-2">
                     <PlateEditor
-                        initialValue={content}
+                        initialValue={localContent}
                         onChange={handleChange}
                         className="px-0 py-0 pb-0 min-h-0 sm:px-0"
                     />
                 </div>
             </div>
+            <Button
+                onClick={handleSave}
+                className="w-full"
+            >
+                {t("save")}
+            </Button>
         </div>
     );
 }

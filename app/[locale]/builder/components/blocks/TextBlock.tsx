@@ -64,6 +64,7 @@ export function TextBlock({
                 )}
             >
                 <PlateEditor
+                    key={JSON.stringify(content)}
                     initialValue={content}
                     onChange={handleChange}
                     readOnly={true}
