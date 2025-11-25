@@ -85,8 +85,7 @@ export function PropertiesPanel() {
     }
   }, [block]);
 
-  const displayBlock =
-    block || (selectedBlockIds.length === 0 ? lastBlock : undefined);
+  const displayBlock = block;
 
   const currentSchema = displayBlock
     ? displayBlock.type === "grid"

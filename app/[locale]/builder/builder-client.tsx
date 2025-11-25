@@ -59,6 +59,7 @@ export function BuilderClient() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const addBlock = useCanvasStore((state) => state.addBlock);
     const selectedBlockIds = useCanvasStore((state) => state.selectedBlockIds);
+    const selectBlock = useCanvasStore((state) => state.selectBlock);
     const currentBoard = useCanvasStore((state) => state.currentBoard);
     // const _setCurrentBoard = useCanvasStore((state) => state.setCurrentBoard);
     const blocks = useCanvasStore((state) => state.blocks);
@@ -263,6 +264,40 @@ export function BuilderClient() {
     const cutBlock = useCanvasStore((state) => state.cutBlock);
     const pasteBlock = useCanvasStore((state) => state.pasteBlock);
     const clipboard = useCanvasStore((state) => state.clipboard);
+
+    // Global click handler to deselect blocks when clicking outside
+    useEffect(() => {
+        const handleGlobalClick = (e: MouseEvent) => {
+            // Skip if in preview mode
+            if (isPreviewMode) return;
+
+            // Skip if no blocks are selected
+            if (selectedBlockIds.length === 0) return;
+
+            const target = e.target as HTMLElement;
+            if (!target) return;
+
+            // Check if click is within a selected block
+            const isWithinSelectedBlock = selectedBlockIds.some(blockId => {
+                const blockElement = document.querySelector(`[data-block-id="${blockId}"]`);
+                return blockElement && blockElement.contains(target);
+            });
+
+            // Check if click is within the right sidebar
+            const rightSidebar = document.querySelector('[data-sidebar="sidebar"][data-side="right"]');
+            const isWithinRightSidebar = rightSidebar && rightSidebar.contains(target);
+
+            // If click is not within selected blocks or right sidebar, deselect all
+            if (!isWithinSelectedBlock && !isWithinRightSidebar) {
+                selectBlock(null);
+            }
+        };
+
+        document.addEventListener("mousedown", handleGlobalClick);
+        return () => {
+            document.removeEventListener("mousedown", handleGlobalClick);
+        };
+    }, [selectedBlockIds, isPreviewMode, selectBlock]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {

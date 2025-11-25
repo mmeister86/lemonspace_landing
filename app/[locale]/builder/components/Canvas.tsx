@@ -90,6 +90,7 @@ export default function Canvas({ currentViewport, zoomLevel = 100 }: CanvasProps
                                             return (
                                                 <div
                                                     key={block.id}
+                                                    data-block-id={block.id}
                                                     tabIndex={isPreviewMode ? -1 : 0}
                                                     role={isPreviewMode ? undefined : "button"}
                                                     className={cn(
