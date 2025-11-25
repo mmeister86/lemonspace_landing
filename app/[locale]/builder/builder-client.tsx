@@ -287,9 +287,9 @@ export function BuilderClient() {
             const rightSidebar = document.querySelector('[data-properties-sidebar="true"]');
             const isWithinRightSidebar = rightSidebar && rightSidebar.contains(target);
 
-            // Check if click is within any dialog/overlay (additional protection)
-            const dialogOverlay = document.querySelector('[data-slot="dialog-overlay"]');
-            const isWithinDialog = dialogOverlay && dialogOverlay.contains(target);
+            // Check if click is within any dialog component (overlay, content, buttons, etc.)
+            const isWithinDialog = target.closest('[data-slot^="alert-dialog"]') !== null || 
+                                   target.closest('[data-slot^="dialog"]') !== null;
 
             // If click is not within selected blocks, right sidebar, or dialog, deselect all
             if (!isWithinSelectedBlock && !isWithinRightSidebar && !isWithinDialog) {
