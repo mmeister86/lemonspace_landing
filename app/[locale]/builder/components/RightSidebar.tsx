@@ -11,6 +11,7 @@ export function RightSidebar() {
             side="right"
             collapsible="none"
             className="w-full border-l bg-sidebar"
+            data-properties-sidebar="true"
         >
             <SidebarHeader className="h-14 flex flex-row items-center border-b px-4 py-0 shrink-0">
                 <div className="flex items-center gap-2 font-semibold">

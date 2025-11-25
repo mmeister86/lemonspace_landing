@@ -284,11 +284,15 @@ export function BuilderClient() {
             });
 
             // Check if click is within the right sidebar
-            const rightSidebar = document.querySelector('[data-sidebar="sidebar"][data-side="right"]');
+            const rightSidebar = document.querySelector('[data-properties-sidebar="true"]');
             const isWithinRightSidebar = rightSidebar && rightSidebar.contains(target);
 
-            // If click is not within selected blocks or right sidebar, deselect all
-            if (!isWithinSelectedBlock && !isWithinRightSidebar) {
+            // Check if click is within any dialog/overlay (additional protection)
+            const dialogOverlay = document.querySelector('[data-slot="dialog-overlay"]');
+            const isWithinDialog = dialogOverlay && dialogOverlay.contains(target);
+
+            // If click is not within selected blocks, right sidebar, or dialog, deselect all
+            if (!isWithinSelectedBlock && !isWithinRightSidebar && !isWithinDialog) {
                 selectBlock(null);
             }
         };
@@ -474,7 +478,7 @@ export function BuilderClient() {
                     ) : (
                         // Builder: Canvas + Properties Panel
                         <ResizablePanelGroup direction="horizontal">
-                            <ResizablePanel defaultSize={80} minSize={30}>
+                            <ResizablePanel defaultSize={85} minSize={30}>
                                 <div className="h-full w-full overflow-auto bg-muted/10">
                                     <Canvas
                                         currentViewport={currentViewport}
@@ -483,7 +487,7 @@ export function BuilderClient() {
                                 </div>
                             </ResizablePanel>
                             <ResizableHandle withHandle />
-                            <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+                            <ResizablePanel defaultSize={15} minSize={15} maxSize={40}>
                                 <RightSidebar />
                             </ResizablePanel>
                         </ResizablePanelGroup>

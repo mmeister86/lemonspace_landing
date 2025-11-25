@@ -23,10 +23,14 @@ const createDefaultContent = () => [
 ];
 
 export function TextBlock({
-    block,
+    block: blockProp,
     isSelected,
     isPreviewMode = false,
 }: TextBlockProps) {
+    // Read block directly from store to ensure we always have the latest version
+    const block = useCanvasStore(
+        (state) => state.blocks.find((b) => b.id === blockProp.id) || blockProp
+    );
     const updateBlock = useCanvasStore((state) => state.updateBlock);
     const t = useTranslations("propertiesPanel");
 
@@ -38,6 +42,11 @@ export function TextBlock({
         }
         return createDefaultContent();
     }, [block.data.content]);
+
+    // Create a content-based key to force re-render when content changes
+    const contentKey = useMemo(() => {
+        return `${block.id}-${JSON.stringify(content).slice(0, 100)}`;
+    }, [block.id, content]);
 
     const handleChange = (value: any[]) => { // eslint-disable-line @typescript-eslint/no-explicit-any
         if (!isPreviewMode) {
@@ -58,6 +67,7 @@ export function TextBlock({
 
     return (
         <div
+            data-block-id={block.id}
             className={cn(
                 "w-full min-h-[50px] flex flex-col relative",
                 !isPreviewMode && isSelected && "ring-2 ring-primary ring-offset-2 border-primary"
@@ -78,7 +88,7 @@ export function TextBlock({
                     </div>
                 )}
                 <PlateEditor
-                    key={JSON.stringify(content)}
+                    key={contentKey}
                     initialValue={content}
                     onChange={handleChange}
                     readOnly={true}

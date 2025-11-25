@@ -52,22 +52,24 @@ export function FontColorToolbarButton({
     const [selectedColor, setSelectedColor] = React.useState<string>();
     const [open, setOpen] = React.useState(false);
 
+    // Vereinfachte Funktion zum Öffnen/Schließen des Dropdowns
+    const handleDropdownOpenChange = React.useCallback((isOpen: boolean) => {
+        setOpen(isOpen);
+    }, []);
+
     const onToggle = React.useCallback(
         (value = !open) => {
             setOpen(value);
         },
-        [open, setOpen]
+        [open]
     );
 
     const updateColor = React.useCallback(
         (value: string) => {
             if (editor.selection) {
                 setSelectedColor(value);
-
-                editor.tf.select(editor.selection);
-                editor.tf.focus();
-
                 editor.tf.addMarks({ [nodeType]: value });
+                console.log('✅ Color applied:', value);
             }
         },
         [editor, nodeType]
@@ -75,24 +77,27 @@ export function FontColorToolbarButton({
 
     const updateColorAndClose = React.useCallback(
         (value: string) => {
-            updateColor(value);
-            onToggle();
+            if (editor.selection) {
+                setSelectedColor(value);
+                editor.tf.addMarks({ [nodeType]: value });
+                console.log('✅ Color applied:', value);
+            }
+
+            // Schließe Dropdown
+            setOpen(false);
         },
-        [onToggle, updateColor]
+        [editor, nodeType]
     );
 
     const clearColor = React.useCallback(() => {
         if (editor.selection) {
-            editor.tf.select(editor.selection);
-            editor.tf.focus();
-
             if (selectedColor) {
                 editor.tf.removeMarks(nodeType);
             }
 
-            onToggle();
+            setOpen(false);
         }
-    }, [editor, selectedColor, onToggle, nodeType]);
+    }, [editor, selectedColor, nodeType]);
 
     React.useEffect(() => {
         if (selectionDefined) {
@@ -103,9 +108,7 @@ export function FontColorToolbarButton({
     return (
         <DropdownMenu
             open={open}
-            onOpenChange={(value) => {
-                setOpen(value);
-            }}
+            onOpenChange={handleDropdownOpenChange}
             modal={false}
         >
             <DropdownMenuTrigger asChild>
@@ -114,7 +117,22 @@ export function FontColorToolbarButton({
                 </ToolbarButton>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent
+                align="start"
+                onCloseAutoFocus={(e) => {
+                    e.preventDefault();
+                    // Fokus manuell zurück zum Editor
+                    editor.tf.focus();
+                    console.log('🛡️ Prevented auto-focus on close, restored editor focus');
+                }}
+                onInteractOutside={(e) => {
+                    // Nur verhindern, wenn der Klick im Editor war
+                    const target = e.target as HTMLElement;
+                    if (target.closest('[data-slate-editor]')) {
+                        e.preventDefault();
+                    }
+                }}
+            >
                 <ColorPicker
                     color={selectedColor || color}
                     clearColor={clearColor}
@@ -167,7 +185,12 @@ function PureColorPicker({
             </ToolbarMenuGroup>
             {color && (
                 <ToolbarMenuGroup>
-                    <DropdownMenuItem className="p-2" onClick={clearColor}>
+                    <DropdownMenuItem
+                        className="p-2"
+                        onPointerDown={(e) => e.preventDefault()}
+                        tabIndex={-1}
+                        onClick={clearColor}
+                    >
                         <EraserIcon />
                         <span>Clear</span>
                     </DropdownMenuItem>
@@ -258,6 +281,8 @@ function ColorCustom({
                             }),
                             'absolute top-1 right-2 bottom-2 flex size-8 items-center justify-center rounded-full'
                         )}
+                        onPointerDown={(e) => e.preventDefault()}
+                        tabIndex={-1}
                         onSelect={(e) => {
                             e.preventDefault();
                         }}
@@ -338,6 +363,10 @@ function ColorDropdownMenuItem({
                 className
             )}
             style={{ backgroundColor: value }}
+            onPointerDown={(e) => {
+                e.preventDefault(); // 🛡️ KRITISCH: Verhindert Fokus-Diebstahl
+            }}
+            tabIndex={-1} // Macht Button nicht fokussierbar
             onSelect={(e) => {
                 e.preventDefault();
                 updateColor(value);

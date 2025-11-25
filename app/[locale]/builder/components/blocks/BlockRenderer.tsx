@@ -45,7 +45,7 @@ export function BlockRenderer({
 
     case "heading":
       return (
-        <div className={wrapperClass}>
+        <div data-block-id={block.id} className={wrapperClass}>
           <h1
             className={cn(
               "font-bold",
@@ -59,7 +59,7 @@ export function BlockRenderer({
 
     case "button":
       return (
-        <div className={wrapperClass}>
+        <div data-block-id={block.id} className={wrapperClass}>
           <button className="px-4 py-2 bg-primary text-primary-foreground rounded-md">
             {(block.data.text as string) || "Button"}
           </button>
@@ -68,7 +68,7 @@ export function BlockRenderer({
 
     case "image":
       return (
-        <div className={wrapperClass}>
+        <div data-block-id={block.id} className={wrapperClass}>
           <Image
             src={block.data.src as string}
             alt={(block.data.alt as string) || ""}
@@ -83,7 +83,7 @@ export function BlockRenderer({
 
     default:
       return (
-        <div className={wrapperClass}>
+        <div data-block-id={block.id} className={wrapperClass}>
           <div className="text-sm font-medium mb-2">Block: {block.type}</div>
           <div className="text-xs text-muted-foreground">ID: {block.id}</div>
         </div>

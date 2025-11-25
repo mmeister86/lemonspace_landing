@@ -83,6 +83,7 @@ function GridColumn({
         return (
           <div
             key={child.id}
+            data-block-id={child.id}
             className={cn(
               !isPreviewMode &&
                 "p-4 border rounded-lg bg-background relative cursor-pointer transition-all",
@@ -190,7 +191,7 @@ export function GridBlock({ block, isPreviewMode = false }: GridBlockProps) {
   ]);
 
   return (
-    <div className="w-full h-full min-h-[100px]">
+    <div data-block-id={block.id} className="w-full h-full min-h-[100px]">
       <PanelGroup
         direction="horizontal"
         onLayout={!isPreviewMode ? onLayout : undefined}

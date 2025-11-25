@@ -25,7 +25,11 @@ import { HrElement } from '@/components/ui/hr-node';
 import { ParagraphElement } from '@/components/ui/paragraph-node';
 
 export const BasicBlocksKit = [
+  // Simple component assignment using .withComponent()
   ParagraphPlugin.withComponent(ParagraphElement),
+  HorizontalRulePlugin.withComponent(HrElement),
+
+  // Heading plugins with additional options (rules, shortcuts)
   H1Plugin.configure({
     node: {
       component: H1Element,
@@ -84,5 +88,4 @@ export const BasicBlocksKit = [
     node: { component: BlockquoteElement },
     shortcuts: { toggle: { keys: 'mod+shift+period' } },
   }),
-  HorizontalRulePlugin.withComponent(HrElement),
 ];

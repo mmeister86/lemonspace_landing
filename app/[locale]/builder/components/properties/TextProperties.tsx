@@ -43,6 +43,11 @@ export function TextProperties({ block: blockProp }: TextPropertiesProps) {
         setLocalContent(content);
     }, [content]);
 
+    // Create a content-based key to force re-render when content changes
+    const contentKey = useMemo(() => {
+        return `${block.id}-${JSON.stringify(content).slice(0, 100)}`;
+    }, [block.id, content]);
+
     const handleChange = (value: any[]) => { // eslint-disable-line @typescript-eslint/no-explicit-any
         setLocalContent(value);
     };
@@ -62,7 +67,7 @@ export function TextProperties({ block: blockProp }: TextPropertiesProps) {
             <div className="border rounded-md bg-background flex flex-col overflow-hidden min-h-[200px]">
                 <div className="flex-1 overflow-y-auto px-3 py-2">
                     <PlateEditor
-                        key={block.id}
+                        key={contentKey}
                         initialValue={content}
                         onChange={handleChange}
                         className="px-0 py-0 pb-0 min-h-0 sm:px-0"
