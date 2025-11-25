@@ -38,16 +38,17 @@ jest.mock("@/lib/api/error-handlers", () => ({
     handleAuthError: jest.fn().mockReturnValue(null),
 }));
 
-// Import dependencies using require to ensure mocks and env vars are applied
-const { NextRequest } = require("next/server");
-const { createSupabaseUserContext } = require("@/lib/services/auth-service");
-const { GET } = require("./route");
+// Import dependencies using ES6 imports
+import { NextRequest } from "next/server";
+import { createSupabaseUserContext } from "@/lib/services/auth-service";
+import { GET } from "./route";
 
 describe("GET /api/boards/[id]", () => {
     const mockBoardId = "test-board-id";
     const mockUserId = "test-user-id";
 
-    const mockSupabase = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mockSupabase: any = {
         from: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
@@ -57,9 +58,23 @@ describe("GET /api/boards/[id]", () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (createSupabaseUserContext as jest.Mock).mockResolvedValue({
+        (createSupabaseUserContext as jest.MockedFunction<typeof createSupabaseUserContext>).mockResolvedValue({
             supabase: mockSupabase,
-            user: { id: mockUserId },
+            user: {
+                id: mockUserId,
+                app_metadata: {},
+                user_metadata: {},
+                aud: "authenticated",
+                created_at: new Date().toISOString(),
+                email: "test@example.com",
+                phone: "",
+                email_confirmed_at: new Date().toISOString(),
+                phone_confirmed_at: null,
+                role: "authenticated",
+                updated_at: new Date().toISOString()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any,
+            error: null,
         });
     });
 
@@ -78,8 +93,10 @@ describe("GET /api/boards/[id]", () => {
         };
 
         // Mock getBoard to return the board
-        const { getBoard } = require("@/lib/services/board-service");
-        getBoard.mockResolvedValue(mockBoard);
+        const boardServiceMock = jest.requireMock("@/lib/services/board-service") as {
+            getBoard: jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
+        };
+        boardServiceMock.getBoard.mockResolvedValue(mockBoard);
 
         // Mock board elements query response
         const mockElements = [
@@ -101,20 +118,24 @@ describe("GET /api/boards/[id]", () => {
             }
         ];
 
-        const mockConnections = [];
+        const mockConnections: unknown[] = [];
 
-        const elementsChain = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const elementsChain: any = {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
-            order: jest.fn().mockResolvedValue({ data: mockElements }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            order: (jest.fn() as any).mockResolvedValue({ data: mockElements }),
         };
-        const connectionsChain = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const connectionsChain: any = {
             select: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
-            order: jest.fn().mockResolvedValue({ data: mockConnections }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            order: (jest.fn() as any).mockResolvedValue({ data: mockConnections }),
         };
 
-        mockSupabase.from.mockImplementation((table) => {
+        mockSupabase.from.mockImplementation((table: string) => {
             if (table === "board_elements") return elementsChain;
             if (table === "element_connections") return connectionsChain;
             return mockSupabase;
@@ -125,9 +146,9 @@ describe("GET /api/boards/[id]", () => {
         });
 
         const res = await GET(req, { params: Promise.resolve({ id: mockBoardId }) });
-        expect(res.status).toBe(200);
+        expect(res?.status).toBe(200);
 
-        const data = await res.json();
+        const data = await res?.json();
         const element = data.data.elements[0];
 
         expect(element).toBeDefined();

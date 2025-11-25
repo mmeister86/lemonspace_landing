@@ -5,17 +5,26 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 describe("board-service", () => {
     describe("syncBoardElements", () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let mockSupabase: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let mockFrom: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let mockSelect: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let mockEq: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let mockDelete: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let mockIn: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let mockUpsert: any;
 
         beforeEach(() => {
-            mockUpsert = jest.fn().mockResolvedValue({ error: null });
-            mockIn = jest.fn().mockResolvedValue({ error: null });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockUpsert = (jest.fn() as any).mockResolvedValue({ error: null });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockIn = (jest.fn() as any).mockResolvedValue({ error: null });
             mockDelete = jest.fn().mockReturnValue({ in: mockIn });
             mockEq = jest.fn().mockReturnValue({
                 data: [],
@@ -39,7 +48,7 @@ describe("board-service", () => {
                 { id: "block-1", type: "text", data: {} },
                 { id: "block-2", type: "image", data: {} },
                 { id: "block-3", type: "button", data: {} },
-            ] as any[];
+            ] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
 
             await syncBoardElements(mockSupabase, boardId, blocks);
 

@@ -57,12 +57,6 @@ export function FontColorToolbarButton({
         setOpen(isOpen);
     }, []);
 
-    const onToggle = React.useCallback(
-        (value = !open) => {
-            setOpen(value);
-        },
-        [open]
-    );
 
     const updateColor = React.useCallback(
         (value: string) => {

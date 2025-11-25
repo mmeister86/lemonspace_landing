@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCanvasStore } from "@/lib/stores/canvas-store";
-import { Block, BlockType } from "@/lib/types/board";
+import { BlockType } from "@/lib/types/board";
 import { Separator } from "@/components/ui/separator";
 import { Trash2 } from "lucide-react";
 
@@ -67,23 +67,13 @@ export function PropertiesPanel() {
   const selectedBlockIds = useCanvasStore((state) => state.selectedBlockIds);
   const blocks = useCanvasStore((state) => state.blocks);
   const updateBlock = useCanvasStore((state) => state.updateBlock);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const removeBlock = useCanvasStore((state) => state.removeBlock);
-  const selectBlock = useCanvasStore((state) => state.selectBlock);
 
   const block =
     selectedBlockIds.length === 1
       ? blocks.find((b) => b.id === selectedBlockIds[0])
       : undefined;
 
-  const [lastBlock, setLastBlock] = useState<Block | undefined>(undefined);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  useEffect(() => {
-    if (block) {
-      setLastBlock(block);
-    }
-  }, [block]);
 
   const displayBlock = block;
 
@@ -135,12 +125,6 @@ export function PropertiesPanel() {
     };
   }, [form, block, updateBlock]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      selectBlock(null);
-    }
-  };
 
   const handleDelete = () => {
     setDeleteDialogOpen(true);
