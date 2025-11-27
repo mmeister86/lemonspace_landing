@@ -1,15 +1,22 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { Plate } from 'platejs/react';
 import { usePlateEditor } from 'platejs/react';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 import { FontColorToolbarButton } from '@/components/ui/font-color-toolbar-button';
+import { TurnIntoToolbarButton } from '@/components/ui/turn-into-toolbar-button';
+import { AlignToolbarButton } from '@/components/ui/align-toolbar-button';
+import { FontSizeToolbarButton } from '@/components/ui/font-size-toolbar-button';
+import { IndentToolbarButton, OutdentToolbarButton } from '@/components/ui/indent-toolbar-button';
 import { BasicNodesKit } from '@/components/editor/plugins/basic-nodes-kit';
+import { DndKit } from '@/components/editor/plugins/dnd-kit';
 import { LinkPlugin } from '@platejs/link/react';
 import { ListPlugin } from '@platejs/list/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { LinkElement } from '@/components/ui/link-element';
 import { ListElement, ListItemElement } from '@/components/ui/list-element';
 import { ToolbarGroup, ToolbarSeparator } from '@/components/ui/toolbar';
@@ -22,11 +29,15 @@ interface PlateEditorProps {
     placeholder?: string;
 }
 
-export function PlateEditor({ initialValue, onChange, readOnly, className, placeholder = "Type something..." }: PlateEditorProps) {
+export function PlateEditor({ initialValue, onChange, readOnly, className, placeholder }: PlateEditorProps) {
+    const t = useTranslations('editor');
+    const defaultPlaceholder = placeholder || t('placeholder');
 
     const editor = usePlateEditor({
         plugins: [
             ...BasicNodesKit,
+            ...DndKit,
+            BlockSelectionPlugin,
             LinkPlugin.configure({
                 render: { node: LinkElement },
             }),
@@ -61,19 +72,26 @@ export function PlateEditor({ initialValue, onChange, readOnly, className, place
             {!readOnly && (
                 <FixedToolbar>
                     <ToolbarGroup>
-                        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">
+                        <TurnIntoToolbarButton />
+                        <FontSizeToolbarButton />
+                    </ToolbarGroup>
+
+                    <ToolbarSeparator />
+
+                    <ToolbarGroup>
+                        <MarkToolbarButton nodeType="bold" tooltip={t('toolbar.bold')}>
                             <span className="font-bold">B</span>
                         </MarkToolbarButton>
-                        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">
+                        <MarkToolbarButton nodeType="italic" tooltip={t('toolbar.italic')}>
                             <span className="italic">I</span>
                         </MarkToolbarButton>
-                        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">
+                        <MarkToolbarButton nodeType="underline" tooltip={t('toolbar.underline')}>
                             <span className="underline">U</span>
                         </MarkToolbarButton>
-                        <MarkToolbarButton nodeType="strikethrough" tooltip="Strikethrough (⌘+Shift+X)">
+                        <MarkToolbarButton nodeType="strikethrough" tooltip={t('toolbar.strikethrough')}>
                             <span className="line-through">S</span>
                         </MarkToolbarButton>
-                        <MarkToolbarButton nodeType="code" tooltip="Code (⌘+E)">
+                        <MarkToolbarButton nodeType="code" tooltip={t('toolbar.code')}>
                             <span className="font-mono">{'<>'}</span>
                         </MarkToolbarButton>
                     </ToolbarGroup>
@@ -81,22 +99,18 @@ export function PlateEditor({ initialValue, onChange, readOnly, className, place
                     <ToolbarSeparator />
 
                     <ToolbarGroup>
-                        <FontColorToolbarButton nodeType="color" tooltip="Text Color">
+                        <FontColorToolbarButton nodeType="color" tooltip={t('toolbar.textColor')}>
                             <span className="font-bold text-muted-foreground">A</span>
                         </FontColorToolbarButton>
-                    </ToolbarGroup>
-
-                    <ToolbarSeparator />
-
-                    <ToolbarGroup>
-                        {/* Note: List toolbar buttons would need proper implementation with toggleList command */}
-                        {/* For now we can add simple buttons if needed, or rely on markdown shortcuts */}
+                        <AlignToolbarButton />
+                        <OutdentToolbarButton />
+                        <IndentToolbarButton />
                     </ToolbarGroup>
                 </FixedToolbar>
             )}
 
             <EditorContainer>
-                <Editor placeholder={placeholder} className={className} />
+                <Editor placeholder={defaultPlaceholder} className={className} />
             </EditorContainer>
         </Plate>
     );

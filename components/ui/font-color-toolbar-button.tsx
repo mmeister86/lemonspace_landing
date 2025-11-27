@@ -51,6 +51,14 @@ export function FontColorToolbarButton({
 
     const [selectedColor, setSelectedColor] = React.useState<string>();
     const [open, setOpen] = React.useState(false);
+    const savedSelectionRef = React.useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+    // Save selection when dropdown opens
+    React.useEffect(() => {
+        if (open && editor.selection) {
+            savedSelectionRef.current = editor.selection;
+        }
+    }, [open, editor]);
 
     // Vereinfachte Funktion zum Öffnen/Schließen des Dropdowns
     const handleDropdownOpenChange = React.useCallback((isOpen: boolean) => {
@@ -71,14 +79,26 @@ export function FontColorToolbarButton({
 
     const updateColorAndClose = React.useCallback(
         (value: string) => {
-            if (editor.selection) {
+            // Use saved selection or current selection
+            const currentSelection = savedSelectionRef.current || editor.selection;
+
+            if (currentSelection) {
                 setSelectedColor(value);
+                editor.tf.select(currentSelection);
                 editor.tf.addMarks({ [nodeType]: value });
                 console.log('✅ Color applied:', value);
             }
 
             // Schließe Dropdown
             setOpen(false);
+
+            // Restore selection and focus after a short delay to ensure DOM is updated
+            setTimeout(() => {
+                if (currentSelection) {
+                    editor.tf.select(currentSelection);
+                    editor.tf.focus();
+                }
+            }, 0);
         },
         [editor, nodeType]
     );

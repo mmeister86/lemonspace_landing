@@ -467,5 +467,33 @@
             "divider": "Divider"
         },
         "paste": "Paste"
+    },
+    "editor": {
+        "toolbar": {
+            "turnInto": "Turn into",
+            "paragraph": "Paragraph",
+            "heading1": "Heading 1",
+            "heading2": "Heading 2",
+            "heading3": "Heading 3",
+            "quote": "Quote",
+            "fontSize": "Font size",
+            "decreaseFontSize": "Decrease font size",
+            "increaseFontSize": "Increase font size",
+            "bold": "Bold (⌘+B)",
+            "italic": "Italic (⌘+I)",
+            "underline": "Underline (⌘+U)",
+            "strikethrough": "Strikethrough (⌘+Shift+X)",
+            "code": "Code (⌘+E)",
+            "textColor": "Text Color",
+            "align": "Align",
+            "alignLeft": "Left",
+            "alignCenter": "Center",
+            "alignRight": "Right",
+            "alignJustify": "Justify",
+            "indent": "Indent (Tab)",
+            "outdent": "Outdent (Shift+Tab)",
+            "dragToMove": "Drag to move"
+        },
+        "placeholder": "Type something..."
     }
 }

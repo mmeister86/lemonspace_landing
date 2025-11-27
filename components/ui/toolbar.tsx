@@ -142,6 +142,7 @@ export const ToolbarButton = withTooltip(function ToolbarButton({
           className
         )}
         value={pressed ? 'single' : ''}
+        data-plate-prevent-deselect
         {...props}
       >
         {isDropdown ? (
@@ -171,6 +172,7 @@ export const ToolbarButton = withTooltip(function ToolbarButton({
         isDropdown && 'pr-1',
         className
       )}
+      data-plate-prevent-deselect
       {...props}
     >
       {children}

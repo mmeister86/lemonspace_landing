@@ -1,36 +1,51 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
-import type { PlateElementProps } from 'platejs/react';
+import type { PlateElementProps } from "platejs/react";
 
-import { type VariantProps, cva } from 'class-variance-authority';
-import { PlateElement } from 'platejs/react';
+import { type VariantProps, cva } from "class-variance-authority";
+import { PlateElement } from "platejs/react";
 
-const headingVariants = cva('relative mb-1', {
+import { cn } from "@/lib/utils";
+
+const headingVariants = cva("relative mb-1", {
   variants: {
     variant: {
-      h1: 'mt-[1.6em] pb-1 font-bold font-heading text-4xl',
-      h2: 'mt-[1.4em] pb-px font-heading font-semibold text-2xl tracking-tight',
-      h3: 'mt-[1em] pb-px font-heading font-semibold text-xl tracking-tight',
-      h4: 'mt-[0.75em] font-heading font-semibold text-lg tracking-tight',
-      h5: 'mt-[0.75em] font-semibold text-lg tracking-tight',
-      h6: 'mt-[0.75em] font-semibold text-base tracking-tight',
+      h1: "mt-[1.6em] pb-1 font-bold font-heading text-4xl",
+      h2: "mt-[1.4em] pb-px font-heading font-semibold text-2xl tracking-tight",
+      h3: "mt-[1em] pb-px font-heading font-semibold text-xl tracking-tight",
+      h4: "mt-[0.75em] font-heading font-semibold text-lg tracking-tight",
+      h5: "mt-[0.75em] font-semibold text-lg tracking-tight",
+      h6: "mt-[0.75em] font-semibold text-base tracking-tight",
     },
   },
 });
 
 export function HeadingElement({
-  variant = 'h1',
-  ...props
+  variant = "h1",
+  className,
+  style,
+  element,
+  children,
+  ...rest
 }: PlateElementProps & VariantProps<typeof headingVariants>) {
+  const indentLevel = (element as { indent?: number })?.indent || 0;
+
   return (
     <PlateElement
+      {...rest}
+      element={element}
       as={variant!}
-      className={headingVariants({ variant })}
-      {...props}
+      className={cn(headingVariants({ variant }), className)}
+      style={{
+        ...(style || {}),
+        paddingLeft:
+          (style as React.CSSProperties | undefined)?.paddingLeft ??
+          (indentLevel > 0 ? `${indentLevel * 24}px` : undefined),
+      }}
     >
-      {props.children}
+      {children}
     </PlateElement>
   );
 }

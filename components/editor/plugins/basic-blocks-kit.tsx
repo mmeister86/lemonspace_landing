@@ -10,6 +10,13 @@ import {
   H6Plugin,
   HorizontalRulePlugin,
 } from '@platejs/basic-nodes/react';
+import {
+  FontSizePlugin,
+  LineHeightPlugin,
+  TextAlignPlugin,
+} from '@platejs/basic-styles/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { KEYS } from 'platejs';
 import { ParagraphPlugin } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/ui/blockquote-node';
@@ -87,5 +94,43 @@ export const BasicBlocksKit = [
   BlockquotePlugin.configure({
     node: { component: BlockquoteElement },
     shortcuts: { toggle: { keys: 'mod+shift+period' } },
+  }),
+
+  // Text alignment plugin
+  TextAlignPlugin.configure({
+    inject: {
+      nodeProps: {
+        nodeKey: 'align',
+        defaultNodeValue: 'left',
+        styleKey: 'textAlign',
+        validNodeValues: ['left', 'center', 'right', 'justify'],
+      },
+      targetPlugins: [KEYS.p, KEYS.h1, KEYS.h2, KEYS.h3, KEYS.h4, KEYS.h5, KEYS.h6, KEYS.blockquote],
+    },
+  }),
+
+  // Line height plugin
+  LineHeightPlugin.configure({
+    inject: {
+      nodeProps: {
+        defaultNodeValue: 1.5,
+        validNodeValues: [1, 1.2, 1.5, 2, 2.5, 3],
+      },
+      targetPlugins: [KEYS.p, KEYS.h1, KEYS.h2, KEYS.h3, KEYS.h4, KEYS.h5, KEYS.h6],
+    },
+  }),
+
+  // Font size plugin
+  FontSizePlugin,
+
+  // Indent plugin
+  IndentPlugin.configure({
+    inject: {
+      targetPlugins: [KEYS.p, KEYS.h1, KEYS.h2, KEYS.h3, KEYS.h4, KEYS.h5, KEYS.h6, KEYS.blockquote],
+    },
+    options: {
+      offset: 24,
+      unit: 'px',
+    },
   }),
 ];

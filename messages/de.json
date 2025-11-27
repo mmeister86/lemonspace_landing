@@ -473,5 +473,33 @@
         "cutSuccess": "Block erfolgreich ausgeschnitten",
         "pasteSuccess": "Block erfolgreich eingefügt",
         "pasteError": "Fehler beim Einfügen des Blocks"
+    },
+    "editor": {
+        "toolbar": {
+            "turnInto": "Blocktyp ändern",
+            "paragraph": "Absatz",
+            "heading1": "Überschrift 1",
+            "heading2": "Überschrift 2",
+            "heading3": "Überschrift 3",
+            "quote": "Zitat",
+            "fontSize": "Schriftgröße",
+            "decreaseFontSize": "Schriftgröße verkleinern",
+            "increaseFontSize": "Schriftgröße vergrößern",
+            "bold": "Fett (⌘+B)",
+            "italic": "Kursiv (⌘+I)",
+            "underline": "Unterstrichen (⌘+U)",
+            "strikethrough": "Durchgestrichen (⌘+Shift+X)",
+            "code": "Code (⌘+E)",
+            "textColor": "Textfarbe",
+            "align": "Ausrichtung",
+            "alignLeft": "Links",
+            "alignCenter": "Zentriert",
+            "alignRight": "Rechts",
+            "alignJustify": "Blocksatz",
+            "indent": "Einrücken (Tab)",
+            "outdent": "Ausrücken (Shift+Tab)",
+            "dragToMove": "Ziehen zum Verschieben"
+        },
+        "placeholder": "Beginne zu tippen..."
     }
 }
